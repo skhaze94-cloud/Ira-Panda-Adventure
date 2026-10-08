@@ -32,3 +32,7 @@ Open index.html with assets, game.js and style.css alongside it. WASD or arrow k
 All five routes, objectives, locked gates, chapter transitions, final reunion, movement and pause passed the gameplay harness. Checks also cover doubled playable spans, cooldown behavior, particle expiry/budget and reduced motion. Each chapter and the lantern burst were rendered with the actual Canvas renderer for visual inspection, including a mobile playfield.
 
 Artwork generated with the built-in image tool. Full prompts: assets/asset-prompts-v2.json.
+
+## Music
+
+Menu and opening comic: **Curious Monsters (Remastered)**. Gameplay: **Nimble Motif (Remastered)**. Both supplied MP3s loop. Persistent audio players keep gameplay music continuous through chapters and chapter story panels without reloading or seeking. Music starts with the first user interaction and has a separate Music option. Hidden tabs pause music and resume at the same position when visible.
