@@ -1,6 +1,6 @@
 'use strict';
 const $=s=>document.querySelector(s),canvas=$('#world'),ctx=canvas.getContext('2d');
-const imgs={};for(const n of ['forest','ara','ira','atlas','decor','level-2','level-3','level-4','level-5','ground-v2','trees-v2','lamps-v2','npc-pip','npc-bramble','npc-moss','woodland-door','woodland-key','key-birches','ara-rig-22','npc-rig-22','support-rig-22']){imgs[n]=new Image();imgs[n].src='assets/'+n+'.webp'}
+const imgs={};for(const n of ['forest','ara','ira','atlas','decor','level-2','level-3','level-4','level-5','ground-v2','trees-v2','lamps-v2','npc-pip','npc-bramble','npc-moss','woodland-door','woodland-key','key-birches','ara-rig-22','npc-rig-22','support-rig-22','quests-23']){imgs[n]=new Image();imgs[n].src='assets/'+n+'.webp'}
 let state='menu',page=0,W=innerWidth,H=innerHeight,DPR=Math.min(devicePixelRatio||1,2),last=0,time=0,pausedFrom='menu',heart=3,invuln=0,cooldown=0,pulse=0,toastTime=0,target=null,walk=false,face=1;
 let levelIndex=0,marks=[],decorations=[],sparkles=[],stageFinished=false;
 let sound=false,reduced=false,musicEnabled=true;try{const s=JSON.parse(localStorage.getItem('ara-options')||'{}');sound=!!s.sound;reduced=!!s.reduced;if(typeof s.music==='boolean')musicEnabled=s.music}catch{}document.body.classList.toggle('reduced',reduced);
@@ -29,10 +29,10 @@ function resize(){W=innerWidth;H=innerHeight;DPR=Math.min(devicePixelRatio||1,2)
 function seed(n){let v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v)}
 const levels=[
 {name:'The Whispering Woods',size:65,scene:'forest',task:'key',items:0,theme:['#53635b','#4c5c55','#59665a','#1b393b','#1e3b3b','#213f3c'],tint:'#254b4b',decor:7,bats:2,entry:'“Ira? It’s me. I brought a light.”',caption:'A ribbon, a rustle, and two very nosy bats.',outro:'The brass key turns with a tiny click. Beyond the woodland door, Ira’s ribbon points toward a glow in the trees.',joke:'“Ira, your directions are very… ribbon-y.”'},
-{name:'Glowcap Glade',size:39,scene:'level-2',task:'glow',items:3,theme:['#6a5777','#63516e','#716080','#302d4d','#352c4d','#3b3451'],tint:'#50466b',decor:0,bats:2,entry:'“Are these mushrooms night-lights? Excellent.”',caption:'The mushrooms were asleep. Ara had a bright idea.',outro:'Three glowcaps stretch and shine. A trail of little ribbon scraps appears beside the brook.',joke:'“Thank you, mushrooms. Very illuminating.”'},
-{name:'Puddlebrook Crossing',size:41,scene:'level-3',task:'collect',items:3,theme:['#7f8580','#737d77','#8b9188','#174f5e','#1e5a64','#226472'],tint:'#255f68',decor:1,bats:2,entry:'“Stepping stones. Not splashing stones. Got it.”',caption:'A brook, a bridge, and a frog with absolutely no advice.',outro:'Ara follows the last scrap across the brook. On the far bank, little stars wink between the branches.',joke:'“My paws are only a little bit soggy. A fashionable amount.”'},
-{name:'Stargazer Hollow',size:43,scene:'level-4',task:'glow',items:3,theme:['#505f82','#475574','#5a678d','#1d294d','#233054','#26345b'],tint:'#33487a',decor:6,bats:3,entry:'“Excuse me, stars. Have you seen a pillow?”',caption:'Even the stars needed someone to leave a light on.',outro:'The sleepy lanterns blink awake. Beyond them, Ara spots a tiny cottage and a very familiar pink bow.',joke:'“Aha! Unless the cottage is wearing Ira’s bow…”'},
-{name:'Pillowmoon Garden',size:45,scene:'level-5',task:'glow',items:2,theme:['#847866','#7a705e','#8e8370','#365348','#3a5a4d','#416254'],tint:'#5c6953',decor:4,bats:1,entry:'“Ira! Is that you? Please don’t be another cushion.”',caption:'Home was never very far from a sister’s hug.',outro:'Ira had followed a butterfly, lost her way, and waited beside the warm little cottage.',joke:'“I was hiding,” said Ira. “Just… a bit too successfully.”'}
+{name:'Glowcap Glade',size:73,scene:'level-2',task:'quest',items:3,theme:['#6a5777','#63516e','#716080','#302d4d','#352c4d','#3b3451'],tint:'#50466b',decor:0,bats:2,entry:'“Are these mushrooms night-lights? Excellent.”',caption:'The mushrooms were asleep. Ara had a bright idea.',outro:'Three glowcaps stretch and shine. A trail of little ribbon scraps appears beside the brook.',joke:'“Thank you, mushrooms. Very illuminating.”'},
+{name:'Puddlebrook Crossing',size:77,scene:'level-3',task:'quest',items:3,theme:['#7f8580','#737d77','#8b9188','#174f5e','#1e5a64','#226472'],tint:'#255f68',decor:1,bats:2,entry:'“Stepping stones. Not splashing stones. Got it.”',caption:'A brook, a bridge, and a frog with absolutely no advice.',outro:'Ara follows the last scrap across the brook. On the far bank, little stars wink between the branches.',joke:'“My paws are only a little bit soggy. A fashionable amount.”'},
+{name:'Stargazer Hollow',size:81,scene:'level-4',task:'quest',items:3,theme:['#505f82','#475574','#5a678d','#1d294d','#233054','#26345b'],tint:'#33487a',decor:6,bats:3,entry:'“Excuse me, stars. Have you seen a pillow?”',caption:'Even the stars needed someone to leave a light on.',outro:'The sleepy lanterns blink awake. Beyond them, Ara spots a tiny cottage and a very familiar pink bow.',joke:'“Aha! Unless the cottage is wearing Ira’s bow…”'},
+{name:'Pillowmoon Garden',size:85,scene:'level-5',task:'quest',items:2,theme:['#847866','#7a705e','#8e8370','#365348','#3a5a4d','#416254'],tint:'#5c6953',decor:4,bats:1,entry:'“Ira! Is that you? Please don’t be another cushion.”',caption:'Home was never very far from a sister’s hug.',outro:'Ira had followed a butterfly, lost her way, and waited beside the warm little cottage.',joke:'“I was hiding,” said Ira. “Just… a bit too successfully.”'}
 ];
 function current(){return levels[levelIndex]}
 function curve(x){return Math.sin(x*(.45+levelIndex*.025)+levelIndex*.6)*(1.3+levelIndex*.18)}
@@ -63,10 +63,10 @@ function buildLevel(){
  }
  const lines=[['The trees are whispering. Probably discussing biscuits.','A lantern! Finally, someone with a bright personality.'],['No touching the mushrooms. Unless they ask for a high-five.','This is the cosiest spooky place I have ever been.'],['The water says shhh. I say: where is my sister?','My paws are damp. My determination is waterproof.'],['A star winked at me. That counts as directions, right?','Ira, if you are in space, please come down for bedtime.'],['Those flowers smell like almost-home.','I can see a cottage. And something suspiciously pillow-shaped.']];
  for(let i=0;i<2;i++){let x=5+(l.size-12)*(i+1)/3;waypoints.push({x,y:pathY(x),line:lines[levelIndex][i],id:i})}
- initWoodlandQuest();
+ initWoodlandQuest();initChapterQuest();
  bats.length=0;for(let i=0;i<l.bats;i++){let x=8+i*(l.size-15)/Math.max(1,l.bats-1);bats.push({x,y:pathY(x)+.4,homeX:x,homeY:pathY(x)+.4,fear:0,phase:i*2})}
 }
-function objective(){let done=marks.filter(m=>m.lit).length;$('#hudChapter').textContent='CHAPTER '+(levelIndex+1)+' OF 5';$('#hudTitle').textContent=current().name;$('#objective').textContent=done<marks.length?(levelIndex===2?'Follow the ribbon scraps':levelIndex===1?'Wake the glowcaps':'Light the sleepy lanterns')+' · '+done+' / '+marks.length:(levelIndex===4?'Find Ira beside the little cottage.':'Follow the path to the lantern gate.');if(levelIndex===0)$('#objective').textContent=questObjective();$('#keyStatus').classList.toggle('hidden',!keyQuest?.collected||keyQuest?.doorOpen);$('#journey').textContent=levels.map((_,i)=>i<levelIndex?'✦':i===levelIndex?'✧':'·').join('  ')}
+function objective(){let done=marks.filter(m=>m.lit).length;$('#hudChapter').textContent='CHAPTER '+(levelIndex+1)+' OF 5';$('#hudTitle').textContent=current().name;$('#objective').textContent=done<marks.length?(levelIndex===2?'Follow the ribbon scraps':levelIndex===1?'Wake the glowcaps':'Light the sleepy lanterns')+' · '+done+' / '+marks.length:(levelIndex===4?'Find Ira beside the little cottage.':'Follow the path to the lantern gate.');if(levelIndex===0)$('#objective').textContent=questObjective();else if(chapterQuest)$('#objective').textContent=chapterObjective();$('#keyStatus').classList.toggle('hidden',!keyQuest?.collected||keyQuest?.doorOpen);if(chapterQuest){$('#keyStatus').textContent=(chapterQuest.def.kind==='scroll'?'Scroll pages':chapterQuest.def.kind==='wood'?'Driftwood':chapterQuest.def.kind==='stars'?'Star crystals':'Moonflower petals')+' · '+chapterQuest.count+' / 3';$('#keyStatus').classList.toggle('hidden',chapterQuest.count===0||chapterQuest.done)}else $('#keyStatus').textContent='✧ Brass key · 1';$('#journey').textContent=levels.map((_,i)=>i<levelIndex?'✦':i===levelIndex?'✧':'·').join('  ')}
 const stories=[
 {title:'The suspiciously giggly cushion.',caption:'One last game before bedtime.',text:'Ira was very good at being a pillow. Being a quiet pillow? A little trickier.',bubble:'Ready or not, here I come!',reply:'You can’t see me. I’m a cushion.',replySpeaker:'Ira',footnote:'A cushion with a very obvious bow.',word:'hee hee!',scene:'assets/comic-1.webp',alt:'Ara counts with her eyes covered while Ira peeks out from behind a tiny cushion in their cozy bedroom.'},
 {title:'One sister, suddenly missing.',caption:'Then the giggling stopped.',text:'No Ira. Just an open window, a fluttering ribbon… and a very unhelpful teacup.',bubble:'Oh no! Ira’s missing!',reply:'Not in the teacup. Good to know.',replySpeaker:'Ara, checking everywhere',footnote:'Even excellent detectives start small.',word:'…Ira?',scene:'assets/comic-2.webp',alt:'Ara searches beneath an empty teacup as Ira’s ribbon flutters through the open bedroom window.'},
@@ -87,18 +87,18 @@ $('#options').onclick=()=>{modal('Make yourself at home.','<label class="setting
 function save(){try{localStorage.setItem('ara-options',JSON.stringify({sound,reduced,music:musicEnabled}))}catch{}}
 $('#credits').onclick=()=>modal('Two sisters. One adventure.','<p>Starring Ara the Panda and Ira the Pillowcase.</p><p>Menu music: Curious Monsters (Remastered).<br>Gameplay music: Nimble Motif (Remastered).</p><p>Inspired by your original character designs. A tiny, moonlit story about kindness, courage, and finding your way home.</p>',[{text:'Back',fn:resume,primary:true}],'THE OPENING CREDITS');
 function pause(){if(state!=='play')return;modal('A little breather.','<p>The woods can wait. Your lantern is still glowing.</p>',[{text:'Keep adventuring',primary:true,fn:resume},{text:'Return to title',fn:showMenu}])}$('#pause').onclick=pause;
-function glow(){if(state!=='play'||cooldown>0)return;pulse=GLOW_DURATION;cooldown=LANTERN_COOLDOWN;emitLanternMotes();revealKey();reactNeighboursToGlow();for(const m of marks)if(!m.lit&&current().task==='glow'&&Math.hypot(m.x-player.x,m.y-player.y)<2.5){m.lit=true;sparkles.push({x:m.x,y:m.y,life:1});toast(levelIndex===1?'“Good morning… or good night, mushroom!”':'“There. Much less spooky.”',2.5);objective()}for(const b of bats)if(Math.hypot(b.x-player.x,b.y-player.y)<3.5){b.fear=3;toast('Just a little light. Off you flutter!',2)}tone(850,.32)}$('#glowTouch').onclick=glow;
+function glow(){if(state!=='play'||cooldown>0)return;pulse=GLOW_DURATION;cooldown=LANTERN_COOLDOWN;emitLanternMotes();revealKey();glowChapterQuest();reactNeighboursToGlow();for(const m of marks)if(!m.lit&&current().task==='glow'&&Math.hypot(m.x-player.x,m.y-player.y)<2.5){m.lit=true;sparkles.push({x:m.x,y:m.y,life:1});toast(levelIndex===1?'“Good morning… or good night, mushroom!”':'“There. Much less spooky.”',2.5);objective()}for(const b of bats)if(Math.hypot(b.x-player.x,b.y-player.y)<3.5){b.fear=3;toast('Just a little light. Off you flutter!',2)}tone(850,.32)}$('#glowTouch').onclick=glow;
 addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape'){if(state==='play')pause();else if(state==='dialog')resume();return}if(state==='comic'&&(e.code==='Space'||e.code==='Enter')){$('#next').click();return}if(state==='play'){if(e.code==='KeyE'&&!e.repeat){interact();return}keys.add(e.code);target=null;if(e.code==='Space')glow()}});addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>{keys.clear();if(state==='play')pause()});
 for(const b of document.querySelectorAll('[data-dir]')){let k={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[b.dataset.dir];b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(k);target=null};b.onpointerup=b.onpointercancel=()=>keys.delete(k)}
 let tile=55,camera={x:0,y:0};function project(x,y){return{x:(x-y)*tile+camera.x,y:(x+y)*tile*.49+camera.y}}function unproject(x,y){let a=(x-camera.x)/tile,b=(y-camera.y)/(tile*.49);return{x:(a+b)/2,y:(b-a)/2}};
-canvas.addEventListener('pointerdown',e=>{if(state!=='play')return;const pt=unproject(e.clientX,e.clientY),n=npcs.find(n=>Math.hypot(n.x-pt.x,n.y-pt.y)<1.2);if(n&&Math.hypot(n.x-player.x,n.y-player.y)<2){talkToNPC(n);return}if(canUseDoor()&&Math.hypot(pt.x-exitPoint().x,pt.y-exitPoint().y)<1.2){interact();return}target=n?{x:n.x,y:n.y}:pt});
-function blocked(x,y){if(x<.5||y<.5||x>current().size-1||y>current().size-1)return true;let bx=Math.floor(x),by=Math.floor(y);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(const t of treeBuckets.get((bx+dx)+','+(by+dy))||[])if(Math.hypot(t.x-x,t.y-y)<.57)return true;return false}
+canvas.addEventListener('pointerdown',e=>{if(state!=='play')return;const pt=unproject(e.clientX,e.clientY);if(chapterStationNear()&&Math.hypot(pt.x-chapterQuest.station.x,pt.y-chapterQuest.station.y)<1.8){interactChapterQuest();return}const n=npcs.find(n=>Math.hypot(n.x-pt.x,n.y-pt.y)<1.2);if(n&&Math.hypot(n.x-player.x,n.y-player.y)<2){talkToNPC(n);return}if(canUseDoor()&&Math.hypot(pt.x-exitPoint().x,pt.y-exitPoint().y)<1.2){interact();return}target=n?{x:n.x,y:n.y}:pt});
+function blocked(x,y){if(chapterQuest?.def.kind==='wood'&&!chapterQuest.done&&x>chapterQuest.station.x+.75)return true;if(x<.5||y<.5||x>current().size-1||y>current().size-1)return true;let bx=Math.floor(x),by=Math.floor(y);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(const t of treeBuckets.get((bx+dx)+','+(by+dy))||[])if(Math.hypot(t.x-x,t.y-y)<.57)return true;return false}
 function move(dx,dy){if(!blocked(player.x+dx,player.y))player.x+=dx;if(!blocked(player.x,player.y+dy))player.y+=dy}
 function update(dt){time+=dt;updateCast(dt);if(state!=='play')return;if(updateQuest())return;invuln=Math.max(0,invuln-dt);cooldown=Math.max(0,cooldown-dt);pulse=Math.max(0,pulse-dt);toastTime-=dt;if(toastTime<=0)$('#toast').classList.remove('on');const castOX=player.x,castOY=player.y;let sx=0,sy=0;if(keys.has('KeyW')||keys.has('ArrowUp'))sy--;if(keys.has('KeyS')||keys.has('ArrowDown'))sy++;if(keys.has('KeyA')||keys.has('ArrowLeft'))sx--;if(keys.has('KeyD')||keys.has('ArrowRight'))sx++;let dx=(sx+sy)*.707,dy=(sy-sx)*.707;if(target&&!sx&&!sy){dx=target.x-player.x;dy=target.y-player.y;if(Math.hypot(dx,dy)<.12){target=null;dx=dy=0}}let len=Math.hypot(dx,dy);walk=len>.05;if(walk){dx/=len;dy/=len;face=dx-dy>=0?1:-1;let ox=player.x,oy=player.y;move(dx*dt*2.3,dy*dt*2.3);if(target&&Math.hypot(ox-player.x,oy-player.y)<.001){target=null;toast('A crooked tree! Try the moonlit path.',2)}}updateGait(Math.hypot(player.x-castOX,player.y-castOY),dt);for(const b of bats){let dist=Math.hypot(b.x-player.x,b.y-player.y);b.fear=Math.max(0,b.fear-dt);let tx=b.homeX+Math.sin(time*.8+b.phase)*.9,ty=b.homeY+Math.cos(time*.65+b.phase)*.9;if(dist<3&&!b.fear){tx=player.x;ty=player.y}if(b.fear){tx=b.homeX+(b.x-player.x)*2;ty=b.homeY+(b.y-player.y)*2}let nx=tx-b.x,ny=ty-b.y,l=Math.hypot(nx,ny);if(l>.05){b.x+=nx/l*dt*(b.fear?2:dist<3?1.2:.6);b.y+=ny/l*dt*(b.fear?2:dist<3?1.2:.6)}if(dist<.6&&!invuln&&!b.fear){heart--;hearts();invuln=2.2;b.fear=2;toast('Oops! A fluttery bump. Space to shoo the bats.',3);tone(240);if(heart<=0){player.x=2;player.y=pathY(2);heart=3;hearts();toast('Take a breath. Let’s try the trail again.',4)}}}
 for(const w of waypoints)if(!waypointSeen.has(w.id)&&Math.hypot(player.x-w.x,player.y-w.y)<1.4){waypointSeen.add(w.id);toast('“'+w.line+'”',4)}
 for(const m of marks)if(!m.lit&&current().task==='collect'&&Math.hypot(player.x-m.x,player.y-m.y)<.85){m.lit=true;toast('“Another ribbon scrap! Ira was here.”',2.5);objective();tone(720)}for(const f of sparkles)f.life-=dt;sparkles=sparkles.filter(f=>f.life>0);
-updateLanternMotes(dt);$('#glowStatus').textContent=cooldown>0?'✧ Gathering light · '+cooldown.toFixed(1)+'s':'✧ Lantern ready';$('#glowTouch').style.setProperty?.('--charge',String(1-cooldown/LANTERN_COOLDOWN));let ex=exitPoint();if(Math.hypot(player.x-ex.x,player.y-ex.y)<1.1){if(levelIndex===0){if(keyQuest.doorOpen)complete();else if(toastTime<=0)toast(keyQuest.collected?'Key ready. Press E or tap Open door.':'Locked. Search the birches beside the blue lantern trail.',4)}else if(marks.every(m=>m.lit))complete();else if(toastTime<=0)toast(current().task==='collect'?'A few ribbon scraps are still on the path.':'The path needs a little more light. Glow near the marked spots.',3)}}
-function complete(){if(stageFinished||levelIndex===0&&!keyQuest?.doorOpen)return;stageFinished=true;tone(880,.5);const l=current();if(levelIndex<4){const next=levels[levelIndex+1];modal(next.name,'<img class="chapter-art" src="assets/'+next.scene+'.webp" alt="'+next.name+'"><p class="chapter-caption">'+next.caption+'</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p>',[{text:'On to chapter '+(levelIndex+2),primary:true,fn:()=>startLevel(levelIndex+1)},{text:'Return to title',fn:showMenu}],'CHAPTER '+(levelIndex+1)+' COMPLETE · FOUR PAWS FORWARD')}else{modal('Found you, little sister.','<div class="reunion" style="background-image:url(assets/level-5.webp)"><canvas id="reunionAra" width="320" height="420" aria-label="Ara"></canvas><canvas id="reunionIra" width="320" height="420" aria-label="Ira"></canvas></div><p class="chapter-caption">Five little chapters. One very big hug.</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p><p>“Next time,” Ara smiled, “we hide somewhere with biscuits.”</p>',[{text:'Adventure again',primary:true,fn:begin},{text:'Return to title',fn:showMenu}],'IRA FOUND · THE END')}pausedFrom='play'}
+updateLanternMotes(dt);$('#glowStatus').textContent=cooldown>0?'✧ Gathering light · '+cooldown.toFixed(1)+'s':'✧ Lantern ready';$('#glowTouch').style.setProperty?.('--charge',String(1-cooldown/LANTERN_COOLDOWN));let ex=exitPoint();if(Math.hypot(player.x-ex.x,player.y-ex.y)<1.1){if(levelIndex===0){if(keyQuest.doorOpen)complete();else if(toastTime<=0)toast(keyQuest.collected?'Key ready. Press E or tap Open door.':'Locked. Search the birches beside the blue lantern trail.',4)}else if(chapterQuest?.done)complete();else if(toastTime<=0)toast(chapterObjective(),4)}}
+function complete(){if(stageFinished||levelIndex===0&&!keyQuest?.doorOpen||chapterQuest&&!chapterQuest.done)return;stageFinished=true;tone(880,.5);const l=current();if(levelIndex<4){const next=levels[levelIndex+1];modal(next.name,'<img class="chapter-art" src="assets/'+next.scene+'.webp" alt="'+next.name+'"><p class="chapter-caption">'+next.caption+'</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p>',[{text:'On to chapter '+(levelIndex+2),primary:true,fn:()=>startLevel(levelIndex+1)},{text:'Return to title',fn:showMenu}],'CHAPTER '+(levelIndex+1)+' COMPLETE · FOUR PAWS FORWARD')}else{modal('Found you, little sister.','<div class="reunion" style="background-image:url(assets/level-5.webp)"><canvas id="reunionAra" width="320" height="420" aria-label="Ara"></canvas><canvas id="reunionIra" width="320" height="420" aria-label="Ira"></canvas></div><p class="chapter-caption">Five little chapters. One very big hug.</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p><p>“Next time,” Ara smiled, “we hide somewhere with biscuits.”</p>',[{text:'Adventure again',primary:true,fn:begin},{text:'Return to title',fn:showMenu}],'IRA FOUND · THE END')}pausedFrom='play'}
 
 function drawImage(img,x,y,w,h){if(img.complete&&img.naturalWidth)ctx.drawImage(img,x,y,w,h)}
 function cover(img){if(!img.naturalWidth)return;let s=Math.max(W/img.width,H/img.height);ctx.drawImage(img,(W-img.width*s)/2,(H-img.height*s)/2,img.width*s,img.height*s)}
@@ -195,13 +195,14 @@ function render(){
  for(const t of lampPosts){const p=project(t.x,t.y);if(onScreen(p,170))groundLight(p,tile*(t.type?2:2.7),(t.blue?'#9ad9ff':m.light)+'9a',.42)}
  for(const t of marks)if(t.lit){const p=project(t.x,t.y);if(onScreen(p,120))groundLight(p,110,m.light+'99',.45)}
  const pp=project(player.x,player.y);groundLight(pp,135+(reduced?0:Math.sin(time*2)*2),'#ffe1ac77',.45);
- const ex=exitPoint(),gate=project(ex.x,ex.y),ready=levelIndex===0?keyQuest.collected:marks.every(t=>t.lit);
+ const ex=exitPoint(),gate=project(ex.x,ex.y),ready=levelIndex===0?keyQuest.collected:!!chapterQuest?.done;
  const ents=trees.filter(t=>onScreen(project(t.x,t.y),tile*5)).map(t=>({depth:t.x+t.y,kind:'tree',t}));
  for(const t of decorations)if(onScreen(project(t.x,t.y),tile*2))ents.push({depth:t.x+t.y,kind:'decor',t});
  for(const t of lampPosts)if(onScreen(project(t.x,t.y),tile*3))ents.push({depth:t.x+t.y,kind:'post',t});
  for(const t of marks)if(onScreen(project(t.x,t.y),tile*3))ents.push({depth:t.x+t.y,kind:'mark',t});
  for(const n of npcs)if(onScreen(project(n.x,n.y),160))ents.push({depth:n.x+n.y,kind:'npc',n});
  if(keyQuest&&onScreen(project(keyQuest.clearing.x,keyQuest.clearing.y),300))ents.push({depth:keyQuest.clearing.x+keyQuest.clearing.y-.2,kind:'keylandmark'});
+ if(chapterQuest){if(chapterQuest.def.kind==='stars'){for(const r of chapterQuest.runes)if(onScreen(project(r.x,r.y),180))ents.push({depth:r.x+r.y,kind:'questrune',r})}else if(onScreen(project(chapterQuest.station.x,chapterQuest.station.y),250))ents.push({depth:chapterQuest.station.x+chapterQuest.station.y,kind:'queststation'})}
  ents.push({depth:player.x+player.y,kind:'player'});
  for(const b of bats)if(onScreen(project(b.x,b.y),100))ents.push({depth:b.x+b.y,kind:'bat',b});
  if(onScreen(gate,250))ents.push({depth:ex.x+ex.y,kind:'gate'});
@@ -214,7 +215,9 @@ function render(){
    paintedSprite('trees-v2',levelIndex,t.type,3,5,p.x,p.y,h,tile*2.25);ctx.globalAlpha=1;
   }else if(e.kind==='npc'){drawNPC(e.n)}else if(e.kind==='keylandmark'){drawQuestLandmark()}else if(e.kind==='post'){drawPost(e.t)}
   else if(e.kind==='decor'){const t=e.t,p=project(t.x,t.y),h=tile*1.5*t.size;decoration(t.type,p.x-h*.45,p.y-h,h*.9,h);if(levelIndex===1)softLight(p.x,p.y-30,38,'#bd9aff44',.3)}
+  else if(e.kind==='queststation'){drawChapterStation()}else if(e.kind==='questrune'){drawChapterRune(e.r)}
   else if(e.kind==='mark'){
+   if(chapterQuest){drawChapterItem(e.t);continue}
    const t=e.t,p=project(t.x,t.y);if(t.lit&&l.task==='collect')continue;
    if(l.task==='collect'){softLight(p.x,p.y-16,40,'#ffdeb355',.4);sprite(atlasRects.ribbon,p.x-24,p.y-36,48,29);ctx.fillStyle='#ffe6ba';ctx.font='16px Georgia';ctx.textAlign='center';ctx.fillText('✧',p.x,p.y-47)}
    else{
@@ -226,9 +229,9 @@ function render(){
   else if(e.kind==='player'){drawAra(pp)}
   else if(e.kind==='gate'){
    groundLight(gate,130,ready?m.light+'99':m.moon+'44',.4);
-   if(levelIndex===0){drawImage(imgs['woodland-door'],gate.x-85,gate.y-168,170,168);softLight(gate.x,gate.y-55,45,ready?'#ffdb9b66':'#9fcdea22',.5)}else if(levelIndex===4){decoration(5,gate.x-115,gate.y-190,230,215);drawIra({x:gate.x+44,y:gate.y+1})}
+   if(levelIndex===0){drawImage(imgs['woodland-door'],gate.x-85,gate.y-168,170,168);softLight(gate.x,gate.y-55,45,ready?'#ffdb9b66':'#9fcdea22',.5)}else if(levelIndex===4){decoration(5,gate.x-115,gate.y-190,230,215);if(chapterQuest?.done)drawIra({x:gate.x+44,y:gate.y+1})}
    else{paintedSprite('lamps-v2',levelIndex,0,2,5,gate.x-55,gate.y,160,90);paintedSprite('lamps-v2',levelIndex,0,2,5,gate.x+55,gate.y,160,90);sprite(atlasRects.ribbon,gate.x-23,gate.y-45,46,28);softLight(gate.x,gate.y-95,85,ready?m.light+'88':m.moon+'33',.55)}
-   ctx.fillStyle='#f2e5ce';ctx.font='italic 16px Georgia';ctx.textAlign='center';ctx.fillText(levelIndex===0?(ready?'Key found · Open the woodland door':'Woodland door · Locked'):levelIndex===4?'Ira’s little hiding place':ready?'The way onward':'A little light will open the way',gate.x,gate.y-(levelIndex===4?210:180));
+   ctx.fillStyle='#f2e5ce';ctx.font='italic 16px Georgia';ctx.textAlign='center';ctx.fillText(levelIndex===0?(ready?'Key found · Open the woodland door':'Woodland door · Locked'):levelIndex===4?(ready?'Ira’s little hiding place':'The cottage waits for its lullaby'):ready?'The way onward':'Quest gate · Locked',gate.x,gate.y-(levelIndex===4?210:180));
   }
  }
  for(const f of sparkles){const p=project(f.x,f.y);ctx.save();ctx.globalAlpha=f.life;ctx.fillStyle='#ffecba';ctx.font='18px Georgia';for(let i=0;i<6;i++)ctx.fillText('✧',p.x+Math.cos(i)*35*(1-f.life),p.y-50-Math.sin(i)*40*(1-f.life));ctx.restore()}
@@ -259,7 +262,7 @@ function questObjective(){
  return 'Meet your woodland neighbours along the lantern trail.';
 }
 function talkToNPC(n){
- if(state!=='play'||!n)return;n.introduced=true;
+ if(state!=='play'||!n)return;if(chapterQuest){talkToChapterGuide(n);return}n.introduced=true;
  let text,action='Keep exploring';
  if(n.id==='pip')text='<p>“A little panda with a very big mission! Let’s find your sister.”</p><p><strong>Move:</strong> WASD or arrow keys. On a phone, use the direction pad or tap the path.</p><p><strong>Lantern:</strong> press Space or tap Glow. Its shimmer shoos away bats and reveals things hiding in the woods. It recharges quickly!</p><p><strong>Talk:</strong> come close and press E or tap Talk. Follow the warm lanterns to meet my neighbours.</p><p class="chapter-joke">“I would fly with you, but somebody must supervise this branch.”</p>';
  else if(n.id==='bramble')text=keyQuest.collected?'<p>“You found the key! Follow the main lantern trail to the far end of the woods. Use E or Open door when you reach the wooden door.”</p><p class="chapter-joke">“I knew it wasn’t locked forever. I was just being thorough.”</p>':'<p>“The wooden door at the far end of the woods is locked. You’ll need its brass key to reach the next glade.”</p><p>“Moss the fox is farther along this trail. If anyone knows where it went, he does.”</p><p class="chapter-joke">“I tried saying please. Very politely. Still locked.”</p>';
@@ -272,9 +275,9 @@ function talkToNPC(n){
 }
 function nearestNPC(){return npcs.filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<2).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0]}
 function canUseDoor(){const e=exitPoint();return levelIndex===0&&Math.hypot(player.x-e.x,player.y-e.y)<1.8}
-function interact(){if(state!=='play')return;const n=nearestNPC();if(n){talkToNPC(n);return}if(canUseDoor()){if(!keyQuest.collected){toast('Locked. Find the woodland key—Moss knows a little hint.',4);return}keyQuest.doorOpen=true;objective();tone(1100,.4);complete()}}
+function interact(){if(state!=='play')return;const n=nearestNPC();if(n){talkToNPC(n);return}if(canUseDoor()){if(!keyQuest.collected){toast('Locked. Find the woodland key—Moss knows a little hint.',4);return}keyQuest.doorOpen=true;objective();tone(1100,.4);complete();return}interactChapterQuest()}
 function updateQuest(){
- const button=$('#interact');if(!keyQuest){button.classList.add('hidden');return false}
+ const button=$('#interact');if(!keyQuest){if(chapterQuest)return updateChapterQuest();button.classList.add('hidden');return false}
  const n=nearestNPC(),door=canUseDoor();button.classList.toggle('hidden',!n&&!door);button.textContent=n?'Talk to '+n.name: keyQuest.collected?'Open door':'Check door';
  if(n&&!n.introduced){talkToNPC(n);return true}
  if(keyQuest.revealed&&!keyQuest.collected&&Math.hypot(player.x-keyQuest.key.x,player.y-keyQuest.key.y)<.85){keyQuest.collected=true;keyQuest.started=true;sparkles.push({x:keyQuest.key.x,y:keyQuest.key.y,life:1});objective();tone(1020,.35);toast('Key found! Follow the golden lanterns to the woodland door.',5)}
@@ -426,5 +429,98 @@ function neighbourHop(n){
  return greeting+walking+idle;
 }
 function reactNeighboursToGlow(){for(const n of npcs)if(Math.hypot(player.x-n.x,player.y-n.y)<5){n.greetAt=castClock;n.delightUntil=castClock+1.65;n.delight=1}}
+
+// Quests 2–5 share readable progress, but each chapter has its own actions and ending.
+let chapterQuest=null;
+const chapterQuestArt=[[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,432,362],[625,551,286,433],[1118,568,323,400],[75,1065,361,429],[582,1078,372,404],[1127,1079,306,401]];
+const questStories={
+ 1:{number:2,title:'The Torn Moon Scroll',guide:'pip',giver:'Pip · Keeper of the Moon Scroll',items:3,kind:'scroll',itemArt:0,stationArt:8,
+ intro:'“Ira passed this way! My moon scroll will show you the brook—but three glowcaps borrowed its pages.”',hint:'Follow the little side trails to three purple glowcap nests. Shine your lantern to reveal each torn page, then walk close to collect it. Bring all three to the moon lectern near the end of the glade.',joke:'“They said they were reading. I suspect they were using it as a blanket.”',goal:'Rebuild the moon scroll',done:'The three pages curl together. A silver route points across Puddlebrook.'},
+ 2:{number:3,title:'The Wobbly Brook Bridge',guide:'bramble',giver:'Bramble · Very Serious Bridge Builder',items:3,kind:'wood',itemArt:2,stationArt:3,
+ intro:'“Ira crossed before the bridge went wobbly. Nobody panic. I have a clipboard.”',hint:'Three bundles of driftwood washed up beside the reed beds. Walk close to gather them, then bring them to the broken crossing. Press E or tap Repair bridge there. Your lantern still shoos the bats!',joke:'“A bridge is just a very determined collection of sticks.”',goal:'Repair the brook bridge',done:'Bramble’s bridge settles into place. The far bank leads toward a sky full of sleepy stars.'},
+ 3:{number:4,title:'The Sleepy Constellation',guide:'moss',giver:'Moss · Amateur Star Whisperer',items:3,kind:'stars',itemArt:5,stationArt:4,
+ intro:'“The stars know where Ira went, but their constellation has forgotten how to shine.”',hint:'Find three star crystals beside the silver trees. Then wake the constellation stones with your lantern in this order: Moon → Star → Heart. Their symbols are painted above them. A mistaken glow only resets the stones—you keep your crystals.',joke:'“I asked the stars for directions. They said to look up. Very funny.”',goal:'Wake the constellation',done:'Moon, Star, Heart: a little sister’s constellation shines above the trail to Pillowmoon Garden.'},
+ 4:{number:5,title:'Ira’s Moonflower Lullaby',guide:'pip',giver:'Pip · Bedtime Music Keeper',items:3,kind:'flowers',itemArt:6,stationArt:7,
+ intro:'“That cottage has a very familiar giggle. The door opens for a moonflower lullaby.”',hint:'Wake three sleepy moonflowers with your lantern. Each gives one glowing petal. Bring all three petals to the music box by the cottage, then press E or tap Play lullaby. Ira will hear you!',joke:'“Strictly no loud hooting after bedtime. Gentle hooting is negotiable.”',goal:'Play Ira’s lullaby',done:'The petals turn into three tiny notes. The cottage opens, and Ira bounces into the moonlight.'}
+};
+function initChapterQuest(){
+ chapterQuest=null;if(levelIndex===0)return;
+ const def=questStories[levelIndex],span=current().size-5;
+ const guide={id:def.guide,name:def.guide==='pip'?'Pip':def.guide==='moss'?'Moss':'Bramble',role:def.giver.split(' · ')[1],x:5,y:pathY(5)+.65,art:def.guide==='pip'?0:def.guide==='bramble'?1:2,introduced:false};
+ guide.homeX=guide.x;guide.homeY=guide.y;guide.homeOffset=.65;guide.noticed=false;guide.travel=0;guide.stride=0;guide.delight=0;npcs=[guide];
+ marks=[.22,.48,.72].map((fraction,i)=>{const x=2+span*fraction;return{x,y:pathY(x)+(i%2?2.35:-2.35),lit:false,revealed:def.kind==='wood'||def.kind==='stars',index:i}});
+ const stationX=def.kind==='wood'?current().size-9:current().size-4;
+ chapterQuest={def,started:false,done:false,count:0,station:{x:stationX,y:pathY(stationX)+(def.kind==='flowers'?2.1:0)},runeStep:0,runes:[]};
+ if(def.kind==='stars')for(const [symbol,offset,order]of [['Star',-12,1],['Moon',-8,0],['Heart',-4,2]]){const x=current().size+offset;chapterQuest.runes.push({symbol,order,x,y:pathY(x),lit:false})}
+ const clearSpots=marks.concat([chapterQuest.station]).concat(chapterQuest.runes);lampPosts=lampPosts.filter(l=>clearSpots.every(p=>Math.hypot(l.x-p.x,l.y-p.y)>1.35));decorations=decorations.filter(l=>clearSpots.every(p=>Math.hypot(l.x-p.x,l.y-p.y)>1.2));
+ current().outro=def.done;current().joke=def.joke;
+}
+function chapterObjective(){
+ if(!chapterQuest)return '';
+ const q=chapterQuest,d=q.def,prefix='Quest '+d.number+' · ';
+ if(q.done)return prefix+d.goal+' complete! '+(levelIndex===4?'Find Ira at the cottage.':'Follow the open trail.');
+ if(q.count<3)return prefix+(d.kind==='scroll'?'Reveal and collect scroll pages':d.kind==='wood'?'Collect driftwood':d.kind==='stars'?'Collect star crystals':'Wake moonflowers')+' · '+q.count+' / 3';
+ if(d.kind==='stars')return prefix+'Glow at '+['Moon','Star','Heart'][q.runeStep]+' · Moon → Star → Heart';
+ return prefix+(d.kind==='scroll'?'Bring the pages to the moon lectern':d.kind==='wood'?'Bring the wood to the broken bridge':'Bring the petals to the cottage music box')+' · E / Tap';
+}
+function talkToChapterGuide(n){
+ const q=chapterQuest,d=q.def;q.started=true;n.introduced=true;
+ const text=q.done?'<p>“'+d.done+'”</p><p>“Keep following the warm lantern trail. You’re doing wonderfully.”</p>':'<p><strong>Quest '+d.number+' · '+d.title+'</strong></p><p>'+d.intro+'</p><p>'+d.hint+'</p><p class="chapter-joke">'+d.joke+'</p>';
+ modal(d.giver,'<div class="npc-portrait"><canvas id="npcPortrait" width="256" height="320" aria-label="'+n.name+'"></canvas></div>'+text,[{text:q.done?'Keep going!':'I’ll help!',primary:true,fn:resume}],'A LITTLE QUEST');n.greetAt=castClock;activeSpeaker=n.id;objective();
+}
+function chapterStationNear(){return chapterQuest&&Math.hypot(player.x-chapterQuest.station.x,player.y-chapterQuest.station.y)<2}
+function chapterActionLabel(){return chapterQuest.def.kind==='scroll'?'Rebuild scroll':chapterQuest.def.kind==='wood'?'Repair bridge':chapterQuest.def.kind==='flowers'?'Play lullaby':'Read constellation'}
+function finishChapterQuest(){
+ const q=chapterQuest;if(q.done)return;q.done=true;objective();sparkles.push({x:q.station.x,y:q.station.y,life:1});toast(q.def.done,6);tone(880,.5);
+ if(q.def.kind==='flowers'){tone(660,.32);tone(990,.55)}
+}
+function interactChapterQuest(){
+ const q=chapterQuest;if(!q||!chapterStationNear())return;
+ if(q.done){toast(q.def.kind==='flowers'?'Ira is waiting beside the cottage!':'The way is open. Follow the lantern trail.',3);return}
+ if(q.count<3){toast('Bring all three '+(q.def.kind==='scroll'?'scroll pages':q.def.kind==='wood'?'driftwood bundles':q.def.kind==='stars'?'star crystals':'moonflower petals')+' first. '+q.count+' / 3 found.',4);return}
+ if(q.def.kind==='stars'){toast('Wake the stones with Glow: Moon → Star → Heart.',4);return}
+ finishChapterQuest();
+}
+function updateChapterQuest(){
+ const q=chapterQuest;if(!q)return false;
+ const n=nearestNPC();if(n&&!n.introduced){talkToChapterGuide(n);return true}
+ const at=chapterStationNear(),button=$('#interact');button.classList.toggle('hidden',!n&&!at);button.textContent=n?'Talk to '+n.name:chapterActionLabel();
+ if(q.def.kind!=='flowers')for(const m of marks)if(!m.lit&&m.revealed&&Math.hypot(player.x-m.x,player.y-m.y)<.95){m.lit=true;q.count++;q.started=true;sparkles.push({x:m.x,y:m.y,life:1});objective();tone(960,.2);toast((q.def.kind==='scroll'?'Moon-scroll page':q.def.kind==='wood'?'Driftwood bundle':'Star crystal')+' found · '+q.count+' / 3',3)}
+ return false;
+}
+function glowChapterQuest(){
+ const q=chapterQuest;if(!q)return;
+ for(const m of marks)if(!m.lit&&Math.hypot(player.x-m.x,player.y-m.y)<2.5){
+  if(q.def.kind==='scroll'&&!m.revealed){m.revealed=true;toast('A moon-scroll page is hiding in this glowcap nest! Walk close.',4)}
+  if(q.def.kind==='flowers'){m.lit=true;m.revealed=true;q.count++;q.started=true;sparkles.push({x:m.x,y:m.y,life:1});objective();toast('Moonflower awake! A glowing petal · '+q.count+' / 3',4)}
+ }
+ if(q.def.kind==='stars'&&!q.done){
+  const near=q.runes.filter(r=>Math.hypot(player.x-r.x,player.y-r.y)<2.5).sort((a,b)=>Math.hypot(player.x-a.x,player.y-a.y)-Math.hypot(player.x-b.x,player.y-b.y))[0];
+  if(near){if(q.count<3){toast('The stones need three star crystals before they can wake.',4);return}if(near.lit)return;
+   if(near.order===q.runeStep){near.lit=true;q.runeStep++;tone(700+q.runeStep*150,.25);if(q.runeStep===3)finishChapterQuest();else{objective();toast(near.symbol+' awake! Next: '+['Moon','Star','Heart'][q.runeStep]+'.',3)}}
+   else{q.runeStep=0;for(const r of q.runes)r.lit=false;objective();toast('A sleepy twinkle! Try Moon → Star → Heart. Your crystals are safe.',4)}
+  }
+ }
+}
+function questArt(index,x,y,w,h){const im=imgs['quests-23'],r=chapterQuestArt[index];if(im?.naturalWidth&&r)ctx.drawImage(im,...r,x,y,w,h)}
+function drawChapterItem(m){
+ const q=chapterQuest,p=project(m.x,m.y),d=q.def;
+ if(m.lit&&d.kind!=='flowers')return;
+ const bob=reduced?0:Math.sin(castClock*2+m.index)*2;
+ if(d.kind==='scroll'){decoration(0,p.x-30,p.y-56,60,62);if(!m.revealed){softLight(p.x,p.y-26,35,'#e2beff55',.5);ctx.fillStyle='#e8d5ff';ctx.font='14px Georgia';ctx.textAlign='center';ctx.fillText('Glow to search',p.x,p.y-70);return}}
+ softLight(p.x,p.y-23,40,(d.kind==='stars'?'#d5d7ff':d.kind==='flowers'?'#eaf1aa':'#ffe0a1')+'88',.65);
+ const h=d.kind==='wood'?44:d.kind==='flowers'?70:48,w=d.kind==='wood'?64:50;
+ questArt(d.itemArt,p.x-w/2,p.y-h+bob,w,h);ctx.textAlign='center';ctx.fillStyle='#f6e8c9';ctx.font='14px Georgia';
+ ctx.fillText(d.kind==='scroll'?'Scroll page '+(m.index+1):d.kind==='wood'?'Driftwood':d.kind==='stars'?'Star crystal':m.lit?'Petal gathered':'Glow to wake',p.x,p.y-h-10);
+}
+function drawChapterStation(){
+ const q=chapterQuest,d=q.def,p=project(q.station.x,q.station.y);
+ const h=d.kind==='wood'?130:d.kind==='flowers'?85:110,w=d.kind==='wood'?190:110;
+ if(d.kind==='wood'&&!q.done){const im=imgs['quests-23'],r=chapterQuestArt[3];if(im?.naturalWidth&&r){ctx.drawImage(im,r[0],r[1],r[2]*.4,r[3],p.x-w/2,p.y-h,w*.4,h);ctx.drawImage(im,r[0]+r[2]*.6,r[1],r[2]*.4,r[3],p.x+w*.1,p.y-h,w*.4,h)}}else questArt(d.stationArt,p.x-w/2,p.y-h,w,h);
+ if(d.kind==='scroll'&&q.done)questArt(1,p.x-35,p.y-120,70,60);
+ softLight(p.x,p.y-h*.45,58,q.done?'#ffeaa5aa':'#c3ddff44',.55);ctx.textAlign='center';ctx.font='15px Georgia';ctx.fillStyle='#f5e8c9';ctx.fillText(q.done?(d.kind==='wood'?'Bridge repaired!':d.kind==='flowers'?'Ira’s lullaby':'Moon scroll restored'):chapterActionLabel()+' · E',p.x,p.y-h-12);
+}
+
+function drawChapterRune(r){const a=project(r.x,r.y);questArt(4,a.x-33,a.y-100,66,102);softLight(a.x,a.y-62,45,r.lit?'#fff4bccc':'#b3beff55',r.lit?.8:.45);ctx.textAlign='center';ctx.fillStyle=r.lit?'#fff3ab':'#ddd9ff';ctx.font='bold 23px Georgia';ctx.fillText(r.symbol==='Moon'?'M':r.symbol==='Star'?'S':'H',a.x,a.y-55);ctx.font='14px Georgia';ctx.fillText(r.symbol+(r.lit?' · Awake':''),a.x,a.y-113)}
 
 function loop(ts){let dt=Math.min((ts-last)/1000,.04);last=ts;update(dt);render();requestAnimationFrame(loop)}requestAnimationFrame(loop);

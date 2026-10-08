@@ -1,4 +1,4 @@
-# Ira the Panda 2.2 — Quest to Find Ira
+# Ira the Panda 2.3 — Quest to Find Ira
 
 A kid-friendly painted moonlit adventure starring Ara the Panda and her pillowcase sister Ira.
 
@@ -54,3 +54,16 @@ Cast movement freezes on pause. Gentler motion removes oscillation while preserv
 Pip, Bramble and Moss now move around their home spots rather than remaining in fixed positions. Each has an individual pace and walking bounce. They notice Ara, approach slightly, hop in greeting, settle for easy conversations, and react happily to nearby lantern glow. Moss wags his tail more quickly near Ara. Patrols stay within 1.7 map units of home, avoid tree collisions, and freeze on pause or in gentler motion. Ira shuffles and hops more excitedly as Ara reaches the cottage. Only the original three NPCs and Quest 1 are present.
 
 Checks cover all three NPCs changing world position, clear routes and home boundaries, approach reactions, easy talking, lantern reactions, pause and gentler motion; all chapters and continuous music pass for the standalone HTML.
+
+## Five-quest update (2.3)
+
+Chapters 2–5 have doubled playable spans of 68, 72, 76 and 80 map units, following chapter 1's existing 60-unit route. Quest 1 remains the woodland key adventure. Each later chapter has a lively returning guide, readable objective/inventory progress and new painted quest objects:
+
+- Quest 2, The Torn Moon Scroll: Pip asks Ara to reveal three scroll pages in glowcap nests, collect them and rebuild the scroll at the moon lectern.
+- Quest 3, The Wobbly Brook Bridge: Bramble needs three driftwood bundles. The broken crossing physically blocks onward travel until Ara repairs it with E or the touch action.
+- Quest 4, The Sleepy Constellation: Moss asks for three star crystals, then a lantern puzzle at Moon, Star, Heart stones in that order. Incorrect order resets only the stones, preserving crystals.
+- Quest 5, Ira's Moonflower Lullaby: wake three moonflowers with Glow and play the cottage music box with their petals. Ira appears when the lullaby opens the cottage.
+
+Completed collections survive bat resets; restarting an adventure resets progress. Later exits and direct completion calls are guarded until the chapter quest is done. Persistent music and articulated/lively character behavior remain in place.
+
+Gameplay checks pass for every quest, reachable items/guides, doubled route spans, no duplicate collection, mandatory lantern actions, broken/repaired bridge, puzzle retry, chapter transitions and final reunion. Music and all quest checks also pass for the self-contained HTML. Quest item/station/completed states were inspected with the actual Canvas renderer. New atlas: assets/quests-23.webp; exact built-in generation prompt: assets/quests-23-prompts.json; source rectangles: assets/quests-23-crops.json.
