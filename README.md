@@ -1,4 +1,4 @@
-# Ira the Panda 2.0 — Quest to Find Ira
+# Ira the Panda 2.1 — Quest to Find Ira
 
 A kid-friendly painted moonlit adventure starring Ara the Panda and her pillowcase sister Ira.
 
@@ -25,7 +25,7 @@ A kid-friendly painted moonlit adventure starring Ara the Panda and her pillowca
 
 ## Play locally
 
-Open index.html with assets, game.js and style.css alongside it. WASD or arrow keys move, Space activates the lantern, Esc pauses. Touch controls and tap-to-walk are included. Options control sound and gentler motion.
+Open index.html with assets, game.js and style.css alongside it. WASD or arrow keys move, Space activates the lantern, E talks to neighbours or opens the door, Esc pauses. Touch controls and tap-to-walk are included. Options control sound and gentler motion.
 
 ## Validation
 
@@ -36,3 +36,9 @@ Artwork generated with the built-in image tool. Full prompts: assets/asset-promp
 ## Music
 
 Menu and opening comic: **Curious Monsters (Remastered)**. Gameplay: **Nimble Motif (Remastered)**. Both supplied MP3s loop. Persistent audio players keep gameplay music continuous through chapters and chapter story panels without reloading or seeking. Music starts with the first user interaction and has a separate Music option. Hidden tabs pause music and resume at the same position when visible.
+
+## Quest 1 — The Lost Woodland Key (2.1)
+
+Level 1 is twice its 2.0 length. Three painted NPCs appear only in Whispering Woods: Pip the owl teaches movement and lantern use; Bramble the hedgehog explains the locked door; Moss the fox gives the key quest and a hint about three pale birches, blue mushrooms and a blue lantern branch. Explore the woodland branch, use the lantern to reveal the brass key, approach it to collect it, then press E or tap Open door at the wooden door. The first door stays locked until you have the key. Only Quest 1 is added; later chapters retain their existing objectives. Collected keys survive bat resets; a fresh adventure resets the quest.
+
+Quest checks verify all NPC dialogues, the reachable woodland branch, lantern reveal and pickup, locked-door guards, door interaction, first-level length, quest reset and no NPCs/quests in chapters 2–5. Music continuity checks also pass for the standalone HTML.
