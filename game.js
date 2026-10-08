@@ -1,6 +1,6 @@
 'use strict';
 const $=s=>document.querySelector(s),canvas=$('#world'),ctx=canvas.getContext('2d');
-const imgs={};for(const n of ['forest','ara','ira','atlas','decor','level-2','level-3','level-4','level-5','ground-v2','trees-v2','lamps-v2','npc-pip','npc-bramble','npc-moss','woodland-door','woodland-key','key-birches']){imgs[n]=new Image();imgs[n].src='assets/'+n+'.webp'}
+const imgs={};for(const n of ['forest','ara','ira','atlas','decor','level-2','level-3','level-4','level-5','ground-v2','trees-v2','lamps-v2','npc-pip','npc-bramble','npc-moss','woodland-door','woodland-key','key-birches','ara-rig-22','npc-rig-22','support-rig-22']){imgs[n]=new Image();imgs[n].src='assets/'+n+'.webp'}
 let state='menu',page=0,W=innerWidth,H=innerHeight,DPR=Math.min(devicePixelRatio||1,2),last=0,time=0,pausedFrom='menu',heart=3,invuln=0,cooldown=0,pulse=0,toastTime=0,target=null,walk=false,face=1;
 let levelIndex=0,marks=[],decorations=[],sparkles=[],stageFinished=false;
 let sound=false,reduced=false,musicEnabled=true;try{const s=JSON.parse(localStorage.getItem('ara-options')||'{}');sound=!!s.sound;reduced=!!s.reduced;if(typeof s.music==='boolean')musicEnabled=s.music}catch{}document.body.classList.toggle('reduced',reduced);
@@ -77,11 +77,11 @@ function comic(){state='comic';setMusicScene('menu');$('#menu').classList.add('h
 $('#previous').onclick=()=>{if(page>0){page--;comic()}};
 $('#start').onclick=()=>{page=0;comic()};$('#next').onclick=()=>{if(page<2){page++;comic()}else begin()};$('#skip').onclick=begin;
 function begin(){startLevel(0)}
-function startLevel(index){levelIndex=index;buildLevel();state='play';setMusicScene('gameplay');player.x=2;player.y=pathY(2);heart=3;invuln=0;cooldown=0;pulse=0;target=null;keys.clear();$('#comic').classList.add('hidden');$('#menu').classList.add('hidden');$('#hud').classList.remove('hidden');closeDialog();hearts();objective();toast(current().entry,5)}
+function startLevel(index){levelIndex=index;buildLevel();state='play';setMusicScene('gameplay');player.x=2;player.y=pathY(2);heart=3;invuln=0;cooldown=0;pulse=0;target=null;walk=false;gaitPhase=0;gaitWeight=0;araLook=0;keys.clear();$('#comic').classList.add('hidden');$('#menu').classList.add('hidden');$('#hud').classList.remove('hidden');closeDialog();hearts();objective();toast(current().entry,5)}
 function hearts(){$('#hearts').textContent=Array.from({length:3},(_,i)=>i<heart?'♥':'♡').join(' ');$('#hearts').ariaLabel=heart+' hearts remaining'}
 function toast(s,d=3){$('#toast').textContent=s;$('#toast').classList.add('on');toastTime=d}
 function modal(title,body,actions,eyebrow){pausedFrom=state;state='dialog';keys.clear();target=null;$('#dialogTitle').textContent=title;$('#dialogBody').innerHTML=body;$('#dialogEyebrow').textContent=eyebrow||'A MOMENT BY THE MOONLIGHT';$('#dialogActions').innerHTML='';for(const a of actions){let b=document.createElement('button');b.textContent=a.text;if(a.primary)b.className='primary';b.onclick=a.fn;$('#dialogActions').append(b)}$('#dialog').classList.remove('hidden');$('#dialogActions button')?.focus()}
-function closeDialog(){$('#dialog').classList.add('hidden')}
+function closeDialog(){activeSpeaker=null;$('#dialog').classList.add('hidden')}
 function resume(){if(stageFinished){return}if(pausedFrom==='menu'){showMenu();return}state=pausedFrom;closeDialog()}
 $('#options').onclick=()=>{modal('Make yourself at home.','<label class="setting">Music<input id="music" type="checkbox" '+(musicEnabled?'checked':'')+'></label><label class="setting">Lantern sounds<input id="snd" type="checkbox" '+(sound?'checked':'')+'></label><label class="setting">Gentler motion<input id="motion" type="checkbox" '+(reduced?'checked':'')+'></label><p>Move with WASD or the arrow keys. Tap a spot on the path to walk there. Space makes your lantern glow.</p>',[{text:'Back',fn:resume,primary:true}]);$('#music').onchange=e=>{musicEnabled=e.target.checked;save();unlockMusic()};$('#snd').onchange=e=>{sound=e.target.checked;save();tone()};$('#motion').onchange=e=>{reduced=e.target.checked;document.body.classList.toggle('reduced',reduced);save()}};
 function save(){try{localStorage.setItem('ara-options',JSON.stringify({sound,reduced,music:musicEnabled}))}catch{}}
@@ -94,11 +94,11 @@ let tile=55,camera={x:0,y:0};function project(x,y){return{x:(x-y)*tile+camera.x,
 canvas.addEventListener('pointerdown',e=>{if(state!=='play')return;const pt=unproject(e.clientX,e.clientY),n=npcs.find(n=>Math.hypot(n.x-pt.x,n.y-pt.y)<1.2);if(n&&Math.hypot(n.x-player.x,n.y-player.y)<2){talkToNPC(n);return}if(canUseDoor()&&Math.hypot(pt.x-exitPoint().x,pt.y-exitPoint().y)<1.2){interact();return}target=n?{x:n.x,y:n.y}:pt});
 function blocked(x,y){if(x<.5||y<.5||x>current().size-1||y>current().size-1)return true;let bx=Math.floor(x),by=Math.floor(y);for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(const t of treeBuckets.get((bx+dx)+','+(by+dy))||[])if(Math.hypot(t.x-x,t.y-y)<.57)return true;return false}
 function move(dx,dy){if(!blocked(player.x+dx,player.y))player.x+=dx;if(!blocked(player.x,player.y+dy))player.y+=dy}
-function update(dt){time+=dt;if(state!=='play')return;if(updateQuest())return;invuln=Math.max(0,invuln-dt);cooldown=Math.max(0,cooldown-dt);pulse=Math.max(0,pulse-dt);toastTime-=dt;if(toastTime<=0)$('#toast').classList.remove('on');let sx=0,sy=0;if(keys.has('KeyW')||keys.has('ArrowUp'))sy--;if(keys.has('KeyS')||keys.has('ArrowDown'))sy++;if(keys.has('KeyA')||keys.has('ArrowLeft'))sx--;if(keys.has('KeyD')||keys.has('ArrowRight'))sx++;let dx=(sx+sy)*.707,dy=(sy-sx)*.707;if(target&&!sx&&!sy){dx=target.x-player.x;dy=target.y-player.y;if(Math.hypot(dx,dy)<.12){target=null;dx=dy=0}}let len=Math.hypot(dx,dy);walk=len>.05;if(walk){dx/=len;dy/=len;face=dx-dy>=0?1:-1;let ox=player.x,oy=player.y;move(dx*dt*2.3,dy*dt*2.3);if(target&&Math.hypot(ox-player.x,oy-player.y)<.001){target=null;toast('A crooked tree! Try the moonlit path.',2)}}for(const b of bats){let dist=Math.hypot(b.x-player.x,b.y-player.y);b.fear=Math.max(0,b.fear-dt);let tx=b.homeX+Math.sin(time*.8+b.phase)*.9,ty=b.homeY+Math.cos(time*.65+b.phase)*.9;if(dist<3&&!b.fear){tx=player.x;ty=player.y}if(b.fear){tx=b.homeX+(b.x-player.x)*2;ty=b.homeY+(b.y-player.y)*2}let nx=tx-b.x,ny=ty-b.y,l=Math.hypot(nx,ny);if(l>.05){b.x+=nx/l*dt*(b.fear?2:dist<3?1.2:.6);b.y+=ny/l*dt*(b.fear?2:dist<3?1.2:.6)}if(dist<.6&&!invuln&&!b.fear){heart--;hearts();invuln=2.2;b.fear=2;toast('Oops! A fluttery bump. Space to shoo the bats.',3);tone(240);if(heart<=0){player.x=2;player.y=pathY(2);heart=3;hearts();toast('Take a breath. Let’s try the trail again.',4)}}}
+function update(dt){time+=dt;updateCast(dt);if(state!=='play')return;if(updateQuest())return;invuln=Math.max(0,invuln-dt);cooldown=Math.max(0,cooldown-dt);pulse=Math.max(0,pulse-dt);toastTime-=dt;if(toastTime<=0)$('#toast').classList.remove('on');const castOX=player.x,castOY=player.y;let sx=0,sy=0;if(keys.has('KeyW')||keys.has('ArrowUp'))sy--;if(keys.has('KeyS')||keys.has('ArrowDown'))sy++;if(keys.has('KeyA')||keys.has('ArrowLeft'))sx--;if(keys.has('KeyD')||keys.has('ArrowRight'))sx++;let dx=(sx+sy)*.707,dy=(sy-sx)*.707;if(target&&!sx&&!sy){dx=target.x-player.x;dy=target.y-player.y;if(Math.hypot(dx,dy)<.12){target=null;dx=dy=0}}let len=Math.hypot(dx,dy);walk=len>.05;if(walk){dx/=len;dy/=len;face=dx-dy>=0?1:-1;let ox=player.x,oy=player.y;move(dx*dt*2.3,dy*dt*2.3);if(target&&Math.hypot(ox-player.x,oy-player.y)<.001){target=null;toast('A crooked tree! Try the moonlit path.',2)}}updateGait(Math.hypot(player.x-castOX,player.y-castOY),dt);for(const b of bats){let dist=Math.hypot(b.x-player.x,b.y-player.y);b.fear=Math.max(0,b.fear-dt);let tx=b.homeX+Math.sin(time*.8+b.phase)*.9,ty=b.homeY+Math.cos(time*.65+b.phase)*.9;if(dist<3&&!b.fear){tx=player.x;ty=player.y}if(b.fear){tx=b.homeX+(b.x-player.x)*2;ty=b.homeY+(b.y-player.y)*2}let nx=tx-b.x,ny=ty-b.y,l=Math.hypot(nx,ny);if(l>.05){b.x+=nx/l*dt*(b.fear?2:dist<3?1.2:.6);b.y+=ny/l*dt*(b.fear?2:dist<3?1.2:.6)}if(dist<.6&&!invuln&&!b.fear){heart--;hearts();invuln=2.2;b.fear=2;toast('Oops! A fluttery bump. Space to shoo the bats.',3);tone(240);if(heart<=0){player.x=2;player.y=pathY(2);heart=3;hearts();toast('Take a breath. Let’s try the trail again.',4)}}}
 for(const w of waypoints)if(!waypointSeen.has(w.id)&&Math.hypot(player.x-w.x,player.y-w.y)<1.4){waypointSeen.add(w.id);toast('“'+w.line+'”',4)}
 for(const m of marks)if(!m.lit&&current().task==='collect'&&Math.hypot(player.x-m.x,player.y-m.y)<.85){m.lit=true;toast('“Another ribbon scrap! Ira was here.”',2.5);objective();tone(720)}for(const f of sparkles)f.life-=dt;sparkles=sparkles.filter(f=>f.life>0);
 updateLanternMotes(dt);$('#glowStatus').textContent=cooldown>0?'✧ Gathering light · '+cooldown.toFixed(1)+'s':'✧ Lantern ready';$('#glowTouch').style.setProperty?.('--charge',String(1-cooldown/LANTERN_COOLDOWN));let ex=exitPoint();if(Math.hypot(player.x-ex.x,player.y-ex.y)<1.1){if(levelIndex===0){if(keyQuest.doorOpen)complete();else if(toastTime<=0)toast(keyQuest.collected?'Key ready. Press E or tap Open door.':'Locked. Search the birches beside the blue lantern trail.',4)}else if(marks.every(m=>m.lit))complete();else if(toastTime<=0)toast(current().task==='collect'?'A few ribbon scraps are still on the path.':'The path needs a little more light. Glow near the marked spots.',3)}}
-function complete(){if(stageFinished||levelIndex===0&&!keyQuest?.doorOpen)return;stageFinished=true;tone(880,.5);const l=current();if(levelIndex<4){const next=levels[levelIndex+1];modal(next.name,'<img class="chapter-art" src="assets/'+next.scene+'.webp" alt="'+next.name+'"><p class="chapter-caption">'+next.caption+'</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p>',[{text:'On to chapter '+(levelIndex+2),primary:true,fn:()=>startLevel(levelIndex+1)},{text:'Return to title',fn:showMenu}],'CHAPTER '+(levelIndex+1)+' COMPLETE · FOUR PAWS FORWARD')}else{modal('Found you, little sister.','<div class="reunion" style="background-image:url(assets/level-5.webp)"><img src="assets/ara.webp" alt="Ara"><img src="assets/ira.webp" alt="Ira"></div><p class="chapter-caption">Five little chapters. One very big hug.</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p><p>“Next time,” Ara smiled, “we hide somewhere with biscuits.”</p>',[{text:'Adventure again',primary:true,fn:begin},{text:'Return to title',fn:showMenu}],'IRA FOUND · THE END')}pausedFrom='play'}
+function complete(){if(stageFinished||levelIndex===0&&!keyQuest?.doorOpen)return;stageFinished=true;tone(880,.5);const l=current();if(levelIndex<4){const next=levels[levelIndex+1];modal(next.name,'<img class="chapter-art" src="assets/'+next.scene+'.webp" alt="'+next.name+'"><p class="chapter-caption">'+next.caption+'</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p>',[{text:'On to chapter '+(levelIndex+2),primary:true,fn:()=>startLevel(levelIndex+1)},{text:'Return to title',fn:showMenu}],'CHAPTER '+(levelIndex+1)+' COMPLETE · FOUR PAWS FORWARD')}else{modal('Found you, little sister.','<div class="reunion" style="background-image:url(assets/level-5.webp)"><canvas id="reunionAra" width="320" height="420" aria-label="Ara"></canvas><canvas id="reunionIra" width="320" height="420" aria-label="Ira"></canvas></div><p class="chapter-caption">Five little chapters. One very big hug.</p><p>'+l.outro+'</p><p class="chapter-joke">'+l.joke+'</p><p>“Next time,” Ara smiled, “we hide somewhere with biscuits.”</p>',[{text:'Adventure again',primary:true,fn:begin},{text:'Return to title',fn:showMenu}],'IRA FOUND · THE END')}pausedFrom='play'}
 
 function drawImage(img,x,y,w,h){if(img.complete&&img.naturalWidth)ctx.drawImage(img,x,y,w,h)}
 function cover(img){if(!img.naturalWidth)return;let s=Math.max(W/img.width,H/img.height);ctx.drawImage(img,(W-img.width*s)/2,(H-img.height*s)/2,img.width*s,img.height*s)}
@@ -162,19 +162,6 @@ function drawMoonlight(){
  ctx.restore();
 }
 function drawPost(t){const p=project(t.x,t.y);if(!onScreen(p,190))return;let h=tile*(t.type?1.75:2.7);let info=paintedSprite('lamps-v2',levelIndex,t.type,2,5,p.x,p.y,h,tile*1.25);const top=info?info.top:p.y-h;const flicker=reduced?1:1+Math.sin(time*2.6+t.phase)*.045+Math.sin(time*5.1+t.phase)*.02;softLight(p.x,top+h*.18,48*flicker,(t.blue?'#94d9ff':moods[levelIndex].light)+'75',.65);}
-function drawAra(p){
- ctx.fillStyle='#07132266';ctx.beginPath();ctx.ellipse(p.x,p.y+3,25,8,0,0,7);ctx.fill();
- const t=pulse>0?1-pulse/GLOW_DURATION:1,lift=pulse>0?Math.sin(t*Math.PI):0;
- const sway=walk&&!reduced?Math.sin(time*10)*.075:Math.sin(time*2)*.015;
- const bob=walk&&!reduced?Math.abs(Math.sin(time*10))*4:0;
- ctx.save();ctx.translate(p.x,p.y-bob-(reduced?0:lift*4));ctx.scale(face,1);
- if(invuln&&Math.floor(time*12)%2)ctx.globalAlpha=.55;
- ctx.rotate(sway-(reduced?0:lift*.12));drawImage(imgs.ara,-35,-94,70,98);ctx.restore();
- const lx=p.x+face*(23+lift*9),ly=p.y-43-bob-lift*(reduced?0:27),angle=reduced?0:Math.sin(time*4)*.05+lift*face*.2;
- ctx.save();ctx.translate(lx,ly);ctx.rotate(angle);sprite(atlasRects.lantern,-13,-19,26,38);ctx.restore();
- softLight(lx,ly,48+lift*30,'#ffdc9470',.7);softLight(lx,ly+10,19,'#fff0be70',.75);
- drawLanternBurst(p);
-}
 function drawAtmosphere(){
  const m=moods[levelIndex];
  ctx.save();ctx.globalCompositeOperation='screen';
@@ -191,7 +178,7 @@ function drawAtmosphere(){
 }
 function render(){
  ctx.clearRect(0,0,W,H);
- if(state==='menu'||state==='comic'||(state==='dialog'&&pausedFrom==='menu')){cover(imgs.forest);if(!imgs.forest.naturalWidth){ctx.fillStyle='#142a32';ctx.fillRect(0,0,W,H)}drawMoonlight();fireflies();return}
+ if(state==='menu'||state==='comic'||(state==='dialog'&&pausedFrom==='menu')){cover(imgs.forest);if(!imgs.forest.naturalWidth){ctx.fillStyle='#142a32';ctx.fillRect(0,0,W,H)}drawMoonlight();fireflies();drawCastSurfaces();return}
  const l=current(),n=l.size,m=moods[levelIndex];ctx.fillStyle='#101d2a';ctx.fillRect(0,0,W,H);ctx.globalAlpha=.48;cover(imgs[l.scene]);ctx.globalAlpha=1;
  tile=W<700?42:58;camera.x=W*.5-(player.x-player.y)*tile;camera.y=H*.55-(player.x+player.y)*tile*.49;
  // Iterate only tiles within the current viewport, even on doubled maps.
@@ -235,17 +222,17 @@ function render(){
     softLight(p.x,p.y-65,t.lit?65:26,t.lit?m.light+'aa':m.moon+'30',t.lit?.8:.4);
     ctx.textAlign='center';ctx.fillStyle=t.lit?'#ffe5b2':'#e1e6df';ctx.font='14px system-ui';ctx.fillText(t.lit?'Awake!':'Glow nearby',p.x,p.y-112);
    }
-  }else if(e.kind==='bat'){const b=e.b,p=project(b.x,b.y);ctx.fillStyle='#0003';ctx.beginPath();ctx.ellipse(p.x,p.y,15,5,0,0,7);ctx.fill();sprite(atlasRects.bats[reduced?0:Math.floor(time*8+b.phase)%2],p.x-31,p.y-62+(reduced?0:Math.sin(time*4+b.phase)*5),62,58)}
+  }else if(e.kind==='bat'){drawBat(e.b)}
   else if(e.kind==='player'){drawAra(pp)}
   else if(e.kind==='gate'){
    groundLight(gate,130,ready?m.light+'99':m.moon+'44',.4);
-   if(levelIndex===0){drawImage(imgs['woodland-door'],gate.x-85,gate.y-168,170,168);softLight(gate.x,gate.y-55,45,ready?'#ffdb9b66':'#9fcdea22',.5)}else if(levelIndex===4){decoration(5,gate.x-115,gate.y-190,230,215);drawImage(imgs.ira,gate.x+18,gate.y-61+(reduced?0:Math.sin(time*2)*2),53,62)}
+   if(levelIndex===0){drawImage(imgs['woodland-door'],gate.x-85,gate.y-168,170,168);softLight(gate.x,gate.y-55,45,ready?'#ffdb9b66':'#9fcdea22',.5)}else if(levelIndex===4){decoration(5,gate.x-115,gate.y-190,230,215);drawIra({x:gate.x+44,y:gate.y+1})}
    else{paintedSprite('lamps-v2',levelIndex,0,2,5,gate.x-55,gate.y,160,90);paintedSprite('lamps-v2',levelIndex,0,2,5,gate.x+55,gate.y,160,90);sprite(atlasRects.ribbon,gate.x-23,gate.y-45,46,28);softLight(gate.x,gate.y-95,85,ready?m.light+'88':m.moon+'33',.55)}
    ctx.fillStyle='#f2e5ce';ctx.font='italic 16px Georgia';ctx.textAlign='center';ctx.fillText(levelIndex===0?(ready?'Key found · Open the woodland door':'Woodland door · Locked'):levelIndex===4?'Ira’s little hiding place':ready?'The way onward':'A little light will open the way',gate.x,gate.y-(levelIndex===4?210:180));
   }
  }
  for(const f of sparkles){const p=project(f.x,f.y);ctx.save();ctx.globalAlpha=f.life;ctx.fillStyle='#ffecba';ctx.font='18px Georgia';for(let i=0;i<6;i++)ctx.fillText('✧',p.x+Math.cos(i)*35*(1-f.life),p.y-50-Math.sin(i)*40*(1-f.life));ctx.restore()}
- let night=ctx.createRadialGradient(pp.x,pp.y-40,70,pp.x,pp.y,Math.max(W,H)*.65);night.addColorStop(0,'#08162605');night.addColorStop(.55,'#0a173619');night.addColorStop(1,'#04101d66');ctx.fillStyle=night;ctx.fillRect(0,0,W,H);drawMotes();if(target){const p=project(target.x,target.y);ctx.strokeStyle='#f0ddabaa';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,12,6,0,0,7);ctx.stroke()}drawAtmosphere();
+ let night=ctx.createRadialGradient(pp.x,pp.y-40,70,pp.x,pp.y,Math.max(W,H)*.65);night.addColorStop(0,'#08162605');night.addColorStop(.55,'#0a173619');night.addColorStop(1,'#04101d66');ctx.fillStyle=night;ctx.fillRect(0,0,W,H);drawMotes();if(target){const p=project(target.x,target.y);ctx.strokeStyle='#f0ddabaa';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(p.x,p.y,12,6,0,0,7);ctx.stroke()}drawAtmosphere();drawDialogCast();drawCastSurfaces();
 }
 function fireflies(){ctx.save();for(let i=0;i<32;i++){let x=seed(i*7)*W+(reduced?0:Math.sin(time*.4+i)*22),y=seed(i*23+5)*H+(reduced?0:Math.cos(time*.3+i)*12);ctx.fillStyle='rgba(228,211,144,'+(.18+(reduced?0:Math.sin(time*1.7+i)*.12))+')';ctx.beginPath();ctx.arc(x,y,1.5,0,7);ctx.fill()}ctx.restore()}
 
@@ -280,7 +267,7 @@ function talkToNPC(n){
   action=keyQuest.collected?'Back to the door':'I’ll look for it!';
   text=keyQuest.collected?'<p>“That’s the key! The wooden door is at the end of the main trail. Go on—your sister is waiting.”</p>':'<p><strong>Quest 1 · The Lost Woodland Key</strong></p><p>“I last saw it where <strong>three pale birches</strong> gather around <strong>blue mushrooms</strong>.”</p><p>“A little farther up this path, a <strong>blue lantern</strong> marks a narrow trail into the trees. Follow that trail and shine your lantern between the birch roots. Something brass may wink back.”</p><p class="chapter-joke">“Keys are dreadful at hide-and-seek. They never giggle.”</p>';
  }
- modal(n.name+' · '+n.role,'<div class="npc-portrait"><img src="assets/npc-'+n.id+'.webp" alt="'+n.name+'"></div>'+text,[{text:action,primary:true,fn:resume}],'A WOODLAND NEIGHBOUR');
+ modal(n.name+' · '+n.role,'<div class="npc-portrait"><canvas id="npcPortrait" width="256" height="320" aria-label="'+n.name+'"></canvas></div>'+text,[{text:action,primary:true,fn:resume}],'A WOODLAND NEIGHBOUR');n.greetAt=castClock;activeSpeaker=n.id;
 }
 function nearestNPC(){return npcs.filter(n=>Math.hypot(n.x-player.x,n.y-player.y)<2).sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y))[0]}
 function canUseDoor(){const e=exitPoint();return levelIndex===0&&Math.hypot(player.x-e.x,player.y-e.y)<1.8}
@@ -294,7 +281,107 @@ function updateQuest(){
 }
 function revealKey(){if(keyQuest&&!keyQuest.collected&&Math.hypot(player.x-keyQuest.key.x,player.y-keyQuest.key.y)<3){if(!keyQuest.revealed){keyQuest.revealed=true;keyQuest.started=true;objective();toast('A brass shimmer between the roots! Walk close to pick it up.',4)}}}
 $('#interact').onclick=interact;
-function drawNPC(n){const p=project(n.x,n.y);ctx.save();ctx.translate(p.x,p.y+(reduced?0:Math.sin(time*2+n.art)*1.5));const im=imgs['npc-'+n.id],h=tile*1.8,w=im.naturalWidth?Math.min(tile*1.45,h*im.naturalWidth/im.naturalHeight):tile;drawImage(im,-w/2,-h,w,h);ctx.restore();ctx.textAlign='center';ctx.font='15px Georgia';ctx.fillStyle='#fff0ce';ctx.fillText(n.name,p.x,p.y-tile*1.95);ctx.font='19px Georgia';ctx.fillStyle='#e9d29e';ctx.fillText(n.introduced?'…':'!',p.x,p.y-tile*2.35)}
 function drawQuestLandmark(){const c=keyQuest.clearing,p=project(c.x,c.y),im=imgs['key-birches'],h=tile*3.7,w=im.naturalWidth?h*im.naturalWidth/im.naturalHeight:h;drawImage(im,p.x-w/2,p.y-h,w,h);softLight(p.x,p.y-30,65,'#8fceff66',.6);if(!keyQuest.collected){const k=project(keyQuest.key.x,keyQuest.key.y);if(keyQuest.revealed){const y=k.y-14+(reduced?0:Math.sin(time*3)*3);softLight(k.x,y,35,'#ffe69999',.7);drawImage(imgs['woodland-key'],k.x-18,y-22,36,38);ctx.fillStyle='#ffe5a1';ctx.textAlign='center';ctx.font='14px Georgia';ctx.fillText('Woodland key',k.x,y-33)}else{ctx.fillStyle='#92cef488';ctx.beginPath();ctx.arc(k.x,k.y-10,2,0,7);ctx.fill()}}}
+
+// Articulated 2.2 cast: attachment pivots stay fixed as each part moves.
+let castClock=0,activeSpeaker=null,gaitPhase=0,gaitWeight=0,araLook=0;
+const castRigRects={"ara-rig-22":[[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]],"npc-rig-22":[[18,22,340,277],[379,2,330,319],[711,42,230,177],[1073,12,258,300],[1384,46,223,251],[7,319,343,279],[360,319,350,286],[729,343,300,223],[1063,331,222,248],[1336,328,278,287],[10,602,352,319],[363,613,408,350],[765,656,263,208],[1052,653,237,257],[1305,620,310,319]],"support-rig-22":[[32,50,442,450],[541,50,449,450],[1054,50,441,452],[58,530,418,436],[528,585,476,357],[1056,589,444,354]]}; // Source-pixel crops for isolated joint parts.
+function castPart(c,atlas,index,x,y,w,h,angle=0,ax=.5,ay=.5){
+ const im=imgs[atlas],r=castRigRects[atlas]?.[index];if(!r||!im?.naturalWidth)return false;
+ c.save();c.translate(x,y);c.rotate(angle);c.drawImage(im,r[0],r[1],r[2],r[3],-w*ax,-h*ay,w,h);c.restore();return true;
+}
+function castShadow(c,x,y,w,alpha=.28){c.save();c.fillStyle='rgba(4,15,23,'+alpha+')';c.beginPath();c.ellipse(x,y,w,w*.26,0,0,Math.PI*2);c.fill();c.restore()}
+function castBeat(phase=0,speed=1){return reduced?0:Math.sin(castClock*speed+phase)}
+function castReady(name){return !!(imgs[name]?.naturalWidth&&castRigRects[name]?.length)}
+function updateCast(dt){
+ if(state==='menu'||state==='play'||state==='dialog'&&activeSpeaker)castClock+=dt;
+ if(state!=='play')return;
+ const n=nearestNPC(),desired=n?Math.max(-.11,Math.min(.11,(project(n.x,n.y).x-project(player.x,player.y).x)/600)):0;
+ araLook+=(desired-araLook)*Math.min(1,dt*7);
+}
+function updateGait(distance,dt){gaitPhase+=distance*4.5;gaitWeight+=((distance>.001?1:0)-gaitWeight)*Math.min(1,dt*10)}
+function drawAraRig(c,p,preview=false){
+ castShadow(c,p.x,p.y+2,24);
+ if(!castReady('ara-rig-22')){if(imgs.ara.complete&&imgs.ara.naturalWidth)c.drawImage(imgs.ara,p.x-35,p.y-94,70,98);return}
+ const gait=reduced||preview?0:Math.sin(gaitPhase)*gaitWeight,step=reduced||preview?0:Math.abs(Math.sin(gaitPhase))*gaitWeight;
+ const lift=!preview&&pulse>0?(reduced?.65:Math.sin((1-pulse/GLOW_DURATION)*Math.PI)):0;
+ const breath=castBeat(0,2)*.65,bob=step*2.5;
+ c.save();c.translate(p.x,p.y-bob);const facing=preview?1:face;c.scale(facing,1);if(invuln&&!preview)c.globalAlpha=.7+.3*(reduced?1:Math.sin(castClock*12)**2);
+ castPart(c,'ara-rig-22',4,-12,-9+gait*2.5,18,14,-gait*.16);
+ castPart(c,'ara-rig-22',5,12,-9-gait*2.5,18,14,gait*.16);
+ castPart(c,'ara-rig-22',2,-18,-54,20,36,gait*.22-.12,.6,.12);
+ castPart(c,'ara-rig-22',1,0,-35-breath,45,44,castBeat(1,2)*.015);
+ // Paw, ring handle and lantern are one painted unit: never a floating lamp.
+ const armAngle=-lift*.65+gait*.07+castBeat(0,2.7)*.025;
+ castPart(c,'ara-rig-22',3,18,-54-breath,33,56,armAngle,.14,.09);
+ const headTilt=reduced?0:(preview?0:araLook)*facing+castBeat(2,1.4)*.025-gait*.018;
+ castPart(c,'ara-rig-22',0,0,-52-breath,70,59,headTilt,.5,.95);
+ c.restore();
+ const a=armAngle,dx=(20-33*.14),dy=(42-56*.09),lx=p.x+facing*(18+dx*Math.cos(a)-dy*Math.sin(a)),ly=p.y-bob-54-breath+dx*Math.sin(a)+dy*Math.cos(a);
+ return{x:lx,y:ly,lift};
+}
+function drawAra(p){const lamp=drawAraRig(ctx,p);if(!lamp)return;softLight(lamp.x,lamp.y,45+lamp.lift*35,'#ffdc9470',.7);softLight(lamp.x,lamp.y,15,'#fff0be90',.8);drawLanternBurst({x:lamp.x,y:lamp.y+48})}
+function drawNPCRig(c,n,p,h,portrait=false){
+ const index=n.art*5,near=portrait||Math.hypot(n.x-player.x,n.y-player.y)<3.5,talking=activeSpeaker===n.id;
+ const greet=reduced?0:Math.max(0,1-(castClock-(n.greetAt??-100))/1.1),breath=castBeat(n.art,1.8)*.7;
+ const look=reduced?0:Math.max(-.1,Math.min(.1,(project(player.x,player.y).x-project(n.x,n.y).x)/400));
+ const speak=talking?castBeat(n.art,5.5)*.025:0;
+ c.save();c.translate(p.x,p.y);c.scale(h/110,h/110);
+ castShadow(c,0,2,22);
+ if(!castReady('npc-rig-22')){const im=imgs['npc-'+n.id];if(im?.naturalWidth)c.drawImage(im,-40,-110,80,110);c.restore();return}
+ // Rear details are independent: fox tail, hedgehog quills, owl scarf fringe.
+ if(n.id==='moss')castPart(c,'npc-rig-22',index+4,21,-22,51,47,castBeat(1,1.9)*.13,.15,.8);
+ else if(n.id==='bramble')castPart(c,'npc-rig-22',index+4,-4,-54,48,57,castBeat(2,1.6)*.025);
+ else castPart(c,'npc-rig-22',index+4,14,-48,17,31,castBeat(0,2.3)*.09,.5,.1);
+ castPart(c,'npc-rig-22',index+1,0,-29-breath,62,58,castBeat(n.art,1.5)*.015);
+ if(n.id==='pip'){
+  castPart(c,'npc-rig-22',index+2,-23,-48-breath,35,31,-.08+castBeat(1,1.7)*.04,.6,.15);
+  castPart(c,'npc-rig-22',index+3,23,-49-breath,33,39,-(near?.14:0)-greet*.12+castBeat(2,2)*.035,.18,.12);
+ }else if(n.id==='bramble'){
+  castPart(c,'npc-rig-22',index+2,-24,-45-breath,51,38,castBeat(0,1.8)*.035,.15,.3);
+  castPart(c,'npc-rig-22',index+3,24,-47-breath,29,33,-(near?.25:0)-greet*.35+(talking?castBeat(1,5)*.05:castBeat(1,1.8)*.03),.25,.12);
+ }else{
+  castPart(c,'npc-rig-22',index+3,-24,-47-breath,30,34,castBeat(0,1.7)*.04,.35,.1);
+  const point=near?.2:0;
+  castPart(c,'npc-rig-22',index+2,23,-47-breath,44,35,-point-greet*.16+(talking?castBeat(1,3.5)*.055:castBeat(1,1.7)*.03),.1,.25);
+ }
+ castPart(c,'npc-rig-22',index,0,-53-breath,59,51,look+castBeat(n.art,1.4)*.035+speak,.5,.93);
+ c.restore();
+}
+function drawNPC(n){
+ const p=project(n.x,n.y),near=Math.hypot(n.x-player.x,n.y-player.y)<3.5;
+ drawNPCRig(ctx,n,p,tile*2.15);
+ if(n.id==='pip')softLight(p.x+tile*.55,p.y-tile*.68,32,'#ffe1a366',.5);
+ ctx.textAlign='center';ctx.font='15px Georgia';ctx.fillStyle=near?'#fff4d7':'#e6dec8';ctx.fillText(n.name,p.x,p.y-tile*2.35);
+ ctx.font='18px Georgia';ctx.fillStyle='#e9d29e';ctx.fillText(n.introduced?(near?'Talk · E':'…'):'!',p.x,p.y-tile*2.7);
+}
+function drawIraRig(c,p,preview=false){
+ if(!castReady('support-rig-22')){if(imgs.ira.complete&&imgs.ira.naturalWidth)c.drawImage(imgs.ira,p.x-28,p.y-65,56,65);return}
+ const near=preview||Math.hypot(player.x-exitPoint().x,player.y-exitPoint().y)<4;
+ const blink=!reduced&&castClock%4.8>4.62;
+ c.save();c.translate(p.x,p.y);c.rotate(castBeat(1,near?2.5:1.2)*.035);c.scale(1+castBeat(2,1.7)*.018,1-castBeat(2,1.7)*.018);
+ castShadow(c,0,1,21);castPart(c,'support-rig-22',blink?1:near?2:0,0,-34,62,68);c.restore();
+}
+function drawIra(p){drawIraRig(ctx,p)}
+function drawBat(b){
+ const p=project(b.x,b.y),flap=reduced?.18:Math.sin(castClock*(b.fear?19:12)+b.phase),squash=reduced?1:.8+.18*Math.abs(flap);
+ castShadow(ctx,p.x,p.y,15,.18);
+ if(!castReady('support-rig-22')){sprite(atlasRects.bats[0],p.x-31,p.y-62,62,58);return}
+ ctx.save();ctx.translate(p.x,p.y-42+castBeat(b.phase,3)*3);ctx.rotate(castBeat(b.phase,2)*.045+(b.fear?castBeat(b.phase,8)*.09:0));
+ ctx.save();ctx.scale(1,squash);castPart(ctx,'support-rig-22',4,-8,-11,40,30,-flap*.24,.72,.1);castPart(ctx,'support-rig-22',5,8,-11,40,30,flap*.24,.35,.1);ctx.restore();
+ castPart(ctx,'support-rig-22',3,0,-3,24,34,castBeat(b.phase,2)*.04);ctx.restore();
+}
+function drawDialogCast(){
+ if(!activeSpeaker||state!=='dialog')return;const n=npcs.find(n=>n.id===activeSpeaker),el=$('#npcPortrait');
+ if(!n||!el?.getContext)return;const c=el.getContext('2d');c.clearRect(0,0,256,320);drawNPCRig(c,n,{x:128,y:300},250,true);
+}
+
+function drawCastSurfaces(){
+ for(const [id,type]of [['menuAra','ara'],['menuIra','ira'],['reunionAra','ara'],['reunionIra','ira']]){
+  if(id.startsWith('menu')&&state!=='menu'||id.startsWith('reunion')&&!(state==='dialog'&&stageFinished&&levelIndex===4))continue;
+  const el=$('#'+id);if(!el?.getContext)continue;const c=el.getContext('2d');c.clearRect(0,0,320,420);c.save();
+  if(type==='ara'){c.translate(140,397);c.scale(3.1,3.1);drawAraRig(c,{x:0,y:0},true)}else{c.translate(155,373);c.scale(4,4);drawIraRig(c,{x:0,y:0},true)}c.restore();
+ }
+}
 
 function loop(ts){let dt=Math.min((ts-last)/1000,.04);last=ts;update(dt);render();requestAnimationFrame(loop)}requestAnimationFrame(loop);

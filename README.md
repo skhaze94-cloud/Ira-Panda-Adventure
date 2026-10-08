@@ -1,4 +1,4 @@
-# Ira the Panda 2.1 — Quest to Find Ira
+# Ira the Panda 2.2 — Quest to Find Ira
 
 A kid-friendly painted moonlit adventure starring Ara the Panda and her pillowcase sister Ira.
 
@@ -42,3 +42,9 @@ Menu and opening comic: **Curious Monsters (Remastered)**. Gameplay: **Nimble Mo
 Level 1 is twice its 2.0 length. Three painted NPCs appear only in Whispering Woods: Pip the owl teaches movement and lantern use; Bramble the hedgehog explains the locked door; Moss the fox gives the key quest and a hint about three pale birches, blue mushrooms and a blue lantern branch. Explore the woodland branch, use the lantern to reveal the brass key, approach it to collect it, then press E or tap Open door at the wooden door. The first door stays locked until you have the key. Only Quest 1 is added; later chapters retain their existing objectives. Collected keys survive bat resets; a fresh adventure resets the quest.
 
 Quest checks verify all NPC dialogues, the reachable woodland branch, lantern reveal and pickup, locked-door guards, door interaction, first-level length, quest reset and no NPCs/quests in chapters 2–5. Music continuity checks also pass for the standalone HTML.
+
+## Character animation update (2.2)
+
+New painted transparent rig atlases preserve the original character designs. Ara's paw, ring handle and lantern form one connected painted part, with a lantern lift on Glow, independent footsteps driven by actual travel, breathing and head turns. Pip has separate wing/lantern gestures and head turns; Bramble moves his held clipboard and pencil; Moss points and swishes his separate tail. NPC conversations show the same animated rigs in live portraits. Ira has neutral, blinking and delighted expressions, with a softer fabric sway and a happy reaction as Ara approaches. Bats have continuously articulated violet wings and faster frightened flaps. The title screen and final reunion use the articulated sisters.
+
+Cast movement freezes on pause. Gentler motion removes oscillation while preserving readable poses and glow actions. Quest 1, all five chapters, and music continuity are retained. Gameplay and standalone checks cover all chapters, quest/door behavior, movement-driven gait, dialogue animation, pause, gentler motion, sprite crops and looping music. Source sprites and full built-in image-generation prompts are in assets/*-rig-22.webp and assets/cast-22-prompts.json; source crop definitions are in assets/cast-22-crops.json.

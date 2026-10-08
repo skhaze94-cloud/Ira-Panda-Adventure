@@ -1,0 +1,227 @@
+{
+  "mode": "built-in imagegen",
+  "calls": 3,
+  "noRetries": true,
+  "rectFormat": "[x,y,width,height], pixel coordinates, origin top left; explicit actual-piece crops rather than equal grid cells",
+  "assets": [
+    {
+      "filename": "ara-rig.png",
+      "source": "exec-eab97c02-d808-4adb-b500-7b128fc39a34.png",
+      "width": 1536,
+      "height": 1024,
+      "crops": {
+        "head": [
+          0,
+          32,
+          588,
+          451
+        ],
+        "torso": [
+          628,
+          106,
+          458,
+          392
+        ],
+        "leftArm": [
+          1209,
+          92,
+          239,
+          390
+        ],
+        "rightArmLantern": [
+          125,
+          515,
+          330,
+          465
+        ],
+        "leftFoot": [
+          626,
+          660,
+          314,
+          276
+        ],
+        "rightFoot": [
+          1165,
+          659,
+          314,
+          274
+        ]
+      },
+      "notes": [
+        "Use explicit rectangles; generated pieces did not stay within equal cells.",
+        "Head reaches left canvas edge; bow and face intact, ear has minimal left padding.",
+        "All six distinct pieces readable, right paw visibly grips lantern ring."
+      ],
+      "path": "/workspace/scratch/8dd3263065cf/cast-22-art/ara-rig.png",
+      "prompt": "Use case: identity-preserve. Asset type: transparent painted 2D game rig atlas.\nInput image 1 is the exact Ara identity and texture reference. Preserve Ara EXACTLY: cute ivory panda face, huge round black eye patches with ivory eye rings, tiny black nose and friendly curved smile, subtle pink cheeks, round black plush ears, large black stitched bow atop head, black stitched dress and plush limbs. Improve hand painted crosshatch fidelity without redesign.\nCreate ONE landscape 1536x1024 PNG with genuine transparent alpha background, six equal invisible cells, 3 columns x 2 rows. NO visible grid or labels. Each cell 512x512. Keep every piece entirely inside its own cell with at least 48px transparent padding and clear gaps from every neighbor.\nRow 1 col1 HEAD ONLY including bow and both ears, no torso. Row1 col2 TORSO ONLY black stitched dress, no head arms or feet, smooth rounded neck and shoulder attachment shapes. Row1 col3 LEFT ARM ONLY relaxed black plush arm with rounded paw, no prop.\nRow2 col1 RIGHT ARM AND PAW HOLDING A SMALL GOLDEN LANTERN BY ITS RING HANDLE as ONE physically connected unit. Lantern must hang directly below paw with ring actually gripped, complete lantern inside cell, no torso or head. Row2 col2 LEFT FOOT ONLY black plush. Row2 col3 RIGHT FOOT ONLY black plush.\nFlat front slight threequarter, consistent scale, smooth overlap-ready joint ends, all parts fully visible. Rich fine stitched seams, distressed woven texture, storybook gothic painted quality, cute safe friendly expression. No scenery, text, shadows cast outside pieces, frames, extra pieces, duplicate full characters, ragged amputations, fake checkerboard transparency.",
+      "referenceImages": [
+        "/workspace/scratch/8dd3263065cf/.sites-checkout/dist/assets/ara.webp"
+      ]
+    },
+    {
+      "filename": "npc-rig.png",
+      "source": "exec-bba7340c-79d8-4fe2-bfd8-7ef4541a7b24.png",
+      "width": 1619,
+      "height": 972,
+      "crops": {
+        "pipHead": [
+          18,
+          22,
+          340,
+          277
+        ],
+        "pipTorso": [
+          379,
+          2,
+          330,
+          319
+        ],
+        "pipLeftArm": [
+          703,
+          42,
+          330,
+          246
+        ],
+        "pipRightArmLantern": [
+          1073,
+          12,
+          258,
+          300
+        ],
+        "pipScarfTassel": [
+          1384,
+          46,
+          223,
+          251
+        ],
+        "brambleHead": [
+          7,
+          319,
+          343,
+          279
+        ],
+        "brambleTorso": [
+          360,
+          319,
+          350,
+          294
+        ],
+        "brambleLeftArmClipboard": [
+          729,
+          343,
+          300,
+          223
+        ],
+        "brambleRightArmPencil": [
+          1063,
+          331,
+          222,
+          248
+        ],
+        "brambleSpines": [
+          1336,
+          328,
+          278,
+          287
+        ],
+        "mossHead": [
+          10,
+          591,
+          352,
+          330
+        ],
+        "mossTorso": [
+          363,
+          602,
+          408,
+          361
+        ],
+        "mossLeftArm": [
+          765,
+          656,
+          263,
+          208
+        ],
+        "mossRightArm": [
+          1052,
+          653,
+          237,
+          257
+        ],
+        "mossTail": [
+          1305,
+          620,
+          310,
+          319
+        ]
+      },
+      "notes": [
+        "Use explicit rectangles; generated layout has uneven cell geometry.",
+        "Low-alpha pixels bridge Moss head/torso edges; crops visually isolate but need attention if strict transparent gutters required.",
+        "Pip torso also includes a satchel; left wing has a satchel as requested, causing duplicated satchel when assembling if both retained.",
+        "Lantern, clipboard and pencil remain visibly held by their arms."
+      ],
+      "path": "/workspace/scratch/8dd3263065cf/cast-22-art/npc-rig.png",
+      "prompt": "Use case: identity-preserve. Asset type: transparent painted 2D NPC rig atlas.\nInput images 1,2,3 are the exact Pip owl, Bramble hedgehog, Moss fox identity references respectively. Preserve faces, species, costume, palette and paint fidelity EXACTLY. Pip has tawny cream feathers, huge golden round spectacles, burgundy scarf embroidered with gold flowers, brown leather satchel, gold lantern. Bramble has cream face, brown spikes and ears, moss green ivy coat with tiny white flowers, green bowtie cream collar, ochre waistcoat, brown satchel. Moss has orange fox fur cream muzzle tall ears, moss green embroidered cape gold star clasp, cream shirt, brown leather crossbody satchel belt and brown boots. Improve expressive handpainted detail without redesign.\nCreate ONE landscape 2560x1536 or equivalent 5:3 PNG, genuine transparent alpha background. Invisible 5 columns x3 rows of equal square cells. Each row a different character, each piece centered in assigned cell, at least 50px clear transparent gutters around each piece. NO drawn grid or labels.\nColumn order in every row: 1 HEAD ONLY no torso; 2 TORSO INCLUDING LEGS AND FEET no head or arms; 3 LEFT ARM; 4 RIGHT ARM; 5 BACK ACCESSORY.\nRow1 PIP: col1 owl head spectacles; col2 scarf plus clothed feather body and talons, no wings/head; col3 left feather wing WITH attached brown satchel; col4 right feather wing physically holding warm golden lantern by its ring handle, entire lantern beneath gripping paw; col5 small burgundy scarf tassel.\nRow2 BRAMBLE: col1 hedgehog face round ears and short crown spikes; col2 ivy coat green bowtie ochre waistcoat body and feet with neck shoulder attachments, no head/arms; col3 left arm gripping clipboard as a connected unit; col4 right arm holding a pencil pointing upward; col5 detached full back prickly brown spine fan.\nRow3 MOSS: col1 fox face and tall ears; col2 moss cape cream shirt belt satchel body and brown boots, no head/arms/tail; col3 left arm pointing outward with paw; col4 relaxed right arm and paw; col5 large orange fluffy curved tail with ivory tip.\nFront slight threequarter consistent scales, complete parts without clipping, smooth rounded overlap-ready shoulder and neck joints. Painted woodland gothic children storybook, warm friendly eyes, fine fur feathers cloth texture. No duplicate full characters, scenery, text, labels, checkerboard fake transparency, drop shadows, detached floating props, ragged edges.",
+      "referenceImages": [
+        "/workspace/scratch/8dd3263065cf/.sites-checkout/dist/assets/npc-pip.webp",
+        "/workspace/scratch/8dd3263065cf/.sites-checkout/dist/assets/npc-bramble.webp",
+        "/workspace/scratch/8dd3263065cf/.sites-checkout/dist/assets/npc-moss.webp"
+      ]
+    },
+    {
+      "filename": "support-rig.png",
+      "source": "exec-9e3d5e03-7035-4ae6-8034-c7e5b815affa.png",
+      "width": 1536,
+      "height": 1024,
+      "crops": {
+        "iraNeutral": [
+          32,
+          50,
+          442,
+          450
+        ],
+        "iraSleepy": [
+          541,
+          50,
+          449,
+          450
+        ],
+        "iraDelighted": [
+          1054,
+          50,
+          441,
+          452
+        ],
+        "batBody": [
+          58,
+          530,
+          418,
+          436
+        ],
+        "batLeftWing": [
+          528,
+          585,
+          476,
+          357
+        ],
+        "batRightWing": [
+          1056,
+          589,
+          444,
+          354
+        ]
+      },
+      "notes": [
+        "Three matching Ira expressions and three bat parts readable.",
+        "Explicit rectangles retain generous transparent margin within grid.",
+        "Bat ears are more pointed than requested rounded ears, but expression is cute and mischievous."
+      ],
+      "path": "/workspace/scratch/8dd3263065cf/cast-22-art/support-rig.png",
+      "prompt": "Use case: identity-preserve. Asset type: transparent painted 2D supporting cast atlas.\nInput image 1 is exact Ira character identity reference. Preserve EXACTLY the stitched ivory pillowcase square silhouette, soft pointed folded upper corners, black stitch cross-stars around edges, huge black buttonlike eyes with cream eye rings, blush pink cheeks, small black curved smile, dusty pink stitched bow upper right. Match reference woven crosshatch distress texture and improve painted fidelity, cute friendly gothic storybook.\nCreate ONE landscape 1536x1024 PNG with genuine transparent alpha background. Invisible 3 columns x2 rows, six equal 512px square cells, no visible grid or labels. Every object fits fully within own cell with at least 45px transparent padding and large transparent gaps.\nRow1 col1 fullbody Ira neutral friendly smile and open eyes; row1 col2 fullbody SAME Ira sleepy closed crescent eyes tiny relaxed smile; row1 col3 fullbody SAME Ira delighted bigger smiling mouth open eyes. These are complete pillowcase characters, no extra hands feet or invented costume, identical dusty pink upper-right bow, comparable scales and same silhouette.\nRow2 col1 cute gothic bat BODY ONLY with cute mischievous eyes, rounded ears, dark charcoal soft fur, tiny rounded feet, NO WINGS, friendly rather than frightening. Row2 col2 separate LEFT WING outstretched toward left, painted muted violet membranes and dark bones, smooth rounded attachment root at right. Row2 col3 separate RIGHT WING outstretched toward right, painted muted violet membranes dark bones, smooth root at left. The bat pieces share same scale and painted style. All parts isolated and fully visible.\nNo scenery, text, frames, checkerboard fake transparency, glow background, cast shadows, extra bat wings, duplicate bats or ragged amputations.",
+      "referenceImages": [
+        "/workspace/scratch/8dd3263065cf/.sites-checkout/dist/assets/ira.webp"
+      ]
+    }
+  ]
+}
