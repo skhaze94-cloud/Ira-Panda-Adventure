@@ -1,0 +1,8 @@
+{
+  "mode": "built-in-imagegen",
+  "use_case": "illustration-story",
+  "grid": {
+    "columns": 2,
+    "rows": 4
+  }
+}

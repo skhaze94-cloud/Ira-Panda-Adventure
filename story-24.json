@@ -1,0 +1,114 @@
+[
+  [
+    {
+      "title": "The door says click.",
+      "caption": "A little key opens a bigger mystery.",
+      "text": "Beyond the woodland door, Ara found a pink ribbon caught on a glowcap. It was the colour of Ira’s favourite bow.",
+      "bubble": "That’s Ira’s ribbon!",
+      "reply": "And definitely not a mushroom scarf.",
+      "replySpeaker": "Pip",
+      "footnote": "Every good clue deserves a little happy hop.",
+      "word": "click!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-1-1.webp",
+      "alt": "Beyond the woodland door, Ara found a pink ribbon caught on a glowcap. It was the colour of Ira’s favourite bow."
+    },
+    {
+      "title": "A glow in the right direction.",
+      "caption": "Pip had noticed something fluttery.",
+      "text": "Pip had seen a little pillow following a silver butterfly. The old moon scroll might show where they went… if someone could find its three pages.",
+      "bubble": "A butterfly? Ira does love those.",
+      "reply": "I keep my directions on paper. Usually in one piece.",
+      "replySpeaker": "Pip",
+      "footnote": "Next stop: three very shy scroll pages.",
+      "word": "flutter!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-1-2.webp",
+      "alt": "Pip had seen a little pillow following a silver butterfly. The old moon scroll might show where they went… if someone could find its three pages."
+    }
+  ],
+  [
+    {
+      "title": "Three pages. One promising clue.",
+      "caption": "The moon scroll shines again.",
+      "text": "The rebuilt scroll showed a brook, a bridge and a tiny cottage under the moon. Ara traced the route with one careful paw.",
+      "bubble": "A cottage! Could Ira be there?",
+      "reply": "Let’s ask the brook. It’s excellent at running.",
+      "replySpeaker": "Pip",
+      "footnote": "The map was old. The hope was brand new.",
+      "word": "aha!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-2-1.webp",
+      "alt": "The rebuilt scroll showed a brook, a bridge and a tiny cottage under the moon. Ara traced the route with one careful paw."
+    },
+    {
+      "title": "The bridge has a small problem.",
+      "caption": "Small, if you happen to have wings.",
+      "text": "On the bank, Ara found another ribbon and a bridge with its middle missing. Bramble was already counting useful pieces of driftwood.",
+      "bubble": "Ira, I hope you took the dry route.",
+      "reply": "Three bundles should do it. Plus a little enthusiasm.",
+      "replySpeaker": "Bramble",
+      "footnote": "Panda paws prefer bridges to puddles.",
+      "word": "splash!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-2-2.webp",
+      "alt": "On the bank, Ara found another ribbon and a bridge with its middle missing. Bramble was already counting useful pieces of driftwood."
+    }
+  ],
+  [
+    {
+      "title": "Four paws across.",
+      "caption": "A sturdy bridge and a very proud hedgehog.",
+      "text": "The repaired bridge gave a happy creak. On the far bank, a pink ribbon fluttered beneath a sky full of sleepy stars.",
+      "bubble": "We did it! Ira came this way.",
+      "reply": "Official bridge test: no soggy socks.",
+      "replySpeaker": "Bramble",
+      "footnote": "Bramble had not actually brought socks.",
+      "word": "creeeak!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-3-1.webp",
+      "alt": "The repaired bridge gave a happy creak. On the far bank, a pink ribbon fluttered beneath a sky full of sleepy stars."
+    },
+    {
+      "title": "A frog’s extremely helpful answer.",
+      "caption": "Ara asked everyone. Even this fellow.",
+      "text": "“Have you seen a pillow?” Ara asked. The frog said “Ribbit.” Then a star winked over the hollow, where Moss was waiting with a much better clue.",
+      "bubble": "Was that a yes or a no?",
+      "reply": "Ribbit.",
+      "replySpeaker": "The frog",
+      "footnote": "Some witnesses are better at hopping than talking.",
+      "word": "ribbit!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-3-2.webp",
+      "alt": "“Have you seen a pillow?” Ara asked. The frog said “Ribbit.” Then a star winked over the hollow, where Moss was waiting with a much better clue."
+    }
+  ],
+  [
+    {
+      "title": "The stars leave a light on.",
+      "caption": "Moon. Star. Heart. Home.",
+      "text": "The awakened stones drew a shining trail toward a cottage. Moss pointed to something pink in the garden. Ara’s lantern gave a hopeful shimmer.",
+      "bubble": "Ira’s bow! We’re nearly there!",
+      "reply": "The moonflowers know her favourite tune.",
+      "replySpeaker": "Moss",
+      "footnote": "One last little kindness would wake the garden.",
+      "word": "twinkle!",
+      "speaker": "Ara",
+      "scene": "assets/interlude-4-1.webp",
+      "alt": "The awakened stones drew a shining trail toward a cottage. Moss pointed to something pink in the garden. Ara’s lantern gave a hopeful shimmer."
+    },
+    {
+      "title": "Meanwhile, one very patient pillow.",
+      "caption": "Ira was safe. And a little sleepy.",
+      "text": "The silver butterfly had led Ira to a warm cottage. Now she waited among the moonflowers, listening for the lullaby Ara always hummed at bedtime.",
+      "bubble": "Ara will find me. She always does.",
+      "reply": "Next time, I’m following a biscuit.",
+      "replySpeaker": "Ira",
+      "footnote": "A familiar tune. A familiar hug. Almost home.",
+      "word": "yawn…",
+      "speaker": "Ira",
+      "scene": "assets/interlude-4-2.webp",
+      "alt": "The silver butterfly had led Ira to a warm cottage. Now she waited among the moonflowers, listening for the lullaby Ara always hummed at bedtime."
+    }
+  ]
+]
