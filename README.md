@@ -1,10 +1,10 @@
 # Ara the Panda: Quest to Find Ira
 
-A small, kid-friendly haunted-woods adventure starring Ara the Panda and her pillowcase sister, Ira.
+A little, kid-friendly haunted-woods adventure starring Ara the Panda and her pillowcase sister, Ira. This repository contains the playable opening and the separately extracted character art.
 
-## Play locally
+## Run locally
 
-Open `index.html` in a modern browser. The project is static and needs no build step.
+Open `index.html` in a modern browser. The game is static and needs no build step.
 
 ## Controls
 
@@ -12,10 +12,10 @@ Open `index.html` in a modern browser. The project is static and needs no build 
 - Lantern glow: Space or the Glow button.
 - Pause: Escape or the pause button.
 
-## Project files
+## Files
 
-- `index.html`, `style.css`, `game.js`: game and opening comic.
-- `assets/ara.png`, `assets/ira.png`: extracted transparent character sprites.
-- `assets/atlas.png`: forest object and lantern sprite atlas.
-- `assets/forest.png`: moonlit woods story backdrop.
-- `assets/comic-1.png` to `assets/comic-3.png`: opening comic artwork.
+- `index.html`, `style.css`, `game.js`: title screen, comic intro, and first playable level.
+- `assets/ara.webp`, `assets/ira.webp`: separately extracted transparent character sprites.
+- `assets/atlas.webp`: transparent forest object and lantern sprite atlas.
+- `assets/forest.webp`: moonlit woods backdrop.
+- `assets/comic-1.webp` to `assets/comic-3.webp`: opening comic scenes.
