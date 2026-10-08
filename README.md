@@ -1,21 +1,23 @@
 # Ara the Panda: Quest to Find Ira
 
-A little, kid-friendly haunted-woods adventure starring Ara the Panda and her pillowcase sister, Ira. This repository contains the playable opening and the separately extracted character art.
+A kid-friendly moonlit adventure starring Ara and her pillowcase sister Ira.
 
-## Run locally
+Play: https://ara-quest-to-find-ira.sjk100.chatgpt.site
 
-Open `index.html` in a modern browser. The game is static and needs no build step.
+## Five connected chapters
 
-## Controls
+1. The Whispering Woods — follow the moonlit trail.
+2. Glowcap Glade — wake three glowcaps with lantern light.
+3. Puddlebrook Crossing — collect three ribbon clues.
+4. Stargazer Hollow — light three sleepy lanterns.
+5. Pillowmoon Garden — light two lanterns and find Ira at the cottage.
 
-- Move: WASD or arrow keys; on touch screens use the direction pad.
-- Lantern glow: Space or the Glow button.
-- Pause: Escape or the pause button.
+Each chapter has its own scenery and a funny story transition. The ending reunites the sisters.
 
-## Files
+## Run
 
-- `index.html`, `style.css`, `game.js`: title screen, comic intro, and first playable level.
-- `assets/ara.webp`, `assets/ira.webp`: separately extracted transparent character sprites.
-- `assets/atlas.webp`: transparent forest object and lantern sprite atlas.
-- `assets/forest.webp`: moonlit woods backdrop.
-- `assets/comic-1.webp` to `assets/comic-3.webp`: opening comic scenes.
+Open index.html in a modern browser. Keep assets, game.js, and style.css beside it. WASD or arrow keys move; Space activates the lantern; Esc pauses. Touch controls and tap-to-walk are included. Options control sound and gentler motion.
+
+## Validation
+
+All five routes, objectives, locked gates, chapter transitions, final reunion, movement, pause and artwork references checked using the game logic harness.
