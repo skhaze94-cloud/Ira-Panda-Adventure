@@ -1,23 +1,34 @@
-# Ara the Panda: Quest to Find Ira
+# Ira the Panda 2.0 — Quest to Find Ira
 
-A kid-friendly moonlit adventure starring Ara and her pillowcase sister Ira.
+A kid-friendly painted moonlit adventure starring Ara the Panda and her pillowcase sister Ira.
 
-Play: https://ara-quest-to-find-ira.sjk100.chatgpt.site
+[Play the game](https://ara-quest-to-find-ira.sjk100.chatgpt.site)
 
-## Five connected chapters
+## Comprehensive 2.0 update
 
-1. The Whispering Woods — follow the moonlit trail.
-2. Glowcap Glade — wake three glowcaps with lantern light.
-3. Puddlebrook Crossing — collect three ribbon clues.
-4. Stargazer Hollow — light three sleepy lanterns.
-5. Pillowmoon Garden — light two lanterns and find Ira at the cottage.
+- Five distinct painted terrain sets, with alternating isometric checkerboard tiles.
+- Fifteen woodland, mushroom, riverbank, celestial and flowering tree sprites.
+- Ten ornate tall and short lantern posts with warm pools of light and cool moonbeams.
+- Each chapter's playable route is approximately twice the previous length.
+- Lantern use lifts and sways the lantern, sends curling light wisps outward, and releases shimmering world-space particles.
+- Cooldown reduced from 2.6 seconds to 1.15 seconds.
+- Extra funny captions along the trails; all five chapters still lead to Ira's reunion.
+- Distinct tree arrangements: dense groves, glade clearings, river reeds, celestial openings and spaced garden rows.
 
-Each chapter has its own scenery and a funny story transition. The ending reunites the sisters.
+## Chapters
 
-## Run
+1. The Whispering Woods
+2. Glowcap Glade
+3. Puddlebrook Crossing
+4. Stargazer Hollow
+5. Pillowmoon Garden
 
-Open index.html in a modern browser. Keep assets, game.js, and style.css beside it. WASD or arrow keys move; Space activates the lantern; Esc pauses. Touch controls and tap-to-walk are included. Options control sound and gentler motion.
+## Play locally
+
+Open index.html with assets, game.js and style.css alongside it. WASD or arrow keys move, Space activates the lantern, Esc pauses. Touch controls and tap-to-walk are included. Options control sound and gentler motion.
 
 ## Validation
 
-All five routes, objectives, locked gates, chapter transitions, final reunion, movement, pause and artwork references checked using the game logic harness.
+All five routes, objectives, locked gates, chapter transitions, final reunion, movement and pause passed the gameplay harness. Checks also cover doubled playable spans, cooldown behavior, particle expiry/budget and reduced motion. Each chapter and the lantern burst were rendered with the actual Canvas renderer for visual inspection, including a mobile playfield.
+
+Artwork generated with the built-in image tool. Full prompts: assets/asset-prompts-v2.json.
