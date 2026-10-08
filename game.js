@@ -87,7 +87,7 @@ $('#options').onclick=()=>{modal('Make yourself at home.','<label class="setting
 function save(){try{localStorage.setItem('ara-options',JSON.stringify({sound,reduced,music:musicEnabled}))}catch{}}
 $('#credits').onclick=()=>modal('Two sisters. One adventure.','<p>Starring Ara the Panda and Ira the Pillowcase.</p><p>Menu music: Curious Monsters (Remastered).<br>Gameplay music: Nimble Motif (Remastered).</p><p>Inspired by your original character designs. A tiny, moonlit story about kindness, courage, and finding your way home.</p>',[{text:'Back',fn:resume,primary:true}],'THE OPENING CREDITS');
 function pause(){if(state!=='play')return;modal('A little breather.','<p>The woods can wait. Your lantern is still glowing.</p>',[{text:'Keep adventuring',primary:true,fn:resume},{text:'Return to title',fn:showMenu}])}$('#pause').onclick=pause;
-function glow(){if(state!=='play'||cooldown>0)return;pulse=GLOW_DURATION;cooldown=LANTERN_COOLDOWN;emitLanternMotes();revealKey();for(const m of marks)if(!m.lit&&current().task==='glow'&&Math.hypot(m.x-player.x,m.y-player.y)<2.5){m.lit=true;sparkles.push({x:m.x,y:m.y,life:1});toast(levelIndex===1?'“Good morning… or good night, mushroom!”':'“There. Much less spooky.”',2.5);objective()}for(const b of bats)if(Math.hypot(b.x-player.x,b.y-player.y)<3.5){b.fear=3;toast('Just a little light. Off you flutter!',2)}tone(850,.32)}$('#glowTouch').onclick=glow;
+function glow(){if(state!=='play'||cooldown>0)return;pulse=GLOW_DURATION;cooldown=LANTERN_COOLDOWN;emitLanternMotes();revealKey();reactNeighboursToGlow();for(const m of marks)if(!m.lit&&current().task==='glow'&&Math.hypot(m.x-player.x,m.y-player.y)<2.5){m.lit=true;sparkles.push({x:m.x,y:m.y,life:1});toast(levelIndex===1?'“Good morning… or good night, mushroom!”':'“There. Much less spooky.”',2.5);objective()}for(const b of bats)if(Math.hypot(b.x-player.x,b.y-player.y)<3.5){b.fear=3;toast('Just a little light. Off you flutter!',2)}tone(850,.32)}$('#glowTouch').onclick=glow;
 addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code==='Escape'){if(state==='play')pause();else if(state==='dialog')resume();return}if(state==='comic'&&(e.code==='Space'||e.code==='Enter')){$('#next').click();return}if(state==='play'){if(e.code==='KeyE'&&!e.repeat){interact();return}keys.add(e.code);target=null;if(e.code==='Space')glow()}});addEventListener('keyup',e=>keys.delete(e.code));addEventListener('blur',()=>{keys.clear();if(state==='play')pause()});
 for(const b of document.querySelectorAll('[data-dir]')){let k={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[b.dataset.dir];b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(k);target=null};b.onpointerup=b.onpointercancel=()=>keys.delete(k)}
 let tile=55,camera={x:0,y:0};function project(x,y){return{x:(x-y)*tile+camera.x,y:(x+y)*tile*.49+camera.y}}function unproject(x,y){let a=(x-camera.x)/tile,b=(y-camera.y)/(tile*.49);return{x:(a+b)/2,y:(b-a)/2}};
@@ -245,6 +245,7 @@ function initWoodlandQuest(){
  npcs=[];keyQuest=null;$('#interact').classList.add('hidden');
  if(levelIndex!==0)return;
  npcs=[{id:'pip',name:'Pip',role:'Lantern guide',x:4.5,y:pathY(4.5)+.75,art:0,introduced:false},{id:'bramble',name:'Bramble',role:'Door keeper',x:10,y:pathY(10)-.65,art:1,introduced:false},{id:'moss',name:'Moss',role:'Woodland explorer',x:17,y:pathY(17)+.75,art:2,introduced:false}];
+ for(const n of npcs){n.homeX=n.x;n.homeY=n.y;n.homeOffset=n.y-pathY(n.x);n.noticed=false;n.travel=0;n.stride=0;n.delight=0}
  const c=woodlandTrail()[2];keyQuest={started:false,revealed:false,collected:false,doorOpen:false,key:{x:c.x+.85,y:c.y+.15},clearing:c};
  // A blue-tinted lantern marks the small branch; the main trail stays gold.
  lampPosts.push({x:24.2,y:pathY(24)+1.9,type:1,phase:0,lit:true,blue:true});
@@ -296,6 +297,7 @@ function castReady(name){return !!(imgs[name]?.naturalWidth&&castRigRects[name]?
 function updateCast(dt){
  if(state==='menu'||state==='play'||state==='dialog'&&activeSpeaker)castClock+=dt;
  if(state!=='play')return;
+ updateWoodlandNeighbours(dt);
  const n=nearestNPC(),desired=n?Math.max(-.11,Math.min(.11,(project(n.x,n.y).x-project(player.x,player.y).x)/600)):0;
  araLook+=(desired-araLook)*Math.min(1,dt*7);
 }
@@ -328,9 +330,11 @@ function drawNPCRig(c,n,p,h,portrait=false){
  const speak=talking?castBeat(n.art,5.5)*.025:0;
  c.save();c.translate(p.x,p.y);c.scale(h/110,h/110);
  castShadow(c,0,2,22);
+ const hop=portrait?neighbourHop(n)*.28:neighbourHop(n),shuffle=reduced?0:Math.sin(n.stride||0)*(n.travel||0)*1.2;
+ c.translate(shuffle,-hop);c.rotate(reduced?0:Math.sin(n.stride||0)*(n.travel||0)*.035);
  if(!castReady('npc-rig-22')){const im=imgs['npc-'+n.id];if(im?.naturalWidth)c.drawImage(im,-40,-110,80,110);c.restore();return}
  // Rear details are independent: fox tail, hedgehog quills, owl scarf fringe.
- if(n.id==='moss')castPart(c,'npc-rig-22',index+4,21,-22,51,47,castBeat(1,1.9)*.13,.15,.8);
+ if(n.id==='moss')castPart(c,'npc-rig-22',index+4,21,-22,51,47,castBeat(1,n.noticed?4:1.9)*(n.noticed?.22:.13),.15,.8);
  else if(n.id==='bramble')castPart(c,'npc-rig-22',index+4,-4,-54,48,57,castBeat(2,1.6)*.025);
  else castPart(c,'npc-rig-22',index+4,14,-48,17,31,castBeat(0,2.3)*.09,.5,.1);
  castPart(c,'npc-rig-22',index+1,0,-29-breath,62,58,castBeat(n.art,1.5)*.015);
@@ -342,7 +346,7 @@ function drawNPCRig(c,n,p,h,portrait=false){
   castPart(c,'npc-rig-22',index+3,24,-47-breath,29,33,-(near?.25:0)-greet*.35+(talking?castBeat(1,5)*.05:castBeat(1,1.8)*.03),.25,.12);
  }else{
   castPart(c,'npc-rig-22',index+3,-24,-47-breath,30,34,castBeat(0,1.7)*.04,.35,.1);
-  const point=near?.2:0;
+  const point=near?.3:0;
   castPart(c,'npc-rig-22',index+2,23,-47-breath,44,35,-point-greet*.16+(talking?castBeat(1,3.5)*.055:castBeat(1,1.7)*.03),.1,.25);
  }
  castPart(c,'npc-rig-22',index,0,-53-breath,59,51,look+castBeat(n.art,1.4)*.035+speak,.5,.93);
@@ -362,7 +366,12 @@ function drawIraRig(c,p,preview=false){
  c.save();c.translate(p.x,p.y);c.rotate(castBeat(1,near?2.5:1.2)*.035);c.scale(1+castBeat(2,1.7)*.018,1-castBeat(2,1.7)*.018);
  castShadow(c,0,1,21);castPart(c,'support-rig-22',blink?1:near?2:0,0,-34,62,68);c.restore();
 }
-function drawIra(p){drawIraRig(ctx,p)}
+function drawIra(p){
+ const e=exitPoint(),near=Math.hypot(player.x-e.x,player.y-e.y)<7;
+ const shuffle=reduced?0:Math.sin(castClock*(near?2.4:1))*(near?13:5);
+ const hop=reduced?0:Math.max(0,Math.sin(castClock*(near?5.8:2.3)))*(near?9:2);
+ drawIraRig(ctx,{x:p.x+shuffle,y:p.y-hop});
+}
 function drawBat(b){
  const p=project(b.x,b.y),flap=reduced?.18:Math.sin(castClock*(b.fear?19:12)+b.phase),squash=reduced?1:.8+.18*Math.abs(flap);
  castShadow(ctx,p.x,p.y,15,.18);
@@ -383,5 +392,39 @@ function drawCastSurfaces(){
   if(type==='ara'){c.translate(140,397);c.scale(3.1,3.1);drawAraRig(c,{x:0,y:0},true)}else{c.translate(155,373);c.scale(4,4);drawIraRig(c,{x:0,y:0},true)}c.restore();
  }
 }
+
+// Home-bound wanderers remain easy to find, and settle when Ara is close enough to talk.
+function updateWoodlandNeighbours(dt){
+ if(state!=='play')return;
+ for(const n of npcs){
+  const d=Math.hypot(player.x-n.x,player.y-n.y);
+  if(d<4.7&&!n.noticed){n.noticed=true;n.greetAt=castClock;n.delightUntil=castClock+1.8}
+  else if(d>6)n.noticed=false;
+  n.delight=Math.max(0,Math.min(1,((n.delightUntil??0)-castClock)/.7));
+  n.stride??=0;n.travel??=0;
+  if(reduced){n.travel=0;continue}
+  const phase=n.art*2.1,pace=[.58,.45,.68][n.art],radius=[.8,1.05,1.25][n.art];
+  let tx=n.homeX+Math.sin(castClock*pace+phase)*radius;
+  let ty=pathY(tx)+n.homeOffset+Math.cos(castClock*pace*.8+phase)*.28;
+  if(d<2.6){n.travel*=Math.exp(-dt*9);continue}
+  if(n.noticed){
+   tx=n.homeX+Math.max(-.85,Math.min(.85,(player.x-n.homeX)*.22));
+   ty=n.homeY+Math.max(-.65,Math.min(.65,(player.y-n.homeY)*.22));
+  }
+  const leash=Math.hypot(tx-n.homeX,ty-n.homeY);if(leash>1.7){tx=n.homeX+(tx-n.homeX)*1.7/leash;ty=n.homeY+(ty-n.homeY)*1.7/leash}
+  const dx=tx-n.x,dy=ty-n.y,len=Math.hypot(dx,dy),step=Math.min(len,dt*[.78,.6,.95][n.art]);
+  const ox=n.x,oy=n.y;
+  if(len>.04){const nx=n.x+dx/len*step,ny=n.y+dy/len*step;if(!blocked(nx,n.y))n.x=nx;if(!blocked(n.x,ny))n.y=ny}
+  const moved=Math.hypot(n.x-ox,n.y-oy);n.stride+=moved*7;n.travel+=((moved>.001?1:0)-n.travel)*Math.min(1,dt*8);
+ }
+}
+function neighbourHop(n){
+ if(reduced)return 0;
+ const greeting=(n.delight||0)*Math.max(0,Math.sin((castClock-(n.greetAt??0))*9))*[7,5,8][n.art];
+ const walking=Math.abs(Math.sin(n.stride||0))*(n.travel||0)*[3.2,2.2,3.7][n.art];
+ const idle=n.noticed?Math.max(0,Math.sin(castClock*3+n.art))*1.8:0;
+ return greeting+walking+idle;
+}
+function reactNeighboursToGlow(){for(const n of npcs)if(Math.hypot(player.x-n.x,player.y-n.y)<5){n.greetAt=castClock;n.delightUntil=castClock+1.65;n.delight=1}}
 
 function loop(ts){let dt=Math.min((ts-last)/1000,.04);last=ts;update(dt);render();requestAnimationFrame(loop)}requestAnimationFrame(loop);
