@@ -31,6 +31,9 @@ func sync() -> void:
 	surface.set_shader_parameter("tile_size",game.tile)
 	surface.set_shader_parameter("player_world",game.player)
 	surface.set_shader_parameter("pulse",game.pulse)
+	surface.set_shader_parameter("clock",0.0 if game.quieter_motion else game.elapsed)
+	surface.set_shader_parameter("water_center",game._station().x+1.4)
+	surface.set_shader_parameter("detail",float(game.graphics_quality))
 	var pools: Array[Vector4] = []
 	var colors: Array[Vector3] = []
 	var sources: Array = []
