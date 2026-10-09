@@ -131,7 +131,7 @@ func _resume() -> void:
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	for name in ["forest","level-2","level-3","level-4","level-5","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-pip","npc-bramble","npc-moss","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
-		tex[name] = load("res://assets/%s.webp" % name)
+		tex[name] = load("res://assets/%s.png" % name)
 	var file := FileAccess.open("res://story-24.json", FileAccess.READ)
 	if file:
 		var parsed = JSON.parse_string(file.get_as_text())

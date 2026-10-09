@@ -1,8 +1,24 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.2
+# Ara the Panda: Quest to Find Ira — Godot v0.2.2
 
 **Moonlight & Woodland Depth** upgrades all five chapters from the supplied
 Godot v0.1 project, with native lights and shadows, textured relief shading,
 moonlit mist, motes, livelier characters and a corrected panda arm rig.
+
+## Import fix in v0.2.2
+
+This archive has `project.godot` directly at its root, rather than inside an
+extra wrapper folder. Explicit directory records are written before their files, so Godot can create
+`assets/`, `scenes/`, `scripts/`, `shaders/`, `tests/` and `tools/` during ZIP import.
+The previous ZIP lacked those directory records: normal archive extraction
+created the folders automatically, but Godot's package importer did not. All 33 WebP textures are now lossless RGBA PNGs,
+with the same dimensions, colors and alpha channels. Runtime asset paths were
+updated. No Godot cache or stale import sidecars are included.
+
+**Recommended on Windows:** right-click the ZIP → **Extract All**, choose a
+new writable folder such as `Documents/Ira-Panda-v0.2.2`, then open Godot
+Project Manager → **Import** → select that folder's **project.godot**.
+If importing the ZIP directly, choose a new empty writable destination folder.
+Avoid the partially extracted folder from the failed import.
 
 ## Open and play
 
@@ -52,4 +68,8 @@ godot --path . --script res://tests/capture.gd
 The tests passed on Godot 4.3. Mobile exports, physical touch controls, audio
 playback and target-device performance still need a device playtest.
 
-GitHub branch: `godot-4-v0.2-moonlight-depth`. The browser game remains on `main`.
+This PNG compatibility fix is included on the `godot-4-v0.2-moonlight-depth` branch. The browser game remains on `main`.
+
+The v0.2.2 archive was extracted using Godot ZIPReader with the Project Manager
+folder-creation behavior: 58 files, zero extraction failures. Editor import
+and all five quest smoke checks passed on that fresh extraction.

@@ -11,6 +11,8 @@ func run() -> void:
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
+	for asset_name in game.tex:
+		check(game.tex[asset_name] is Texture2D,"Missing texture: " + asset_name)
 	game.music_enabled = false
 	game.menu_audio.stop()
 	game.game_audio.stop()

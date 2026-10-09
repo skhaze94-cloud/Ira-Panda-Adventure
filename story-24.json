@@ -10,7 +10,7 @@
       "footnote": "Every good clue deserves a little happy hop.",
       "word": "click!",
       "speaker": "Ara",
-      "scene": "assets/interlude-1-1.webp",
+      "scene": "assets/interlude-1-1.png",
       "alt": "Beyond the woodland door, Ara found a pink ribbon caught on a glowcap. It was the colour of Ira’s favourite bow."
     },
     {
@@ -23,7 +23,7 @@
       "footnote": "Next stop: three very shy scroll pages.",
       "word": "flutter!",
       "speaker": "Ara",
-      "scene": "assets/interlude-1-2.webp",
+      "scene": "assets/interlude-1-2.png",
       "alt": "Pip had seen a little pillow following a silver butterfly. The old moon scroll might show where they went… if someone could find its three pages."
     }
   ],
@@ -38,7 +38,7 @@
       "footnote": "The map was old. The hope was brand new.",
       "word": "aha!",
       "speaker": "Ara",
-      "scene": "assets/interlude-2-1.webp",
+      "scene": "assets/interlude-2-1.png",
       "alt": "The rebuilt scroll showed a brook, a bridge and a tiny cottage under the moon. Ara traced the route with one careful paw."
     },
     {
@@ -51,7 +51,7 @@
       "footnote": "Panda paws prefer bridges to puddles.",
       "word": "splash!",
       "speaker": "Ara",
-      "scene": "assets/interlude-2-2.webp",
+      "scene": "assets/interlude-2-2.png",
       "alt": "On the bank, Ara found another ribbon and a bridge with its middle missing. Bramble was already counting useful pieces of driftwood."
     }
   ],
@@ -66,7 +66,7 @@
       "footnote": "Bramble had not actually brought socks.",
       "word": "creeeak!",
       "speaker": "Ara",
-      "scene": "assets/interlude-3-1.webp",
+      "scene": "assets/interlude-3-1.png",
       "alt": "The repaired bridge gave a happy creak. On the far bank, a pink ribbon fluttered beneath a sky full of sleepy stars."
     },
     {
@@ -79,7 +79,7 @@
       "footnote": "Some witnesses are better at hopping than talking.",
       "word": "ribbit!",
       "speaker": "Ara",
-      "scene": "assets/interlude-3-2.webp",
+      "scene": "assets/interlude-3-2.png",
       "alt": "“Have you seen a pillow?” Ara asked. The frog said “Ribbit.” Then a star winked over the hollow, where Moss was waiting with a much better clue."
     }
   ],
@@ -94,7 +94,7 @@
       "footnote": "One last little kindness would wake the garden.",
       "word": "twinkle!",
       "speaker": "Ara",
-      "scene": "assets/interlude-4-1.webp",
+      "scene": "assets/interlude-4-1.png",
       "alt": "The awakened stones drew a shining trail toward a cottage. Moss pointed to something pink in the garden. Ara’s lantern gave a hopeful shimmer."
     },
     {
@@ -107,7 +107,7 @@
       "footnote": "A familiar tune. A familiar hug. Almost home.",
       "word": "yawn…",
       "speaker": "Ira",
-      "scene": "assets/interlude-4-2.webp",
+      "scene": "assets/interlude-4-2.png",
       "alt": "The silver butterfly had led Ira to a warm cottage. Now she waited among the moonflowers, listening for the lullaby Ara always hummed at bedtime."
     }
   ]
