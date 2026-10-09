@@ -18,9 +18,9 @@ func _draw() -> void:
 	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
 	var corners := [_unproject(Vector2(-tile,-tile)), _unproject(Vector2(size.x+tile,-tile)), _unproject(Vector2(-tile,size.y+tile)), _unproject(size+Vector2(tile,tile))]
 	var min_x := int(maxf(0.0, floor(minf(minf(corners[0].x,corners[1].x),minf(corners[2].x,corners[3].x)))))
-	var max_x := int(minf(BASE_LEVELS[level_index].size-1, ceil(maxf(maxf(corners[0].x,corners[1].x),maxf(corners[2].x,corners[3].x)))))
+	var max_x := int(minf(BASE_LEVELS[level_index]["size"]-1, ceil(maxf(maxf(corners[0].x,corners[1].x),maxf(corners[2].x,corners[3].x)))))
 	var min_y := int(maxf(0.0, floor(minf(minf(corners[0].y,corners[1].y),minf(corners[2].y,corners[3].y)))))
-	var max_y := int(minf(BASE_LEVELS[level_index].size-1, ceil(maxf(maxf(corners[0].y,corners[1].y),maxf(corners[2].y,corners[3].y)))))
+	var max_y := int(minf(BASE_LEVELS[level_index]["size"]-1, ceil(maxf(maxf(corners[0].y,corners[1].y),maxf(corners[2].y,corners[3].y)))))
 	for s in range(min_x + min_y, max_x + max_y + 1):
 		for x in range(min_x,max_x+1):
 			var y := s - x
@@ -131,10 +131,10 @@ func _draw_halo(at: Vector2, radius: float, tint: Color, weight: float=1.0) -> v
 
 func _draw_tree(t: Dictionary) -> void:
 	var at := _project(t.pos)
-	var h: float = tile*3.9*float(t.size)
+	var h: float = tile*3.9*float(t["size"])
 	var crop: Array = TREE_RECTS[level_index*3 + int(t.variant)]
 	var w: float = minf(tile*2.25,h*float(crop[2])/float(crop[3]))
-	_shadow(at,30*t.size)
+	_shadow(at,30*t["size"])
 	var alpha := 0.28 if at.y > _project(player).y and absf(at.x-_project(player).x)<tile*1.2 and at.y-_project(player).y < h*0.7 else 1.0
 	_draw_crop("trees-v2",crop,Rect2(at-Vector2(w*0.5,h),Vector2(w,h)),Color(1,1,1,alpha))
 
@@ -149,7 +149,7 @@ func _draw_lantern(l: Dictionary) -> void:
 
 func _draw_decoration(d: Dictionary) -> void:
 	var at := _project(d.pos)
-	var h: float = tile*1.5*d.size
+	var h: float = tile*1.5*d["size"]
 	var w := h*0.88
 	var crop: Array = DECOR_RECTS[int(d.variant)]
 	_draw_crop("decor",crop,Rect2(at-Vector2(w*0.5,h),Vector2(w,h)))
