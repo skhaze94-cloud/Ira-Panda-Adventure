@@ -105,6 +105,7 @@ var quieter_motion := false
 var music_enabled := true
 var mobile_axis := Vector2.ZERO
 var dialog_from := "play"
+var conversation: Control
 var menu_layer: Control
 var story_layer: Control
 var hud_layer: Control
@@ -141,6 +142,12 @@ func _story_advance() -> void:
 	pass
 
 func _build_ui() -> void:
+	pass
+
+func _talk(_npc: Dictionary) -> void:
+	pass
+
+func _reunion() -> void:
 	pass
 
 func _show_dialog(_title: String, _body: String, _primary: String, _secondary: String, _action: String) -> void:
@@ -197,6 +204,7 @@ func _music(filename: String) -> AudioStreamPlayer:
 	return a
 
 func _set_state(next_state: String) -> void:
+	if conversation!=null and next_state not in ["dialog","win"]: conversation.dismiss()
 	if next_state != "play": _reset_controls()
 	state = next_state
 	menu_layer.visible = state == "menu"
@@ -431,7 +439,7 @@ func _process(dt: float) -> void:
 		if level_index > 0 and quest_done and player.distance_to(_exit()) < 1.15: _complete_chapter()
 		if toast_seconds > 0:
 			toast_seconds -= dt
-			toast_label.visible = toast_seconds > 0
+			toast_label.visible = false
 		hud_glow.text = "LANTERN READY" if cooldown <= 0 else "GLOW %.1fs" % cooldown
 		_update_hud()
 	var lead_target := velocity * 0.38 if state == "play" and not quieter_motion else Vector2.ZERO
@@ -460,7 +468,8 @@ func _update_collectibles() -> void:
 				m.lit = true
 				quest_count += 1
 				_burst(m.pos)
-				show_toast("Found: %d of 3!" % quest_count, 2.2)
+				var noun: String = ["key","scroll page","driftwood bundle","star crystal","moonflower"][level_index]
+				show_toast("A %s! That's %d of three." % [noun,quest_count] if quest_count<3 else "All three! "+["","Time to mend the story at the lectern.","Let's make that bridge sturdy!","Now wake Moon, Star, Heart.","The cottage music box is ready."][level_index],3.0)
 
 func _update_bats(dt: float) -> void:
 	for b in bats:
@@ -502,7 +511,7 @@ func glow() -> void:
 					m.lit = true
 					quest_count += 1
 					_burst(m.pos)
-					show_toast("Moonflower awakened! %d / 3" % quest_count, 3)
+					show_toast("Wake up, little moonflower! %d of three are shining." % quest_count if quest_count<3 else "All three flowers are awake! Let's play their lullaby at the cottage.",3.5)
 		if level_index == 3 and not quest_done:
 			for rune in runes:
 				if player.distance_to(rune.pos) < 2.5 and not rune.lit:
@@ -526,11 +535,12 @@ func interact() -> void:
 	var ni := _nearest_npc()
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]
+		_talk(npc)
 		npc.met = true
 		npc.reaction = 1.6
 		if npc.id == "moss" and level_index == 0: quest_started = true
 		if level_index > 0: quest_started = true
-		_show_dialog("%s · Woodland Neighbour" % npc.name, _guide_text(npc.id), "KEEP EXPLORING", "", "resume")
+		_update_hud()
 		return
 	if level_index == 0:
 		if player.distance_to(_exit()) < INTERACT_RADIUS:
@@ -547,15 +557,6 @@ func interact() -> void:
 		else:
 			_finish_quest()
 
-func _guide_text(id: String) -> String:
-	var light_lesson := "\n\nYour lantern reveals silver footprints. Wake blue lantern blooms for hints and a heart if you need one. At shadow stones, stand on the brass crescent and glow to see a clue."
-	if level_index > 0: return "QUEST %d: %s\n\n%s" % [level_index + 1, QUEST_TITLES[level_index], QUEST_HINTS[level_index]] + light_lesson
-	match id:
-		"pip": return "Let's find Ira! Walk with WASD / arrows, or the touch direction pad. Shine your lantern with Space or GLOW. Press E to talk. The woodland path leads to three helpful friends." + light_lesson
-		"bramble": return "The wooden door at the far end of the woods is locked. Moss knows something about a brass key near the blue lantern trail."
-		"moss": return "QUEST 1: The Lost Woodland Key\n\nThree pale birches stand beside a blue-lantern side trail. Go there, glow between their roots, then pick up the key. Return to the woodland door."
-	return QUEST_HINTS[0]
-
 func _nearest_npc() -> int:
 	var best := -1
 	var distance := INTERACT_RADIUS
@@ -571,7 +572,7 @@ func _finish_quest() -> void:
 	celebration = 2.5
 	navigation = null # Rebuild navigation when the bridge opens.
 	_burst(_station())
-	show_toast("Quest complete! Follow the lantern path.", 4.0)
+	show_toast("Quest complete! "+["","The story is whole again. Let's follow the lanterns!","A proper sturdy bridge! Onward, little paws!","The stars are awake. Ira must be getting closer!","The lullaby is playing. Ira is beside the cottage!"][level_index],4.5)
 
 func _complete_chapter() -> void:
 	if completed: return
@@ -579,9 +580,7 @@ func _complete_chapter() -> void:
 	if level_index > 0 and not quest_done: return
 	completed = true
 	if level_index == 4:
-		_show_dialog("Found you, little sister!", "Ara found Ira among the moonflowers by the cottage. Five little chapters. One very big hug.\n\n'Next time,' Ara smiled, 'we hide somewhere with biscuits.'", "PLAY AGAIN", "TITLE SCREEN", "replay")
-		state = "win"
-		modal_layer.visible = true
+		_reunion()
 	else:
 		story_chapter = level_index
 		story_page = 0
@@ -595,7 +594,7 @@ func _burst(location: Vector2) -> void:
 
 func _update_hud() -> void:
 	if light_trails != null:
-		hud_discoveries.text = "Lantern discoveries %d / %d  ·  %s" % [light_trails.discovered,light_trails.total,light_trails.nearby_hint()]
+		hud_discoveries.text = "✦ Lantern discoveries  %d / %d" % [light_trails.discovered,light_trails.total]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
@@ -606,13 +605,15 @@ func _update_hud() -> void:
 		hud_objective.text = ("Quest complete · Follow the lantern path" if quest_done else "Quest %d · %s · %d / 3" % [level_index + 1, verb, quest_count] if quest_count < 3 else "Glow: Moon → Star → Heart" if level_index == 3 else "Use the quest station near the end of the path")
 
 func show_toast(message: String, duration: float = 3.0) -> void:
-	toast_label.text = message
+	toast_label.text = message # Preserve the last message for gameplay/debug callers.
 	toast_seconds = duration
-	toast_label.visible = true
+	toast_label.visible = false
+	if conversation!=null: conversation.notify(message,duration)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	var key := event as InputEventKey
 	if key == null or not key.pressed or key.echo: return
+	if conversation!=null and conversation.active: return
 	if key.keycode == KEY_ESCAPE:
 		if state == "play": _pause()
 		elif state == "dialog": _resume()

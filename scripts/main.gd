@@ -76,7 +76,7 @@ func _build_ui() -> void:
 	var menu_col := VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",16)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ GRAPHICAL MASTERCLASS · v0.3 ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ LITTLE TALKS, BIG ADVENTURE · v0.4 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",42)
 	_label(menu_col,"Quest to Find Ira",28,Color("#fedbb3"))
 	var avatar := TextureRect.new()
@@ -124,16 +124,17 @@ func _build_ui() -> void:
 	var title_plate := _panel(hud_layer,Color(0.06,0.14,0.19,0.86),16)
 	title_plate.anchor_left = 0.02
 	title_plate.anchor_top = 0.02
-	title_plate.anchor_right = 0.48
+	title_plate.anchor_right = 0.43
 	title_plate.anchor_bottom = 0.02
-	title_plate.offset_bottom = 160
+	title_plate.offset_bottom = 112
 	var title_col := VBoxContainer.new()
 	title_col.add_theme_constant_override("separation",3)
 	title_plate.add_child(title_col)
 	hud_chapter = _label(title_col,"CHAPTER 1 OF 5",12,Color("#eed6a1"))
-	hud_title = _label(title_col,"Whispering Woods",22)
+	hud_chapter.visible = false
+	hud_title = _label(title_col,"Whispering Woods",18)
 	hud_objective = _label(title_col,"Find the key",14)
-	hud_discoveries = _label(title_col,"Explore with your lantern",13,Color("#a9e4df"))
+	hud_discoveries = _label(title_col,"Explore with your lantern",12,Color("#a9e4df"))
 	hud_discoveries.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_objective.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -232,6 +233,16 @@ func _build_ui() -> void:
 	modal_primary = _button(drow,"CONTINUE",_resume,Vector2(175,50))
 	modal_secondary = _button(drow,"TITLE",_return_menu,Vector2(175,50))
 
+	conversation = load("res://scripts/conversation.gd").new()
+	conversation.game = self
+	ui_canvas.add_child(conversation)
+
+func _talk(npc: Dictionary) -> void:
+	conversation.start(load("res://scripts/quest_dialogue.gd").talk(self,npc.id))
+
+func _reunion() -> void:
+	conversation.start(load("res://scripts/quest_dialogue.gd").reunion(),"replay")
+
 func _direction_button(symbol: String, offset: Vector2, vector: Vector2) -> void:
 	var button := _button(hud_layer,symbol,func(): pass,Vector2(57,57))
 	button.anchor_left = 0
@@ -289,6 +300,7 @@ func _story_end() -> void:
 	start_level(next_level)
 
 func _show_dialog(title: String, body: String, primary: String, secondary: String, action: String) -> void:
+	conversation.dismiss()
 	dialog_from = action
 	options_music.visible = false
 	options_motion.visible = false
@@ -301,6 +313,9 @@ func _show_dialog(title: String, body: String, primary: String, secondary: Strin
 	_set_state("dialog")
 
 func _resume() -> void:
+	if conversation.active:
+		conversation.close()
+		return
 	if state == "win":
 		start_level(0)
 		return
