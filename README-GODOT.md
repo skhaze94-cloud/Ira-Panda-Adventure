@@ -1,9 +1,28 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.4 — Lantern Trails
+# Ara the Panda: Quest to Find Ira — Godot v0.5 — Living Woodlands
 
-This release makes the lantern a tool for discovery throughout the existing
-**2D Godot adventure**. It retains v0.3 landscapes and controls, the v0.2.2 PNG /
-ZIP import fix, all five quests, story panels, artwork and music. The Unity 3D
-conversion remains on hold.
+This release refreshes the graphics, character animation, scenic environments
+and rendering performance of the existing **2D Godot adventure**. It includes
+all five quests, stories and v0.4 lantern discoveries. Unity 3D conversion
+remains on hold.
+
+## New in v0.5
+
+- Articulated painted NPC rigs: Pip's wing wave, scarf and lantern swing;
+  Bramble's clipboard and pencil motion; Moss's tail swish and gestures.
+  Neighbours face Ara, greet her on approach and react to lantern glows.
+- Scenic clearings with ribbons, large glowcaps, lily pads, orbiting star
+  sculptures and flower arches. Fireflies, butterflies, frogs, pond ripples,
+  shooting stars and garden music notes add chapter-specific life.
+- Walking dust, quest celebrations, soft effect edges, blended trail borders
+  and warm ground lighting. Decorative props do not add collision or quest gates.
+- One-pass textured ground, batched effect discs, spatial forest culling,
+  smaller light pools and capped sparkle/creature budgets.
+- Graphics in Options: **Light** (two lights, fewer motes/creatures),
+  **Balanced** (default; three lights) and **Rich** (five lights, lantern
+  shadows and painted texture relief). Chapter art and clues remain in every mode.
+  Settings last for the current game session.
+
+See [PERFORMANCE-V0.5.md](PERFORMANCE-V0.5.md) for reproducible local measurements.
 
 ## Open and play
 
@@ -20,7 +39,7 @@ conversion remains on hold.
 | Pause | Escape / pause button |
 | Story | Enter / Space / Next Page / Skip |
 
-Music and Gentler Motion are available under Options. Losing application focus
+Music, Gentler Motion and Graphics are available under Options. Losing application focus
 pauses play. UI buttons do not capture movement or lantern keys after a click.
 
 ## Lantern discovery loop
@@ -95,6 +114,11 @@ Validated locally with Godot **4.7.2**:
 - Screen-direction mapping, 30/60/120 fps movement consistency, braking,
   duplicate direction releases, pause cancellation, Gentler Motion movement
   and lantern buffering checks passed.
+- v0.5 checks passed for forest visibility, bounded light/creature/sparkle
+  pools, all graphics presets, NPC facing and greetings, lantern reactions,
+  Gentler Motion and paused animation timers.
+- New OpenGL captures of all five scenic stops, all three neighbours and the
+  graphics selector were reviewed.
 - OpenGL rendered before/after lantern captures of all five chapters, an
   awakened bloom and the rune-order clue were reviewed. Earlier v0.3 checks
   covered facing directions and bridge/garden completion states.
@@ -107,10 +131,13 @@ godot --headless --path . --editor --import --quit
 godot --headless --path . --script res://tests/smoke.gd
 godot --headless --path . --script res://tests/landscapes_controls.gd
 godot --headless --path . --script res://tests/lantern.gd
+godot --headless --path . --script res://tests/graphics_v05.gd
+godot --path . --disable-vsync --max-fps 0 --script res://tests/benchmark.gd
+godot --path . --script res://tests/capture_v05.gd
 godot --path . --script res://tests/capture_lantern.gd --max-fps 60
 ```
 
-Lantern captures default to `user://v04-captures`. Set `IRA_CAPTURE_DIR` to save them
+v0.5 captures default to `user://v05-captures`. Lantern captures default to `user://v04-captures`. Set `IRA_CAPTURE_DIR` to save them
 elsewhere. `tools/package_project.py` makes a ZIP with explicit directory
 records and excludes generated import caches.
 

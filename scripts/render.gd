@@ -7,30 +7,18 @@ func _draw() -> void:
 		_cover("forest")
 		_moon_haze()
 		for i in range(28):
-			var px: float = _randseed(i * 17) * size.x + sin(elapsed * 0.4 + i) * 16
-			var py: float = _randseed(i * 23 + 5) * size.y + cos(elapsed * 0.3 + i) * 12
-			draw_circle(Vector2(px,py), 1.4, Color(0.98,0.89,0.61,0.25))
+			var px: float = _randseed(i * 17) * size.x + (sin(elapsed * 0.4 + i) * 16 if not quieter_motion else 0.0)
+			var py: float = _randseed(i * 23 + 5) * size.y + (cos(elapsed * 0.3 + i) * 12 if not quieter_motion else 0.0)
+			_disc(Vector2(px,py), 1.4, Color(0.98,0.89,0.61,0.25))
 		return
 	if not (state == "play" or state == "dialog" or state == "win"): return
-	draw_rect(Rect2(Vector2.ZERO,size), Color("#101d2a"))
-	_cover(BASE_LEVELS[level_index].background, 0.47)
-	var corners := [_unproject(Vector2(-tile,-tile)), _unproject(Vector2(size.x+tile,-tile)), _unproject(Vector2(-tile,size.y+tile)), _unproject(size+Vector2(tile,tile))]
-	var min_x := int(floor(minf(minf(corners[0].x,corners[1].x),minf(corners[2].x,corners[3].x))))
-	var max_x := int(ceil(maxf(maxf(corners[0].x,corners[1].x),maxf(corners[2].x,corners[3].x))))
-	var min_y := int(floor(minf(minf(corners[0].y,corners[1].y),minf(corners[2].y,corners[3].y))))
-	var max_y := int(ceil(maxf(maxf(corners[0].y,corners[1].y),maxf(corners[2].y,corners[3].y))))
-	for s in range(min_x + min_y, max_x + max_y + 1):
-		for x in range(min_x,max_x+1):
-			var y := s - x
-			if y < min_y or y > max_y: continue
-			var center := _project(Vector2(x,y))
-			if not _visible(center, tile*1.2): continue
-			_draw_ground(x,y,center)
+	var draw_begin := Time.get_ticks_usec()
+	_refresh_visible_trees()
 	_draw_level_surface()
 	_draw_lantern_clues_ground()
 	_moon_haze()
 	var entities: Array = []
-	for t in trees:
+	for t in visible_trees:
 		if _visible(_project(t.pos),tile*5): entities.append({"depth":t.pos.x+t.pos.y, "type":"tree", "data":t})
 	for t in lanterns:
 		if _visible(_project(t.pos),tile*3): entities.append({"depth":t.pos.x+t.pos.y,"type":"lantern","data":t})
@@ -44,6 +32,8 @@ func _draw() -> void:
 		if _visible(_project(rune.pos),tile*3): entities.append({"depth":rune.pos.x+rune.pos.y,"type":"rune","data":rune})
 	for b in bats:
 		if _visible(_project(b.pos),tile*3): entities.append({"depth":b.pos.x+b.pos.y,"type":"bat","data":b})
+	for prop in ambience.scenery:
+		if _visible(_project(prop.pos),tile*5): entities.append({"depth":prop.pos.x+prop.pos.y,"type":"flourish","data":prop})
 	for landmark in landmarks:
 		if _visible(_project(landmark.pos),tile*5): entities.append({"depth":landmark.pos.x+landmark.pos.y,"type":"landmark","data":landmark})
 	for plant in light_trails.plants:
@@ -77,11 +67,13 @@ func _draw() -> void:
 			"landmark": _draw_landmark(d)
 			"light_plant": _draw_lantern_plant(d)
 			"shadow_stone": _draw_shadow_stone(d)
+			"flourish": _draw_woodland_prop(d)
 	_draw_landmark_names()
 	for part in particles:
 		var fade: float = part.life / part.max
-		var at: Vector2 = _project(part.pos) + part.offset * (1.0 - fade) * 90 - Vector2(0,45)
-		draw_circle(at, 3.3 * fade, Color(1.0,0.91,0.62,fade))
+		var dust: bool = part.get("kind","") == "dust"
+		var at: Vector2 = _project(part.pos)+part.offset*(1.0-fade)*(18 if dust else 90)-Vector2(0,4 if dust else 45)
+		_disc(at,(4.0 if dust else 3.3)*fade,Color(0.75,0.77,0.64,fade*0.22) if dust else Color(1.0,0.91,0.62,fade))
 	if pulse > 0:
 		var expansion := 1.0 - pulse/GLOW_TIME
 		var radius := 2.4 if quieter_motion else lerpf(0.6,light_trails.REVEAL_RADIUS,expansion)
@@ -94,10 +86,12 @@ func _draw() -> void:
 		draw_arc(at,12,0,TAU,24,Color(1,0.89,0.65,0.7),2)
 		for i in range(route_index, route.size()):
 			var waypoint := _project(route[i])
-			if _visible(waypoint,10): draw_circle(waypoint,2.5,Color(1,0.89,0.65,0.35))
+			if _visible(waypoint,10): _disc(waypoint,2.5,Color(1,0.89,0.65,0.35))
 	_draw_interaction_hint()
 	_draw_shadow_inscriptions()
 	_draw_lantern_plant_names()
+	_draw_woodland_air()
+	render_cpu_us = Time.get_ticks_usec()-draw_begin
 
 func _cover(name: String, alpha: float=1.0) -> void:
 	var texture: Texture2D = tex.get(name)
@@ -111,34 +105,10 @@ func _moon_haze() -> void:
 	for i in range(3):
 		var at := Vector2(size.x * (0.2+float(i)*0.3), size.y * 0.15)
 		for k in range(5,0,-1):
-			draw_circle(at, float(k)*80.0, Color(0.65,0.77,1.0,0.007))
+			_disc(at, float(k)*80.0, Color(0.65,0.77,1.0,0.007))
 
 func _visible(point: Vector2, pad: float=130) -> bool:
 	return point.x > -pad and point.y > -pad and point.x < size.x+pad and point.y < size.y+pad
-
-func _draw_ground(x: int, y: int, center: Vector2) -> void:
-	var tex_ground: Texture2D = tex.get("ground-v2")
-	var trail := absf(float(y)-_path_y(x)) < 2.1 or _key_trail(Vector2(x,y))
-	var col := (0 if trail else 2) + posmod(x+y,2)
-	var rect: Array = GROUND_RECTS[level_index*4 + col]
-	var points := PackedVector2Array([center + Vector2(0,-tile*0.49),center+Vector2(tile,0),center+Vector2(0,tile*0.49),center+Vector2(-tile,0)])
-	if tex_ground:
-		var ts: Vector2 = tex_ground.get_size()
-		var u := float(rect[0])/ts.x
-		var v := float(rect[1])/ts.y
-		var u2 := float(rect[0]+rect[2])/ts.x
-		var v2 := float(rect[1]+rect[3])/ts.y
-		draw_polygon(points, PackedColorArray([Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE]), PackedVector2Array([Vector2(u,v),Vector2(u2,v),Vector2(u2,v2),Vector2(u,v2)]),tex_ground)
-	else:
-		draw_colored_polygon(points, Color("#53635b") if trail else Color("#1b393b"))
-	# Stable per-tile tint breaks the checkerboard without changing the art.
-	var variation: float = _randseed(x * 13 + y * 37 + level_index * 83)
-	draw_colored_polygon(points, Color(0.09,0.16,0.23,0.035 + variation * 0.055))
-	if not trail and variation > 0.72:
-		var glint := center + Vector2((variation-0.5)*tile, 0)
-		draw_line(glint,glint+Vector2(3,-5),Color(0.53,0.72,0.63,0.24),1.0,true)
-	if posmod(x+y,2) == 1:
-		draw_colored_polygon(points,Color(0.04,0.12,0.19,0.035))
 
 func _draw_crop(name: String, src: Array, dst: Rect2, color: Color=Color.WHITE) -> void:
 	var texture: Texture2D = tex.get(name)
@@ -150,9 +120,9 @@ func _draw_png(name: String, at: Vector2, w: float, h: float, alpha: float=1.0) 
 	if t: draw_texture_rect(t,Rect2(Vector2(at.x-w*0.5,at.y-h),Vector2(w,h)),false,Color(1,1,1,alpha))
 
 func _draw_halo(at: Vector2, radius: float, tint: Color, weight: float=1.0) -> void:
-	for ring in range(7,0,-1):
-		var f := float(ring)/7.0
-		draw_circle(at,radius*f,Color(tint.r,tint.g,tint.b,weight * (1-f) * 0.034))
+	for ring in range(3,0,-1):
+		var f := float(ring)/3.0
+		_disc(at,radius*f,Color(tint.r,tint.g,tint.b,weight * (1-f) * 0.065))
 
 func _draw_tree(t: Dictionary) -> void:
 	var at := _project(t.pos)
@@ -182,17 +152,57 @@ func _draw_decoration(d: Dictionary) -> void:
 	var crop: Array = DECOR_RECTS[int(d.variant)]
 	_draw_crop("decor",crop,Rect2(at-Vector2(w*0.5,h),Vector2(w,h)))
 
-func _draw_npc(n: Dictionary) -> void:
-	var at: Vector2 = _project(n.pos)
-	var near := player.distance_to(n.pos) < 4
-	var bounce := (sin(elapsed*3.1+float(n.pos.x))*3.5 if not quieter_motion else 0.0)
-	_shadow(at,24)
-	var tilt: float = sin(elapsed * 1.7 + n.pos.x) * (0.065 if near else 0.025) if not quieter_motion else 0.0
-	draw_set_transform(at-Vector2(0,bounce),tilt)
-	_draw_png("npc-"+n.id,Vector2.ZERO,tile*1.46,tile*2.1)
+const NPC_CROPS = [
+	[18,22,340,277],[379,2,330,319],[711,42,230,177],[1073,12,258,300],[1384,46,223,251],
+	[7,319,343,279],[360,319,350,286],[729,343,300,223],[1063,331,222,248],[1336,328,278,287],
+	[10,602,352,319],[363,613,408,350],[765,656,263,208],[1052,653,237,257],[1305,620,310,319]
+]
+
+func _npc_part(n: Dictionary, index: int, offset: Vector2, wh: Vector2, spin: float=0.0, pivot: Vector2=Vector2(0.5,0.5)) -> void:
+	var facing_npc: float = float(n.facing)
+	var at := _project(n.pos)+Vector2(offset.x*facing_npc,offset.y)
+	draw_set_transform(at,spin*facing_npc,Vector2(facing_npc,1.0))
+	_draw_crop("npc-rig-22",NPC_CROPS[index],Rect2(-wh*pivot,wh))
 	draw_set_transform(Vector2.ZERO)
-	if near:
-		_draw_halo(at-Vector2(0,90),32,Color("#d4f4ff"),0.6)
+
+func _draw_npc(n: Dictionary) -> void:
+	var at := _project(n.pos)
+	var phase: float = elapsed+float(n.home.x)*0.13
+	var motion := 0.0 if quieter_motion else 1.0
+	var greeting: float = minf(1.0,float(n.greeting))*motion
+	var joy: float = minf(1.0,float(n.reaction))*motion
+	var breath := sin(phase*2.0)*1.2*motion
+	var head_tilt := (sin(phase*1.3)*0.025+sin(phase*7.0)*greeting*0.055)*motion
+	var hop := absf(sin(phase*7.0))*joy*5.0
+	_shadow(at,25)
+	match n.id:
+		"pip":
+			_npc_part(n,2,Vector2(-24,-49-breath-hop),Vector2(39,31),sin(phase*6.0)*greeting*0.6,Vector2(0.8,0.18))
+			_npc_part(n,1,Vector2(0,-35-breath-hop),Vector2(62,60))
+			_npc_part(n,4,Vector2(19,-55-breath-hop),Vector2(25,30),sin(phase*2.5)*0.10*motion,Vector2(0.35,0.1))
+			_npc_part(n,3,Vector2(23,-48-breath-hop),Vector2(34,41),sin(phase*2.1)*0.07*motion-greeting*0.25,Vector2(0.18,0.12))
+			_npc_part(n,0,Vector2(0,-80-breath-hop),Vector2(69,56),head_tilt)
+			_draw_halo(at+Vector2(33*float(n.facing),-56-hop),35,Color("#ffe0a0"),1.0)
+		"bramble":
+			_npc_part(n,9,Vector2(0,-38-hop),Vector2(58,60),sin(phase*1.3)*0.025*motion)
+			_npc_part(n,6,Vector2(0,-32-breath-hop),Vector2(63,51))
+			_npc_part(n,7,Vector2(-20,-40-hop),Vector2(49,37),sin(phase*1.5)*0.035*motion,Vector2(0.28,0.2))
+			var scribble := sin(phase*10.0)*0.10*motion if greeting<0.1 else sin(phase*7.0)*greeting*0.5
+			_npc_part(n,8,Vector2(23,-41-hop),Vector2(31,35),scribble,Vector2(0.24,0.15))
+			_npc_part(n,5,Vector2(0,-75-breath-hop),Vector2(65,53),head_tilt)
+		"moss":
+			_npc_part(n,14,Vector2(22,-28-hop),Vector2(47,48),sin(phase*2.4)*0.12*motion,Vector2(0.35,0.8))
+			_npc_part(n,11,Vector2(0,-33-breath-hop),Vector2(65,56))
+			_npc_part(n,13,Vector2(-20,-48-hop),Vector2(29,31),sin(phase*2.0)*0.045*motion,Vector2(0.75,0.12))
+			_npc_part(n,12,Vector2(21,-48-hop),Vector2(40,31),-greeting*0.25+sin(phase*3.0)*0.04*motion,Vector2(0.14,0.2))
+			_npc_part(n,10,Vector2(0,-82-breath-hop),Vector2(66,60),head_tilt)
+	if n.greeting>0 or n.reaction>0:
+		var text := "Hi, Ara!" if n.greeting>0 else "Lovely light!"
+		var font := ThemeDB.fallback_font
+		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,13).x
+		var bubble := at+Vector2(-95,-78-hop)
+		draw_style_box(_landmark_style(),Rect2(bubble-Vector2(width*0.5+8,19),Vector2(width+16,25)))
+		draw_string(font,bubble-Vector2(width*0.5,1),text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("#ffefc2"))
 
 func _draw_item(m: Dictionary) -> void:
 	if m.lit and level_index != 4: return
@@ -234,7 +244,10 @@ func _draw_bat(b: Dictionary) -> void:
 	var at := _project(b.pos)
 	var h: float = tile*0.85
 	var w: float = tile*1.1
-	var floaty := 12.0 + sin(elapsed*4+b.phase)*8.0
+	var floaty := 12.0 + (sin(elapsed*4+b.phase)*8.0 if not quieter_motion else 0.0)
+	var flap := sin(elapsed*10.0+b.phase)*0.07 if not quieter_motion else 0.0
+	w *= 1.0+flap
+	h *= 1.0-flap*0.5
 	var src := [1090,185,446,320] if int(b.phase) % 2 == 0 else [20,605,430,390]
 	var t: Texture2D = tex.get("atlas")
 	if t:
@@ -266,9 +279,9 @@ func _draw_exit() -> void:
 
 func _shadow(at: Vector2, rad: float) -> void:
 	draw_set_transform(at, 0.0, Vector2(1.0,0.32))
-	for ring in range(4,0,-1):
-		draw_circle(Vector2(5,2),rad*(0.65+float(ring)*0.12),Color(0.025,0.04,0.07,0.09))
-	draw_circle(Vector2.ZERO,rad*0.68,Color(0.025,0.04,0.07,0.24))
+	for ring in range(2,0,-1):
+		_disc(Vector2(5,2),rad*(0.65+float(ring)*0.12),Color(0.025,0.04,0.07,0.09))
+	_disc(Vector2.ZERO,rad*0.68,Color(0.025,0.04,0.07,0.24))
 	draw_set_transform(Vector2.ZERO)
 
 func _rig_part(index: int, center: Vector2, wh: Vector2, spin: float=0.0, pivot: Vector2=Vector2(0.5,0.5)) -> void:
@@ -341,7 +354,7 @@ func _draw_level_surface() -> void:
 				draw_line(at,at+Vector2(5,-3),Color(0.72,0.64,0.36,0.45),2,true)
 			1: # Violet glowcaps with clear luminous caps.
 				draw_line(at,at-Vector2(0,12),Color(0.75,0.66,0.84,0.7),2,true)
-				draw_circle(at-Vector2(0,13),5,Color(0.69,0.49,0.98,0.85))
+				_disc(at-Vector2(0,13),5,Color(0.69,0.49,0.98,0.85))
 			3: # Star flecks embedded in the hollow floor.
 				var twinkle: float = 0.35+(sin(elapsed+float(i))*0.15 if not quieter_motion else 0.0)
 				draw_line(at-Vector2(3,0),at+Vector2(3,0),Color(0.82,0.85,1,twinkle),1,true)
@@ -349,7 +362,7 @@ func _draw_level_surface() -> void:
 			4: # Petals encircle a warm moonflower garden.
 				for petal in range(5):
 					var offset := Vector2(4,0).rotated(float(petal)*TAU/5.0)
-					draw_circle(at+offset-Vector2(0,6),2.4,Color(0.96,0.77,0.85,0.68))
+					_disc(at+offset-Vector2(0,6),2.4,Color(0.96,0.77,0.85,0.68))
 
 func _world_polygon(points: Array, tint: Color) -> void:
 	var projected := PackedVector2Array()
@@ -382,8 +395,8 @@ func _draw_chapter_landscape() -> void:
 					var at := _project(p)
 					draw_line(at,at-Vector2(0,17),Color("#b4a2c8"),3,true)
 					_draw_halo(at-Vector2(0,18),24,Color("#b995ff"),0.7)
-					draw_circle(at-Vector2(0,18),7,Color("#aa7bd4"))
-					draw_circle(at-Vector2(2,20),2,Color("#ece0ff"))
+					_disc(at-Vector2(0,18),7,Color("#aa7bd4"))
+					_disc(at-Vector2(2,20),2,Color("#ece0ff"))
 		2:
 			# Pebble pools and reeds track the brook banks, leaving the walk clear.
 			for x in [16.0,29.0,43.0,55.0]:
@@ -393,7 +406,7 @@ func _draw_chapter_landscape() -> void:
 				_world_oval(p,Vector2(2.55,1.5),Color("#214d64"))
 				for i in range(8):
 					var at := _project(p+Vector2(2.7,0).rotated(float(i)*TAU/8.0))
-					draw_circle(at,5,Color("#859f9d"))
+					_disc(at,5,Color("#859f9d"))
 					draw_line(at,at+Vector2(4,-22),Color("#78978b"),2,true)
 		3:
 			var center := Vector2(70,_path_y(70))
@@ -402,7 +415,7 @@ func _draw_chapter_landscape() -> void:
 				for ring in [2.8,4.5,7.5]:
 					for i in range(48):
 						var p := center+Vector2(ring,0).rotated(float(i)*TAU/48.0)
-						draw_circle(_project(p),3.0,Color(0.77,0.79,1,0.72))
+						_disc(_project(p),3.0,Color(0.77,0.79,1,0.72))
 				for i in range(runes.size()-1):
 					var a := _project(runes[i].pos)-Vector2(0,60)
 					var b := _project(runes[i+1].pos)-Vector2(0,60)
@@ -417,8 +430,8 @@ func _draw_chapter_landscape() -> void:
 					for i in range(9):
 						var at := _project(p+Vector2(0.9,0).rotated(float(i)*TAU/9.0))
 						for petal in range(5):
-							draw_circle(at+Vector2(4,0).rotated(float(petal)*TAU/5.0)-Vector2(0,10),3.2,Color("#d8a8c5"))
-						draw_circle(at-Vector2(0,10),2.8,Color("#ffe6a0"))
+							_disc(at+Vector2(4,0).rotated(float(petal)*TAU/5.0)-Vector2(0,10),3.2,Color("#d8a8c5"))
+						_disc(at-Vector2(0,10),2.8,Color("#ffe6a0"))
 
 func _draw_landmark(mark: Dictionary) -> void:
 	var at := _project(mark.pos)
@@ -493,9 +506,9 @@ func _draw_lantern_clues_ground() -> void:
 		var fade := minf(1.0,float(track.time)/3.0)
 		_draw_halo(at,18,Color("#b9f3ff"),fade*1.7)
 		draw_set_transform(at,projected.angle()-PI*0.5,Vector2(0.85,1.0))
-		draw_circle(Vector2.ZERO,5.0,Color(0.63,0.91,1.0,0.62*fade))
+		_disc(Vector2.ZERO,5.0,Color(0.63,0.91,1.0,0.62*fade))
 		for toe in range(3):
-			draw_circle(Vector2(float(toe-1)*4.0,7.0-absf(float(toe-1))*1.0),2.1,Color(0.88,0.98,1.0,0.90*fade))
+			_disc(Vector2(float(toe-1)*4.0,7.0-absf(float(toe-1))*1.0),2.1,Color(0.88,0.98,1.0,0.90*fade))
 		draw_set_transform(Vector2.ZERO)
 	for stone in light_trails.stones:
 		var at := _project(stone.pos)
@@ -520,7 +533,7 @@ func _draw_lantern_clues_ground() -> void:
 		# This visible marker teaches the alignment without revealing the answer.
 		var marker := _project(stone.stand)
 		draw_arc(marker,14.0,0.25,PI*1.65,24,Color(0.94,0.76,0.39,0.85),3,true)
-		draw_circle(marker+Vector2(0,-3),2,Color("#fff0bd"))
+		_disc(marker+Vector2(0,-3),2,Color("#fff0bd"))
 
 func _draw_lantern_plant(plant: Dictionary) -> void:
 	var at := _project(plant.pos)
@@ -536,11 +549,11 @@ func _draw_lantern_plant(plant: Dictionary) -> void:
 	if awake:
 		for petal in range(7):
 			var offset := Vector2(9,0).rotated(float(petal)*TAU/7.0)
-			draw_circle(stem+offset,6,Color("#87d6cb"))
-			draw_circle(stem+offset*1.15,2.8,Color("#c9fff0"))
-		draw_circle(stem,6.5,Color("#fff0b0"))
+			_disc(stem+offset,6,Color("#87d6cb"))
+			_disc(stem+offset*1.15,2.8,Color("#c9fff0"))
+		_disc(stem,6.5,Color("#fff0b0"))
 	else:
-		draw_circle(stem,7,Color("#416f87"))
+		_disc(stem,7,Color("#416f87"))
 		draw_arc(stem,7,-PI*0.8,-PI*0.2,12,Color("#a0d0e6"),2,true)
 
 func _draw_lantern_plant_names() -> void:
@@ -578,3 +591,126 @@ func _draw_shadow_inscriptions() -> void:
 		box.bg_color.a *= fade
 		draw_style_box(box,Rect2(at-Vector2(width*0.5+10,19),Vector2(width+20,27)))
 		draw_string(font,at-Vector2(width*0.5,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color(1.0,0.90,0.65,fade))
+
+# Each chapter has its own small set of animated, nonblocking scenic props.
+func _draw_woodland_prop(prop: Dictionary) -> void:
+	var at := _project(prop.pos)
+	var sway := sin(elapsed*1.2+float(prop.phase))*3.0 if not quieter_motion else 0.0
+	_shadow(at,29)
+	match prop.kind:
+		"ribbon":
+			for side in [-1.0,1.0]:
+				draw_line(at+Vector2(side*34,0),at+Vector2(side*28,-86),Color("#73665a"),5,true)
+			draw_arc(at+Vector2(0,-91),31,0,PI,20,Color("#bda984"),3,true)
+			for i in range(5):
+				var tip := at+Vector2(-26+i*13,-82+sway*float(i%2))
+				draw_colored_polygon(PackedVector2Array([tip,tip+Vector2(8,1),tip+Vector2(4,17)]),Color("#dbb887") if i%2 else Color("#88b8bb"))
+		"mushroom":
+			for i in range(3):
+				var foot := at+Vector2((i-1)*22,abs(i-1)*6)
+				var h := 35.0+float(i%2)*18.0
+				draw_line(foot,foot-Vector2(0,h),Color("#cfb9ab"),7,true)
+				var cap := foot-Vector2(0,h)
+				_disc(cap,19 if i==1 else 14,Color("#8b80ad"))
+				draw_arc(cap,15 if i==1 else 11,PI,TAU,16,Color("#c4abdb"),4,true)
+				_disc(cap+Vector2(-5,-4),2.5,Color("#f2dfaa"))
+		"lily":
+			for i in range(3):
+				var pad := at+Vector2((i-1)*24,i%2*12)
+				draw_set_transform(pad,0,Vector2(1,0.45))
+				_disc(Vector2.ZERO,19,Color("#548e88"))
+				draw_arc(Vector2.ZERO,19,0.2,TAU-0.4,20,Color("#86b3a0"),2,true)
+				draw_set_transform(Vector2.ZERO)
+				if i==1: _woodland_flower(pad-Vector2(0,7+sway*0.3),Color("#ebcbdd"),8)
+		"orrery":
+			var center := at-Vector2(0,53+sway)
+			draw_line(at,center+Vector2(0,15),Color("#9a91a8"),5,true)
+			draw_arc(center,30,0,TAU,32,Color("#bbab83"),2,true)
+			draw_set_transform(center,-0.6,Vector2(1,0.45))
+			draw_arc(Vector2.ZERO,39,0,TAU,32,Color("#b4bce5"),2,true)
+			draw_set_transform(Vector2.ZERO)
+			_draw_halo(center,47,Color("#b4bce5"),1.6)
+			for i in range(3):
+				var angle := float(i)*TAU/3.0+(elapsed*0.4 if not quieter_motion else 0.0)
+				_disc(center+Vector2(30,0).rotated(angle),4,Color("#fff0bb"))
+		"garden_arch":
+			for side in [-1.0,1.0]: draw_line(at+Vector2(side*34,0),at+Vector2(side*34,-69),Color("#7b9c86"),5,true)
+			draw_arc(at-Vector2(0,69),34,PI,TAU,24,Color("#7b9c86"),5,true)
+			for i in range(7):
+				var angle := PI+float(i)*PI/6.0
+				_woodland_flower(at-Vector2(0,69)+Vector2(34,0).rotated(angle),Color("#e4b8c9") if i%2 else Color("#b8d5bc"),6)
+
+func _woodland_flower(at: Vector2, tint: Color, radius: float) -> void:
+	for i in range(5): _disc(at+Vector2(radius*0.65,0).rotated(float(i)*TAU/5.0),radius*0.5,tint)
+	_disc(at,radius*0.3,Color("#ffe9b4"))
+
+func _draw_woodland_air() -> void:
+	var clock := 0.0 if quieter_motion else elapsed
+	for creature in ambience.nearby_creatures():
+		var phase: float = creature.phase
+		var at := _project(creature.home)+Vector2(sin(clock*0.7+phase)*23,-29+cos(clock*1.1+phase)*9)
+		if not _visible(at,20): continue
+		var responding: bool = ambience.response>0 and creature.home.distance_to(player)<5
+		var wing := 2.0+absf(sin(clock*9.0+phase))*3.0
+		match level_index:
+			0:
+				var alpha := 0.35+(sin(clock*2.0+phase)+1.0)*0.22
+				_disc(at,2.1,Color(1.0,0.89,0.57,alpha))
+				if responding: _draw_halo(at,17,Color("#ffe8a9"),2.0)
+			1,4:
+				var tint := Color("#c8b7ec") if level_index==1 else Color("#f1becd")
+				_disc(at+Vector2(-wing,0),wing,tint)
+				_disc(at+Vector2(wing,0),wing,tint)
+				draw_line(at+Vector2(0,-3),at+Vector2(0,4),Color("#ffe6ad"),1.5,true)
+			2:
+				var ripple := fmod(clock*0.45+phase,1.0)
+				var water := _project(creature.home)+Vector2(0,8)
+				draw_set_transform(water,0,Vector2(1,0.4))
+				draw_arc(Vector2.ZERO,8+ripple*23,0,TAU,24,Color(0.65,0.88,0.91,(1-ripple)*0.3),1,true)
+				draw_set_transform(Vector2.ZERO)
+				if int(creature.index)%4==0:
+					var hop := maxf(0,sin(clock*1.8+phase))*8.0
+					var frog := water-Vector2(0,hop+8)
+					_disc(frog,5,Color("#8eb68c"))
+					for side in [-1.0,1.0]: _disc(frog+Vector2(side*3,-3),2,Color("#e9e6bb"))
+			3:
+				var radius := 3.0+(sin(clock+phase)+1)*0.7
+				draw_line(at-Vector2(radius,0),at+Vector2(radius,0),Color("#d2d5fa"),1.5,true)
+				draw_line(at-Vector2(0,radius),at+Vector2(0,radius),Color("#d2d5fa"),1.5,true)
+		if responding and level_index!=0: draw_arc(at,11,0,TAU,16,Color(1,0.91,0.69,0.35),1,true)
+	if level_index==3 and not quieter_motion:
+		var flight := fmod(elapsed,8.0)
+		if flight<1.0:
+			var star := Vector2(size.x*0.15+flight*size.x*0.55,190+flight*90)
+			draw_line(star-Vector2(44,7),star,Color(0.79,0.83,1,(1-flight)*0.45),2,true)
+			_disc(star,2.5,Color("#fff4cf"))
+	if level_index==4 and quest_done:
+		var center := _project(_station())-Vector2(0,85)
+		for i in range(3):
+			var rise := fmod(clock*0.22+float(i)/3.0,1.0)
+			var note := center+Vector2(sin(rise*TAU+float(i))*24,-rise*55)
+			draw_line(note,note-Vector2(0,13),Color(1,0.90,0.66,1-rise),1.5,true)
+			_disc(note-Vector2(2,0),3,Color(1,0.90,0.66,1-rise))
+	if celebration>0:
+		var at := _project(player)-Vector2(0,70)
+		for i in range(8):
+			var angle := float(i)*TAU/8.0
+			var radius := 38.0 if quieter_motion else 24.0+(2.5-celebration)*22.0
+			var spark := at+Vector2(radius,0).rotated(angle)
+			_disc(spark,3,Color(1,0.89,0.62,minf(1,celebration)))
+
+# A shared antialiased disc lets petals, shadows and motes batch as textured quads.
+var disc_texture: GradientTexture2D
+func _disc(at: Vector2, radius: float, tint: Color) -> void:
+	if disc_texture == null:
+		disc_texture = GradientTexture2D.new()
+		disc_texture.width = 64
+		disc_texture.height = 64
+		disc_texture.fill = GradientTexture2D.FILL_RADIAL
+		disc_texture.fill_from = Vector2(0.5,0.5)
+		disc_texture.fill_to = Vector2(1.0,0.5)
+		var gradient := Gradient.new()
+		gradient.offsets = PackedFloat32Array([0.0,0.92,1.0])
+		gradient.colors = PackedColorArray([Color.WHITE,Color.WHITE,Color(1,1,1,0)])
+		disc_texture.gradient = gradient
+	draw_texture_rect(disc_texture,Rect2(at-Vector2.ONE*radius,Vector2.ONE*radius*2),false,tint)

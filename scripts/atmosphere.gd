@@ -25,7 +25,7 @@ func _ready() -> void:
 	falloff.fill = GradientTexture2D.FILL_RADIAL
 	falloff.fill_from = Vector2(0.5,0.5)
 	falloff.fill_to = Vector2(1,0.5)
-	for i in range(12):
+	for i in range(5):
 		var light := PointLight2D.new()
 		light.texture = falloff
 		light.texture_scale = 1.0
@@ -129,7 +129,7 @@ func _process(_dt: float) -> void:
 	sources.sort_custom(func(a,b): return a.at.distance_squared_to(player_light.position)<b.at.distance_squared_to(player_light.position))
 	var li := 1
 	for source in sources:
-		if li >= lights.size(): break
+		if li >= [2,3,5][game.graphics_quality]: break
 		if not game._visible(source.at,180): continue
 		lights[li].enabled = true
 		lights[li].position = source.at
@@ -138,9 +138,15 @@ func _process(_dt: float) -> void:
 		lights[li].texture_scale = 0.78
 		li += 1
 	var oi := 0
-	for tree in game.trees:
+	for tree in game.visible_trees:
+		if game.graphics_quality < 2: break
 		if tree.pos.distance_squared_to(game.player) > 20: continue
 		if oi >= occluders.size(): break
 		occluders[oi].visible = true
 		occluders[oi].position = game._project(tree.pos)
 		oi += 1
+
+func apply_quality(index: int) -> void:
+	if lights.is_empty(): return
+	lights[0].shadow_enabled = index == 2
+	motes.amount = [12,24,40][index]

@@ -1,0 +1,52 @@
+{
+  "engine": "4.7.2-stable (official)",
+  "quality": "0",
+  "size": "(1280.0, 720.0)",
+  "views": [
+    {
+      "chapter": 1,
+      "last_draw_cpu_ms": 1.391,
+      "mean_draw_calls": 295.0,
+      "median_ms": 3.706,
+      "p95_ms": 4.669,
+      "texture_mib": 99.7168493270874,
+      "visible_trees": 113
+    },
+    {
+      "chapter": 2,
+      "last_draw_cpu_ms": 1.968,
+      "mean_draw_calls": 365.0,
+      "median_ms": 4.234,
+      "p95_ms": 5.731,
+      "texture_mib": 99.8001832962036,
+      "visible_trees": 108
+    },
+    {
+      "chapter": 3,
+      "last_draw_cpu_ms": 1.584,
+      "mean_draw_calls": 258.0,
+      "median_ms": 3.5,
+      "p95_ms": 4.601,
+      "texture_mib": 99.8001832962036,
+      "visible_trees": 80
+    },
+    {
+      "chapter": 4,
+      "last_draw_cpu_ms": 1.011,
+      "mean_draw_calls": 187.0,
+      "median_ms": 3.358,
+      "p95_ms": 4.97,
+      "texture_mib": 99.9251832962036,
+      "visible_trees": 51
+    },
+    {
+      "chapter": 5,
+      "last_draw_cpu_ms": 1.153,
+      "mean_draw_calls": 132.0,
+      "median_ms": 3.53,
+      "p95_ms": 4.325,
+      "texture_mib": 99.9251832962036,
+      "visible_trees": 20
+    }
+  ]
+}

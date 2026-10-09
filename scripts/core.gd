@@ -43,6 +43,17 @@ const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8
 var ui_canvas: CanvasLayer
 var atmosphere: Node2D
 var light_trails: RefCounted
+var ground_layer: ColorRect
+var graphics_quality := 1
+var relief_material: ShaderMaterial
+var tree_render_chunks: Dictionary = {}
+var visible_trees: Array = []
+var visibility_camera := Vector2(INF,INF)
+var visibility_size := Vector2.ZERO
+var render_cpu_us := 0
+var ambience: RefCounted
+var celebration := 0.0
+var foot_dust := 0.0
 
 var tex: Dictionary = {}
 var chapter_stories: Array = []
@@ -120,6 +131,7 @@ var modal_primary: Button
 var modal_secondary: Button
 var options_music: CheckButton
 var options_motion: CheckButton
+var options_quality: OptionButton
 var menu_audio: AudioStreamPlayer
 var game_audio: AudioStreamPlayer
 
@@ -145,7 +157,7 @@ func _resume() -> void:
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
-	for name in ["forest","level-2","level-3","level-4","level-5","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-pip","npc-bramble","npc-moss","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
+	for name in ["forest","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-rig-22","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
 		tex[name] = load("res://assets/%s.png" % name)
 	var file := FileAccess.open("res://story-24.json", FileAccess.READ)
 	if file:
@@ -160,9 +172,13 @@ func _ready() -> void:
 	atmosphere = load("res://scripts/atmosphere.gd").new()
 	atmosphere.game = self
 	add_child(atmosphere)
-	var surface := ShaderMaterial.new()
-	surface.shader = load("res://shaders/stitched_surface.gdshader")
-	material = surface
+	relief_material = ShaderMaterial.new()
+	relief_material.shader = load("res://shaders/stitched_surface.gdshader")
+	ambience = load("res://scripts/woodland_flourishes.gd").new()
+	ground_layer = load("res://scripts/woodland_ground.gd").new()
+	ground_layer.game = self
+	add_child(ground_layer)
+	set_graphics_quality(graphics_quality)
 	menu_audio = _music("menu-music")
 	game_audio = _music("gameplay-music")
 	_set_state("menu")
@@ -210,6 +226,13 @@ func _curve(x: float) -> float:
 	return 0.0
 
 func _clearing_radius(x: float) -> float:
+	# Give the new scenic stops real breathing room between the canopies.
+	if level_index in [0,1]:
+		for stop in [12.0,26.0,40.0,54.0]:
+			if absf(x-stop)<3.2: return 6.8
+	if level_index == 2:
+		for stop in [16.0,29.0,43.0,55.0]:
+			if absf(x-stop)<3.4: return 8.4
 	match level_index:
 		0: return 3.6
 		1: return 3.5 + maxf(0.0, sin(x * 0.20)) * 3.2
@@ -298,6 +321,11 @@ func start_level(index: int) -> void:
 	npcs.clear()
 	bats.clear()
 	tree_cells.clear()
+	tree_render_chunks.clear()
+	visible_trees.clear()
+	visibility_camera = Vector2(INF,INF)
+	celebration = 0.0
+	foot_dust = 0.0
 	var level: Dictionary = BASE_LEVELS[level_index]
 	var n: int = level["size"]
 	var exit_pos := _exit()
@@ -310,6 +338,9 @@ func start_level(index: int) -> void:
 			if level_index == 4 and (x % 3 == 1 or y % 3 == 1): continue
 			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
 			trees.append(t)
+			var chunk := Vector2i(floori(p.x/8.0),floori(p.y/8.0))
+			if not tree_render_chunks.has(chunk): tree_render_chunks[chunk] = []
+			tree_render_chunks[chunk].append(t)
 			var cell := Vector2i(int(floor(p.x)), int(floor(p.y)))
 			if not tree_cells.has(cell): tree_cells[cell] = []
 			tree_cells[cell].append(p)
@@ -335,7 +366,13 @@ func start_level(index: int) -> void:
 			for info in [["Star",-12,1],["Moon",-8,0],["Heart",-4,2]]:
 				var rx: float = float(n + info[1])
 				runes.append({"name":info[0], "pos":Vector2(rx,_path_y(rx)), "order":info[2], "lit":false})
+	for npc in npcs:
+		npc["facing"] = 1.0
+		npc["greeting"] = 0.0
+		npc["reaction"] = 0.0
+		npc["near_before"] = false
 	light_trails.build(self)
+	ambience.build(self)
 	_set_state("play")
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
@@ -378,10 +415,9 @@ func _process(dt: float) -> void:
 			glow_buffer = maxf(0.0, glow_buffer-dt)
 			if cooldown <= 0: glow()
 		invulnerable = maxf(0, invulnerable - dt)
-		for npc in npcs:
-			var near: bool = player.distance_to(npc.home) < 4.0
-			var wander := Vector2(sin(elapsed * 0.7 + npc.home.x), cos(elapsed * 0.9 + npc.home.x)) * (0.18 if near else 0.38)
-			npc.pos = npc.home if quieter_motion else npc.home + wander
+		_update_npc_animation(dt)
+		ambience.update(dt)
+		celebration = maxf(0.0,celebration-dt)
 		_update_collectibles()
 		_update_bats(dt)
 		if level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS and key_collected:
@@ -403,15 +439,19 @@ func _process(dt: float) -> void:
 	var focus := player + camera_lead
 	var camera_target := size * Vector2(0.5, 0.55) - Vector2((focus.x-focus.y)*tile,(focus.x+focus.y)*tile*0.49)
 	camera = camera_target if quieter_motion else camera.lerp(camera_target,1.0-exp(-dt*7.0))
-	for i in range(particles.size()-1, -1, -1):
-		particles[i].life -= dt
-		if particles[i].life <= 0: particles.remove_at(i)
+	if state == "play":
+		for i in range(particles.size()-1, -1, -1):
+			particles[i].life -= dt
+			if particles[i].life <= 0: particles.remove_at(i)
+	_refresh_visible_trees()
+	ground_layer.sync()
 	queue_redraw()
 
 func _update_collectibles() -> void:
 	if level_index == 0:
 		if key_revealed and not key_collected and player.distance_to(_key_location()) < 1.15:
 			key_collected = true
+			celebration = 1.2
 			_burst(_key_location())
 			show_toast("The brass key is yours! Follow the lanterns to the woodland door.", 4)
 	else:
@@ -447,6 +487,9 @@ func glow() -> void:
 	pulse = GLOW_TIME
 	_burst(player)
 	light_trails.shine()
+	ambience.react_to_glow()
+	for npc in npcs:
+		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
 		key_revealed = true
 		quest_started = true
@@ -484,6 +527,7 @@ func interact() -> void:
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]
 		npc.met = true
+		npc.reaction = 1.6
 		if npc.id == "moss" and level_index == 0: quest_started = true
 		if level_index > 0: quest_started = true
 		_show_dialog("%s · Woodland Neighbour" % npc.name, _guide_text(npc.id), "KEEP EXPLORING", "", "resume")
@@ -524,6 +568,7 @@ func _nearest_npc() -> int:
 
 func _finish_quest() -> void:
 	quest_done = true
+	celebration = 2.5
 	navigation = null # Rebuild navigation when the bridge opens.
 	_burst(_station())
 	show_toast("Quest complete! Follow the lantern path.", 4.0)
@@ -543,7 +588,8 @@ func _complete_chapter() -> void:
 		_show_story()
 
 func _burst(location: Vector2) -> void:
-	for i in range(22 if not quieter_motion else 5):
+	for i in range((12 if graphics_quality == 0 else 20) if not quieter_motion else 5):
+		if particles.size() >= 96: break
 		var a := float(i) * TAU / 22.0
 		particles.append({"pos":location, "offset":Vector2(cos(a), sin(a)), "life":0.9, "max":0.9})
 
@@ -646,6 +692,11 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	if absf(actual.x-actual.y) > 0.15: facing = signf(actual.x-actual.y)
 	body_lean = lerpf(body_lean, clampf((actual.x-actual.y)/SPEED, -1.0, 1.0)*0.045, 1.0-exp(-dt*12.0))
 	foot_time += before.distance_to(player) * 5.0
+	foot_dust += before.distance_to(player)
+	if foot_dust > 0.65:
+		foot_dust = 0.0
+		if not quieter_motion and particles.size() < 96:
+			particles.append({"pos":player,"offset":Vector2(-0.2,0.2),"life":0.5,"max":0.5,"kind":"dust"})
 	if has_destination and actual.length() < 0.01:
 		stuck_time += dt
 		if stuck_time > 0.5:
@@ -733,3 +784,42 @@ func _unproject(p: Vector2) -> Vector2:
 	var b := (p.y-camera.y)/(tile*0.49)
 	return Vector2((a+b)*0.5,(b-a)*0.5)
 
+
+func set_graphics_quality(index: int) -> void:
+	graphics_quality = clampi(index,0,2)
+	material = relief_material if graphics_quality == 2 else null
+	if atmosphere != null: atmosphere.apply_quality(graphics_quality)
+	queue_redraw()
+
+func _update_npc_animation(dt: float) -> void:
+	for npc in npcs:
+		var near: bool = player.distance_to(npc.home) < 4.5
+		if near and not npc.near_before: npc.greeting = 1.8
+		npc.near_before = near
+		npc.greeting = maxf(0.0,float(npc.greeting)-dt)
+		npc.reaction = maxf(0.0,float(npc.reaction)-dt)
+		var screen_side: float = (player.x-player.y)-(npc.home.x-npc.home.y)
+		if near and absf(screen_side)>0.45: npc.facing = signf(screen_side)
+		var wander := Vector2(sin(elapsed*0.7+npc.home.x),cos(elapsed*0.9+npc.home.x))*(0.12 if near else 0.28)
+		npc.pos = npc.home if quieter_motion else npc.home+wander
+
+func _refresh_visible_trees() -> void:
+	if state not in ["play","dialog","win"]: return
+	if camera.distance_squared_to(visibility_camera)<64.0 and size == visibility_size: return
+	visibility_camera = camera
+	visibility_size = size
+	visible_trees.clear()
+	var pad := tile*5.5
+	var corners := [_unproject(Vector2(-pad,-pad)),_unproject(Vector2(size.x+pad,-pad)),_unproject(Vector2(-pad,size.y+pad)),_unproject(size+Vector2(pad,pad))]
+	var low := Vector2(INF,INF)
+	var high := Vector2(-INF,-INF)
+	for p in corners:
+		low = low.min(p)
+		high = high.max(p)
+	for x in range(floori(low.x/8.0),floori(high.x/8.0)+1):
+		for y in range(floori(low.y/8.0),floori(high.y/8.0)+1):
+			for tree in tree_render_chunks.get(Vector2i(x,y),[]):
+				var at := _project(tree.pos)
+				var height: float = tile*3.9*float(tree["size"])
+				if at.x>-tile*1.8 and at.x<size.x+tile*1.8 and at.y>-20 and at.y<size.y+height+20:
+					visible_trees.append(tree)

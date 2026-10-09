@@ -76,7 +76,7 @@ func _build_ui() -> void:
 	var menu_col := VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",16)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ A MOONLIT ADVENTURE ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ LIVING WOODLANDS · v0.5 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",42)
 	_label(menu_col,"Quest to Find Ira",28,Color("#fedbb3"))
 	var avatar := TextureRect.new()
@@ -213,8 +213,18 @@ func _build_ui() -> void:
 	options_motion.text = "Gentler motion"
 	options_motion.button_pressed = quieter_motion
 	options_motion.visible = false
+	if options_quality != null: options_quality.visible = false
 	dcol.add_child(options_motion)
 	options_motion.toggled.connect(func(yes: bool): quieter_motion = yes)
+	options_quality = OptionButton.new()
+	options_quality.add_item("Graphics: Light")
+	options_quality.add_item("Graphics: Balanced")
+	options_quality.add_item("Graphics: Rich")
+	options_quality.selected = graphics_quality
+	options_quality.visible = false
+	dcol.add_child(options_quality)
+	options_quality.item_selected.connect(set_graphics_quality)
+
 	var drow := HBoxContainer.new()
 	drow.alignment = BoxContainer.ALIGNMENT_CENTER
 	drow.add_theme_constant_override("separation",12)
@@ -282,6 +292,7 @@ func _show_dialog(title: String, body: String, primary: String, secondary: Strin
 	dialog_from = action
 	options_music.visible = false
 	options_motion.visible = false
+	if options_quality != null: options_quality.visible = false
 	modal_heading.text = title
 	modal_text.text = body
 	modal_primary.text = primary
@@ -312,6 +323,8 @@ func _open_options() -> void:
 	options_motion.button_pressed = quieter_motion
 	options_music.visible = true
 	options_motion.visible = true
+	options_quality.selected = graphics_quality
+	options_quality.visible = true
 
 func _toggle_music(enabled: bool) -> void:
 	music_enabled = enabled
