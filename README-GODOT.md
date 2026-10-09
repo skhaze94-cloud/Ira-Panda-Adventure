@@ -1,27 +1,55 @@
-# Ira the Panda Adventure — Godot 4 port (v0.1)
+# Ara the Panda: Quest to Find Ira — Godot v0.2
 
-Isolated branch **godot-4-port-v0.1**, based on the latest 2.4 Storybook. The HTML game is preserved on main.
+**Moonlight & Woodland Depth** upgrades all five chapters from the supplied
+Godot v0.1 project, with native lights and shadows, textured relief shading,
+moonlit mist, motes, livelier characters and a corrected panda arm rig.
 
-## Open
-In Godot 4.3+, import project.godot and run the project. It uses the WebP images, MP3 music and story-24.json already in this repository.
+## Open and play
 
-## Controls
-- WASD or arrow keys: Move
-- Space: Lantern glow
-- E: Interact and talk
-- Escape: Pause
-- On-screen directional pad, GLOW / INTERACT, or tap-to-walk
+1. Use Godot **4.3 or newer**, with the **Compatibility** renderer.
+2. Extract this ZIP. Import `project.godot` in Godot Project Manager.
+3. Allow the image/audio imports to finish, then press **F5**.
 
-## Scope
-Five storybook chapters, woodland key, scroll, bridge, stars, moonflower quests, 2.4 comic transitions, Godot native rendering/UI and character animation.
+| Action | Keyboard | Touch / mouse |
+|---|---|---|
+| Move | WASD / arrows | Direction buttons or tap the path |
+| Lantern | Space | GLOW |
+| Talk / interact | E | INTERACT / TALK near a guide or quest station |
+| Pause | Escape | Pause button |
+| Story | Enter / Space | Next Page / Skip |
 
-## Source structure
-- `scripts/core.gd` — GDScript quest logic, gameplay, map generation and controls
-- `scripts/render.gd` — isometric textured renderer and character animations
-- `scripts/main.gd` — menu, storybook, HUD and touch UI
-- `scenes/main.tscn` — Godot entry scene
-- `assets/` and `story-24.json` — original 2.4 Storybook media and script data
+Options include music and Reduced Motion. All five quests and the original
+storybook panels remain included. Ara is the panda; Ira is her pillowcase sister.
 
-**Status:** First native port candidate. Godot editor/runtime and mobile export testing have not yet been completed. The `main` branch has been left unchanged.
+## What's new
 
-This is a first port and needs Godot editor/runtime testing. Do not merge to main until tested.
+- Native player and woodland lantern lighting, including filtered trunk shadows.
+- Gentle texture relief, soft contact shadows, drifting mist and moonbeams.
+- Chapter-specific ground details, atmosphere and quest-object lights.
+- Visible brook, repair materials before bridge completion and repaired crossing.
+- Whole-rig mirroring and better shoulder attachment; the light follows the arm.
+- NPC wandering/leaning, canopy sway, floating motes and smooth camera following.
+- Continuous decorative ground at map edges and fixes for Godot 4.3 load errors.
+
+See `REVIEW-V0.2.md` for the chapter-by-chapter review and validation limits.
+This is a native **2D** Godot project with stylized depth, not a 3D mesh conversion.
+Original bitmap artwork is retained; shaders enhance its lighting and texture.
+
+## Developer checks
+
+```sh
+godot --headless --path . --editor --import --quit
+godot --headless --path . --script res://tests/smoke.gd
+```
+
+`tests/capture.gd` needs a real rendering display and writes chapter images to
+`user://v02-captures` inside Godot's application data folder. Run it with:
+
+```sh
+godot --path . --script res://tests/capture.gd
+```
+
+The tests passed on Godot 4.3. Mobile exports, physical touch controls, audio
+playback and target-device performance still need a device playtest.
+
+GitHub branch: `godot-4-v0.2-moonlight-depth`. The browser game remains on `main`.

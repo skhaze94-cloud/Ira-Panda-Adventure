@@ -68,7 +68,7 @@ func _center(control: Control, width_percent: float, height_percent: float) -> v
 func _build_ui() -> void:
 	menu_layer = Control.new()
 	menu_layer.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(menu_layer)
+	ui_canvas.add_child(menu_layer)
 	_fill(menu_layer)
 	var menu_card := _panel(menu_layer,Color(0.05,0.12,0.17,0.91),28)
 	_center(menu_card,0.52,0.75)
@@ -90,7 +90,7 @@ func _build_ui() -> void:
 	_button(menu_col,"CREDITS",func(): _show_dialog("Made with moonlight", "Ara and Ira's artwork, five original woodland chapters, and the music from the 2.4 Storybook edition.\n\nGodot conversion: native GDScript, Godot Controls, 2D CanvasItem, and input handling.","BACK", "", "menu"),Vector2(190,46))
 
 	story_layer = Control.new()
-	add_child(story_layer)
+	ui_canvas.add_child(story_layer)
 	_fill(story_layer)
 	var comic_card := _panel(story_layer,Color(0.055,0.095,0.16,0.96),25)
 	_center(comic_card,0.72,0.91)
@@ -118,7 +118,7 @@ func _build_ui() -> void:
 
 	hud_layer = Control.new()
 	hud_layer.mouse_filter = Control.MOUSE_FILTER_PASS
-	add_child(hud_layer)
+	ui_canvas.add_child(hud_layer)
 	_fill(hud_layer)
 	var title_plate := _panel(hud_layer,Color(0.06,0.14,0.19,0.86),16)
 	title_plate.anchor_left = 0.02
@@ -184,7 +184,7 @@ func _build_ui() -> void:
 	toast_label.visible = false
 
 	modal_layer = Control.new()
-	add_child(modal_layer)
+	ui_canvas.add_child(modal_layer)
 	_fill(modal_layer)
 	var dim := ColorRect.new()
 	dim.color = Color(0,0,0,0.62)

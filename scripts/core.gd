@@ -1,5 +1,6 @@
 extends Control
-## Native Godot 4 port of Ira Panda Adventure 2.4 Storybook.
+## Godot 4 native reimplementation of the v2.4 browser game.
+## Source reference: game.js and story-24.json; never evaluates JavaScript or embeds a webview.
 
 const SPEED := 2.3
 const GLOW_TIME := 1.05
@@ -35,6 +36,9 @@ const DECOR_RECTS = [[0,0,385,512],[384,125,405,375],[790,175,435,345],[1230,35,
 const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,432,362],[625,551,286,433],[1118,568,323,400],[75,1065,361,429],[582,1078,372,404],[1127,1079,306,401]]
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
+
+var ui_canvas: CanvasLayer
+var atmosphere: Node2D
 
 var tex: Dictionary = {}
 var chapter_stories: Array = []
@@ -104,7 +108,11 @@ var options_motion: CheckButton
 var menu_audio: AudioStreamPlayer
 var game_audio: AudioStreamPlayer
 
-# Virtual UI hooks overridden by scripts/main.gd.
+# Virtual UI hooks are overridden by scripts/main.gd. Declaring them in the base
+# lets Godot statically resolve callbacks from the gameplay layer.
+func _story_advance() -> void:
+	pass
+
 func _build_ui() -> void:
 	pass
 
@@ -129,7 +137,16 @@ func _ready() -> void:
 		var parsed = JSON.parse_string(file.get_as_text())
 		if parsed is Array:
 			chapter_stories = parsed
+	ui_canvas = CanvasLayer.new()
+	ui_canvas.layer = 10
+	add_child(ui_canvas)
 	_build_ui()
+	atmosphere = load("res://scripts/atmosphere.gd").new()
+	atmosphere.game = self
+	add_child(atmosphere)
+	var surface := ShaderMaterial.new()
+	surface.shader = load("res://shaders/stitched_surface.gdshader")
+	material = surface
 	menu_audio = _music("menu-music")
 	game_audio = _music("gameplay-music")
 	_set_state("menu")
@@ -203,6 +220,8 @@ func _key_trail(p: Vector2) -> bool:
 func start_level(index: int) -> void:
 	level_index = clampi(index, 0, 4)
 	player = Vector2(2, _path_y(2))
+	tile = clampf(size.x / 20.0,38,58)
+	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
 	walk_dir = Vector2.ZERO
 	has_destination = false
 	mobile_axis = Vector2.ZERO
@@ -254,11 +273,11 @@ func start_level(index: int) -> void:
 			npcs.append({"id":npc[0], "name":npc[1], "pos":Vector2(npc[2], _path_y(npc[2]) + npc[3]), "home":Vector2(npc[2], _path_y(npc[2]) + npc[3]), "met":false})
 		lanterns.append({"pos":Vector2(24.2, _path_y(24) + 1.9), "variant":1, "blue":true, "phase":0.0})
 	else:
-		var guide_name := ["","Pip","Bramble","Moss","Pip"][level_index]
-		var gid := guide_name.to_lower()
+		var guide_name: String = ["","Pip","Bramble","Moss","Pip"][level_index]
+		var gid: String = guide_name.to_lower()
 		npcs.append({"id":gid, "name":guide_name, "pos":Vector2(5, _path_y(5) + 0.65), "home":Vector2(5, _path_y(5) + 0.65), "met":false})
 		for i in range(3):
-			var x := 2.0 + float(n - 5) * [0.22, 0.48, 0.72][i]
+			var x: float = 2.0 + float(n - 5) * [0.22, 0.48, 0.72][i]
 			marks.append({"pos":Vector2(x, _path_y(x) + (2.35 if i % 2 else -2.35)), "lit":false, "revealed":level_index != 1, "index":i})
 		if level_index == 3:
 			for info in [["Star",-12,1],["Moon",-8,0],["Heart",-4,2]]:
@@ -290,7 +309,10 @@ func _walk(d: Vector2) -> void:
 	if not _blocked(ny): player.y = ny.y
 
 func _process(dt: float) -> void:
-	elapsed += dt
+	if state == "play" or state == "menu" or state == "comic": elapsed += dt
+	tile = clampf(size.x / 20.0, 38, 58)
+	var camera_target := size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
+	camera = camera_target if quieter_motion else camera.lerp(camera_target,1.0-exp(-dt*9.0))
 	if state == "play":
 		var axis := mobile_axis
 		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): axis.y -= 1
@@ -314,6 +336,10 @@ func _process(dt: float) -> void:
 		cooldown = maxf(0, cooldown - dt)
 		pulse = maxf(0, pulse - dt)
 		invulnerable = maxf(0, invulnerable - dt)
+		for npc in npcs:
+			var near: bool = player.distance_to(npc.home) < 4.0
+			var wander := Vector2(sin(elapsed * 0.7 + npc.home.x), cos(elapsed * 0.9 + npc.home.x)) * (0.18 if near else 0.38)
+			npc.pos = npc.home if quieter_motion else npc.home + wander
 		_update_collectibles()
 		_update_bats(dt)
 		if level_index == 0 and player.distance_to(_exit()) < 1.8 and key_collected:
@@ -472,7 +498,7 @@ func _update_hud() -> void:
 	if level_index == 0:
 		hud_objective.text = "Quest 1 · " + ("Open the woodland door" if key_collected else "Collect the shimmering key" if key_revealed else "Search the birches near the blue lantern" if quest_started else "Meet your woodland neighbours")
 	else:
-		var verb := ["", "Collect moon-scroll pages", "Collect driftwood", "Collect star crystals", "Wake moonflowers"][level_index]
+		var verb: String = ["", "Collect moon-scroll pages", "Collect driftwood", "Collect star crystals", "Wake moonflowers"][level_index]
 		hud_objective.text = ("Quest complete · Follow the lantern path" if quest_done else "Quest %d · %s · %d / 3" % [level_index + 1, verb, quest_count] if quest_count < 3 else "Glow: Moon → Star → Heart" if level_index == 3 else "Use the quest station near the end of the path")
 
 func show_toast(message: String, duration: float = 3.0) -> void:
@@ -515,3 +541,4 @@ func _unproject(p: Vector2) -> Vector2:
 	var a := (p.x-camera.x)/tile
 	var b := (p.y-camera.y)/(tile*0.49)
 	return Vector2((a+b)*0.5,(b-a)*0.5)
+
