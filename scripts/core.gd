@@ -104,6 +104,22 @@ var options_motion: CheckButton
 var menu_audio: AudioStreamPlayer
 var game_audio: AudioStreamPlayer
 
+# Virtual UI hooks overridden by scripts/main.gd.
+func _build_ui() -> void:
+	pass
+
+func _show_dialog(_title: String, _body: String, _primary: String, _secondary: String, _action: String) -> void:
+	pass
+
+func _show_story() -> void:
+	pass
+
+func _pause() -> void:
+	pass
+
+func _resume() -> void:
+	pass
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	for name in ["forest","level-2","level-3","level-4","level-5","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-pip","npc-bramble","npc-moss","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
