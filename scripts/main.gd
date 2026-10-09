@@ -85,7 +85,7 @@ func _build_ui() -> void:
 	avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	menu_col.add_child(avatar)
 	_label(menu_col,"Five little chapters. One very big hug.",18)
-	_button(menu_col,"START ADVENTURE",func(): story_chapter = -1; story_page = 0; _show_story(),Vector2(220,56))
+	_button(menu_col,"START ADVENTURE",_start_intro,Vector2(220,56))
 	_button(menu_col,"OPTIONS",_open_options,Vector2(190,46))
 	_button(menu_col,"CREDITS",func(): _show_dialog("Made with moonlight", "Ara and Ira's artwork, five original woodland chapters, and the music from the 2.4 Storybook edition.\n\nGodot conversion: native GDScript, Godot Controls, 2D CanvasItem, and input handling.","BACK", "", "menu"),Vector2(190,46))
 
@@ -235,6 +235,11 @@ func _direction_button(symbol: String, offset: Vector2, vector: Vector2) -> void
 		if button.button_pressed:
 			mobile_axis -= vector
 	)
+
+func _start_intro() -> void:
+	story_chapter = -1
+	story_page = 0
+	_show_story()
 
 func _show_story() -> void:
 	_set_state("comic")
