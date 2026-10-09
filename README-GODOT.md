@@ -1,18 +1,18 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.3 — Graphical Masterclass
+# Ara the Panda: Quest to Find Ira — Godot v0.4 — Little Talks, Big Adventure
 
-This graphical edition lives on `godot-4-v0.3-graphical-masterclass` and builds
-on the current Living Woodlands source (`dd7d48d`). It preserves the five quests,
-lantern discoveries, articulated NPCs, navigation, chapter scenery and music.
+The quest and captions edition is on `godot-4-v0.4-quests-and-captions`, built
+on v0.3 (`deb7f8a`). All five quests, stories, discoveries, character rigs,
+movement, scenery, music and graphical effects remain included.
 
-New terrain detail, animated reflective water, shaded foliage, a shared panda
-animation frame, unfolding lantern blooms, canopy shafts and quality-scaled
-colour grading/glow are described in [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md).
-Balanced remains the default. Rich includes native lantern shadows, painted
-surface relief and the highlight glow pass. Light omits the screen finish and
-fine terrain grain. Gentler Motion freezes water, rays and botanical motion.
+NPC conversations now use one speaker portrait and one short caption at a time.
+Tap the caption or press **Space / Enter / E** to reveal it, then advance. Use
+**Back to Woods / Escape** to leave a conversation. Gameplay pauses while talking.
+Discovery captions can be tapped to continue or dismiss. Gentler Motion reveals
+text instantly and stops portrait movement and fades.
 
-The older [PERFORMANCE-V0.5.md](PERFORMANCE-V0.5.md) records the inherited
-renderer baseline; its numbers are not measurements of this graphical edition.
+[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) describes the dialogue, responsive
+layout and tests. [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) records the
+inherited v0.3 graphical work. Balanced remains the default graphics setting.
 
 ## Open and play
 

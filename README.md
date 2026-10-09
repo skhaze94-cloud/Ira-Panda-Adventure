@@ -1,30 +1,25 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.3
+# Ara the Panda: Quest to Find Ira — Godot v0.4
 
-**Graphical Masterclass** is a visual and animation edition of the five-chapter
-Godot adventure, on `godot-4-v0.3-graphical-masterclass`.
+**Little Talks, Big Adventure** beautifies quests, NPC interactions and captions
+on `godot-4-v0.4-quests-and-captions`.
 
-- World-space moss, textile grain and irregular trail edges enrich every chapter.
-- Puddlebrook's crossing and four pools have animated water, procedural moonlight
-  glints and shoreline highlights. Repaired bridge planks remain above the water.
-- Shaded ferns, dimensional glowcaps, veined moonflowers and flapping butterflies
-  replace flat scenic shapes. Lantern blooms unfold over 0.8 seconds.
-- Ara's torso, shoulders, head and lantern share one animation frame; the native
-  lantern light follows the sleeve in either facing direction. Ira breathes at
-  the reunion. Trees fade smoothly when they overlap the player.
-- Soft canopy shafts, drifting mist and textured GPU motes finish the atmosphere.
-  Balanced adds subtle colour grading; Rich adds restrained highlight glow,
-  alongside the existing native lantern shadows and painted surface relief.
+- One animated character portrait and one caption at a time, on a warm storybook
+  card. Ara and each woodland friend take turns in short, playful exchanges.
+- Gentle text reveal: tap the caption or press Space, Enter or E to reveal the
+  whole line; press again to continue. Back to Woods or Escape returns to play.
+- Reminders change with actual quest progress: introduction, collecting,
+  ready to finish and completed. No long instruction blocks repeat on every visit.
+- Styled discovery and reward cards replace plain toasts. Long clues continue
+  in separate captions; tap to continue or dismiss them.
+- A smaller quest HUD, fewer overlapping world labels and a four-line reunion
+  between Ara and Ira keep each moment focused.
 
-This edition starts from commit `dd7d48d` of the existing Godot branch, preserving
-its newer Living Woodlands movement, NPC animation, scenery and renderer work.
-The requested v0.3 label identifies this separate graphical edition; it does not
-replace the existing v0.5 branch or the browser project on `main`.
+Gentler Motion shows text immediately and stops portrait motion/fades. Gameplay
+pauses during conversation. The five quests, discoveries, navigation, music and
+v0.3 graphical overhaul remain included.
 
-Import `project.godot` with **Godot 4.3 or newer**, Compatibility renderer, wait
-for import, then press F5. Options includes Light, Balanced (default), Rich and
-Gentler Motion. All quests and clues remain available in every quality mode.
-
-[README-GODOT.md](README-GODOT.md) has controls and quest details.
-[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describes the chapter review,
-rendering choices, checks and performance limits. PNG assets and the explicit
-folder ZIP packaging fix are retained.
+Import **project.godot** with **Godot 4.3 or newer**, Compatibility renderer,
+wait for asset import and press F5. [README-GODOT.md](README-GODOT.md) has controls;
+[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) describes the update and validation.
+This edition builds on v0.3 (`deb7f8a`); earlier branches and browser `main` remain
+available. PNG assets and ZIP folder records retain the previous import fixes.

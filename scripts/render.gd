@@ -198,13 +198,6 @@ func _draw_npc(n: Dictionary) -> void:
 			_npc_part(n,13,Vector2(-20,-48-hop),Vector2(29,31),sin(phase*2.0)*0.045*motion,Vector2(0.75,0.12))
 			_npc_part(n,12,Vector2(21,-48-hop),Vector2(40,31),-greeting*0.25+sin(phase*3.0)*0.04*motion,Vector2(0.14,0.2))
 			_npc_part(n,10,Vector2(0,-82-breath-hop),Vector2(66,60),head_tilt)
-	if n.greeting>0 or n.reaction>0:
-		var text := "Hi, Ara!" if n.greeting>0 else "Lovely light!"
-		var font := ThemeDB.fallback_font
-		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,13).x
-		var bubble := at+Vector2(-95,-78-hop)
-		draw_style_box(_landmark_style(),Rect2(bubble-Vector2(width*0.5+8,19),Vector2(width+16,25)))
-		draw_string(font,bubble-Vector2(width*0.5,1),text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("#ffefc2"))
 
 func _draw_item(m: Dictionary) -> void:
 	if m.lit and level_index != 4: return
@@ -451,6 +444,7 @@ func _draw_landmark(mark: Dictionary) -> void:
 		_draw_crop("decor",DECOR_RECTS[4],Rect2(at-Vector2(45,85),Vector2(90,85)))
 
 func _draw_landmark_names() -> void:
+	if state!="play" or (conversation!=null and conversation.notice_left>0): return
 	for mark in landmarks:
 		if player.distance_to(mark.pos) >= 7.0: continue
 		var at := _project(mark.pos)
@@ -480,6 +474,7 @@ func _landmark_style() -> StyleBoxFlat:
 	return style
 
 func _draw_interaction_hint() -> void:
+	if state!="play" or (conversation!=null and conversation.notice_left>0): return
 	if state != "play": return
 	var target := Vector2.ZERO
 	var text := ""
@@ -559,6 +554,7 @@ func _draw_lantern_plant(plant: Dictionary) -> void:
 		draw_arc(stem,7,-PI*0.8,-PI*0.2,12,Color("#a0d0e6"),2,true)
 
 func _draw_lantern_plant_names() -> void:
+	if state!="play" or (conversation!=null and conversation.notice_left>0): return
 	if light_trails == null: return
 	for plant in light_trails.plants:
 		if player.distance_to(plant.pos) >= 3.5: continue
@@ -580,6 +576,7 @@ func _draw_shadow_stone(stone: Dictionary) -> void:
 	if stone.time > 0: _draw_halo(top,50,Color("#ffe5a3"),1.5)
 
 func _draw_shadow_inscriptions() -> void:
+	if state!="play" or (conversation!=null and conversation.notice_left>0): return
 	if light_trails == null: return
 	for stone in light_trails.stones:
 		if stone.time <= 0: continue
