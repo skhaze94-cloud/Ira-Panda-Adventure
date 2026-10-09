@@ -130,7 +130,9 @@ func _draw_tree(t: Dictionary) -> void:
 	var crop: Array = TREE_RECTS[level_index*3 + int(t.variant)]
 	var w: float = minf(tile*2.25,h*float(crop[2])/float(crop[3]))
 	_shadow(at,30*t["size"])
-	var alpha := 0.28 if at.y > _project(player).y and absf(at.x-_project(player).x)<tile*1.2 and at.y-_project(player).y < h*0.7 else 1.0
+	var relative := at-_project(player)
+	var overlap := (1.0-smoothstep(tile*0.65,tile*1.3,absf(relative.x)))*smoothstep(0.0,18.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
+	var alpha := lerpf(1.0,0.28,overlap)
 	var sway: float = sin(elapsed * 0.8 + t.pos.x) * 0.013 if not quieter_motion else 0.0
 	draw_set_transform(at,sway)
 	_draw_crop("trees-v2",crop,Rect2(Vector2(-w*0.5,-h),Vector2(w,h)),Color(1,1,1,alpha))
@@ -272,7 +274,13 @@ func _draw_exit() -> void:
 		_draw_png("woodland-door",at,170,168)
 	elif level_index == 4:
 		_draw_crop("decor",DECOR_RECTS[5],Rect2(at-Vector2(110,200),Vector2(220,200)))
-		if quest_done: _draw_png("ira",at+Vector2(45,5),65,82)
+		if quest_done:
+			var breath := sin(elapsed*1.8)*0.012 if not quieter_motion else 0.0
+			var ira_at := at+Vector2(45,5)
+			_shadow(ira_at,22)
+			draw_set_transform(ira_at,0,Vector2(1.0-breath,1.0+breath))
+			_draw_png("ira",Vector2.ZERO,65,82)
+			draw_set_transform(Vector2.ZERO)
 	else:
 		_draw_crop("lamps-v2",LAMP_RECTS[level_index*2],Rect2(at-Vector2(100,152),Vector2(75,152)))
 		_draw_crop("lamps-v2",LAMP_RECTS[level_index*2],Rect2(at+Vector2(28,-152),Vector2(75,152)))
@@ -288,8 +296,8 @@ func _rig_part(index: int, center: Vector2, wh: Vector2, spin: float=0.0, pivot:
 	var rect: Array = RIG_RECTS[index]
 	# Mirror both the shoulder position AND the local crop around the body.
 	var root := _ara_root()
-	var mirrored := root + Vector2((center.x-root.x)*facing,center.y-root.y)
-	draw_set_transform(mirrored,spin*facing,Vector2(facing,1))
+	var mirrored := _ara_frame(center-root)
+	draw_set_transform(mirrored,spin*facing+(body_lean if not quieter_motion else 0.0),Vector2(facing,1))
 	_draw_crop("ara-rig-22",rect,Rect2(-wh*pivot,wh))
 	draw_set_transform(Vector2.ZERO)
 
@@ -303,10 +311,10 @@ func _draw_ara() -> void:
 	_rig_part(4,base+Vector2(-12,-9+gait*2),Vector2(18,14),-gait*0.15)
 	_rig_part(5,base+Vector2(12,-9-gait*2),Vector2(18,14),gait*0.15)
 	_rig_part(2,base+Vector2(-14,-52-breath),Vector2(18,34),gait*0.16,Vector2(0.42,0.10))
-	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44),body_lean*facing if not quieter_motion else 0.0)
+	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44),0.0)
 	var lift := sin((1-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
 	_rig_part(3,base+Vector2(14,-51-breath),Vector2(35,49),-lift*0.42+gait*0.04,Vector2(0.16,0.10))
-	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(body_lean*facing*0.6+sin(elapsed*1.4)*0.03 if not quieter_motion else 0.0),Vector2(0.5,0.95))
+	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(sin(elapsed*1.4)*0.018 if not quieter_motion else 0.0),Vector2(0.5,0.95))
 	_draw_halo(_lantern_tip(),62,COLORS[level_index],2.0)
 
 
@@ -321,21 +329,19 @@ func _lantern_tip() -> Vector2:
 	var gait: float = sin(foot_time)*minf(1.0,walk_dir.length()) if not quieter_motion else 0.0
 	var arm_spin: float = -lift*0.42+gait*0.04
 	var tip := Vector2(14,-51-breath) + Vector2(19,32).rotated(arm_spin)
-	return _ara_root()+Vector2(tip.x*facing,tip.y)
+	return _ara_frame(tip)
+
+func _ara_frame(local: Vector2) -> Vector2:
+	var pivot := Vector2(0,-32)
+	var tilt := body_lean if not quieter_motion else 0.0
+	var mirrored := Vector2(local.x*facing,local.y)
+	return _ara_root()+pivot+(mirrored-pivot).rotated(tilt)
 
 func _draw_level_surface() -> void:
 	# Effects sit above the textured ground and below every depth-sorted actor.
 	_draw_chapter_landscape()
 	if level_index == 2:
 		var x: float = _station().x + 1.4
-		var a := _project(Vector2(x, _path_y(x)-5))
-		var b := _project(Vector2(x, _path_y(x)+5))
-		var side := Vector2(tile*0.8,tile*0.39)
-		draw_colored_polygon(PackedVector2Array([a-side,a+side,b+side,b-side]),Color(0.08,0.30,0.43,0.82))
-		for i in range(18):
-			var f := float(i)/18.0
-			var at := a.lerp(b,f)+side*sin((0.0 if quieter_motion else elapsed)*1.4+float(i))*0.16
-			draw_line(at-side*0.65,at+side*0.65,Color(0.53,0.87,0.92,0.13),1.4,true)
 		if quest_done:
 			# Real planks cross the full brook, rather than just an upright bridge picture.
 			for i in range(9):
@@ -351,7 +357,7 @@ func _draw_level_surface() -> void:
 		if not _visible(at,50): continue
 		match level_index:
 			0: # Little leaf clusters along the birch trail.
-				draw_line(at,at+Vector2(5,-3),Color(0.72,0.64,0.36,0.45),2,true)
+				_storybook_fern(at,float(i))
 			1: # Violet glowcaps with clear luminous caps.
 				draw_line(at,at-Vector2(0,12),Color(0.75,0.66,0.84,0.7),2,true)
 				_disc(at-Vector2(0,13),5,Color(0.69,0.49,0.98,0.85))
@@ -360,9 +366,7 @@ func _draw_level_surface() -> void:
 				draw_line(at-Vector2(3,0),at+Vector2(3,0),Color(0.82,0.85,1,twinkle),1,true)
 				draw_line(at-Vector2(0,3),at+Vector2(0,3),Color(0.82,0.85,1,twinkle),1,true)
 			4: # Petals encircle a warm moonflower garden.
-				for petal in range(5):
-					var offset := Vector2(4,0).rotated(float(petal)*TAU/5.0)
-					_disc(at+offset-Vector2(0,6),2.4,Color(0.96,0.77,0.85,0.68))
+				_woodland_flower(at-Vector2(0,7),Color("#e4bdce"),7.0)
 
 func _world_polygon(points: Array, tint: Color) -> void:
 	var projected := PackedVector2Array()
@@ -393,17 +397,13 @@ func _draw_chapter_landscape() -> void:
 				for i in range(18):
 					var p := center+Vector2(3.6,0).rotated(float(i)*TAU/18.0)
 					var at := _project(p)
-					draw_line(at,at-Vector2(0,17),Color("#b4a2c8"),3,true)
-					_draw_halo(at-Vector2(0,18),24,Color("#b995ff"),0.7)
-					_disc(at-Vector2(0,18),7,Color("#aa7bd4"))
-					_disc(at-Vector2(2,20),2,Color("#ece0ff"))
+					_storybook_mushroom(at,8.0,17.0,Color("#b191d4"),float(i))
 		2:
 			# Pebble pools and reeds track the brook banks, leaving the walk clear.
 			for x in [16.0,29.0,43.0,55.0]:
 				var p := Vector2(x,_path_y(x)+5.8)
 				if not _visible(_project(p),tile*5): continue
-				_world_oval(p,Vector2(2.9,1.8),Color("#527076"))
-				_world_oval(p,Vector2(2.55,1.5),Color("#214d64"))
+
 				for i in range(8):
 					var at := _project(p+Vector2(2.7,0).rotated(float(i)*TAU/8.0))
 					_disc(at,5,Color("#859f9d"))
@@ -413,9 +413,15 @@ func _draw_chapter_landscape() -> void:
 			if _visible(_project(center),tile*14):
 				_world_oval(center,Vector2(8,8),Color(0.28,0.29,0.46,0.26))
 				for ring in [2.8,4.5,7.5]:
-					for i in range(48):
-						var p := center+Vector2(ring,0).rotated(float(i)*TAU/48.0)
-						_disc(_project(p),3.0,Color(0.77,0.79,1,0.72))
+					var orbit := PackedVector2Array()
+					for i in range(65):
+						orbit.append(_project(center+Vector2(ring,0).rotated(float(i)*TAU/64.0)))
+					draw_polyline(orbit,Color(0.77,0.79,1,0.22),1.3,true)
+					for i in range(12):
+						var angle := float(i)*TAU/12.0+(elapsed*0.025 if not quieter_motion else 0.0)
+						var star := _project(center+Vector2(ring,0).rotated(angle))
+						_disc(star,2.1,Color(0.87,0.87,1,0.65))
+						if graphics_quality>0: _draw_halo(star,12,Color("#c7bfff"),0.7)
 				for i in range(runes.size()-1):
 					var a := _project(runes[i].pos)-Vector2(0,60)
 					var b := _project(runes[i+1].pos)-Vector2(0,60)
@@ -429,9 +435,7 @@ func _draw_chapter_landscape() -> void:
 					_draw_crop("quests-23",QUEST_RECTS[6],Rect2(_project(p)-Vector2(23,55),Vector2(46,55)))
 					for i in range(9):
 						var at := _project(p+Vector2(0.9,0).rotated(float(i)*TAU/9.0))
-						for petal in range(5):
-							_disc(at+Vector2(4,0).rotated(float(petal)*TAU/5.0)-Vector2(0,10),3.2,Color("#d8a8c5"))
-						_disc(at-Vector2(0,10),2.8,Color("#ffe6a0"))
+						_woodland_flower(at-Vector2(0,10),Color("#d8a8c5"),8.0)
 
 func _draw_landmark(mark: Dictionary) -> void:
 	var at := _project(mark.pos)
@@ -543,14 +547,12 @@ func _draw_lantern_plant(plant: Dictionary) -> void:
 	var stem := at-Vector2(0,32+bob)
 	draw_line(at,stem,Color("#699c94"),3,true)
 	for side in [-1.0,1.0]:
-		var leaf := PackedVector2Array([at-Vector2(0,9),at+Vector2(side*15,-18),at+Vector2(side*9,-5)])
-		draw_colored_polygon(leaf,Color("#83b5a4") if awake else Color("#46786b"))
+		_storybook_petal(at-Vector2(0,9),-0.65 if side>0 else PI+0.65,19.0,5.5,Color("#83b5a4") if awake else Color("#46786b"))
 	_draw_halo(stem,70 if awake else 28,Color("#94ffe1"),2.4 if awake else 0.5)
 	if awake:
 		for petal in range(7):
-			var offset := Vector2(9,0).rotated(float(petal)*TAU/7.0)
-			_disc(stem+offset,6,Color("#87d6cb"))
-			_disc(stem+offset*1.15,2.8,Color("#c9fff0"))
+			var opening := smoothstep(0.0,1.0,float(plant.bloom))
+			_storybook_petal(stem,float(petal)*TAU/7.0,lerpf(5.0,17.0,opening),lerpf(2.0,6.5,opening),Color("#a4eee0"))
 		_disc(stem,6.5,Color("#fff0b0"))
 	else:
 		_disc(stem,7,Color("#416f87"))
@@ -609,11 +611,7 @@ func _draw_woodland_prop(prop: Dictionary) -> void:
 			for i in range(3):
 				var foot := at+Vector2((i-1)*22,abs(i-1)*6)
 				var h := 35.0+float(i%2)*18.0
-				draw_line(foot,foot-Vector2(0,h),Color("#cfb9ab"),7,true)
-				var cap := foot-Vector2(0,h)
-				_disc(cap,19 if i==1 else 14,Color("#8b80ad"))
-				draw_arc(cap,15 if i==1 else 11,PI,TAU,16,Color("#c4abdb"),4,true)
-				_disc(cap+Vector2(-5,-4),2.5,Color("#f2dfaa"))
+				_storybook_mushroom(foot,19.0 if i==1 else 14.0,h,Color("#a58bc1"),float(prop.phase)+i)
 		"lily":
 			for i in range(3):
 				var pad := at+Vector2((i-1)*24,i%2*12)
@@ -640,9 +638,29 @@ func _draw_woodland_prop(prop: Dictionary) -> void:
 				var angle := PI+float(i)*PI/6.0
 				_woodland_flower(at-Vector2(0,69)+Vector2(34,0).rotated(angle),Color("#e4b8c9") if i%2 else Color("#b8d5bc"),6)
 
+var flower_texture: ImageTexture
 func _woodland_flower(at: Vector2, tint: Color, radius: float) -> void:
-	for i in range(5): _disc(at+Vector2(radius*0.65,0).rotated(float(i)*TAU/5.0),radius*0.5,tint)
-	_disc(at,radius*0.3,Color("#ffe9b4"))
+	if flower_texture == null:
+		var image := Image.create(96,96,false,Image.FORMAT_RGBA8)
+		for y in range(96):
+			for x in range(96):
+				var q := Vector2((float(x)+0.5)/48.0-1.0,(float(y)+0.5)/48.0-1.0)
+				var result := Color(0,0,0,0)
+				for i in range(5):
+					var local := q.rotated(-float(i)*TAU/5.0)
+					var v := local.y/0.42
+					var distance := Vector2((local.x-0.5)*2.0,v).length()
+					var alpha := 1.0-smoothstep(0.94,1.0,distance)
+					if alpha<=result.a: continue
+					var shade := 0.89-v*0.12
+					var vein := (1.0-smoothstep(0.01,0.055,absf(v)))*smoothstep(0.08,0.2,local.x)*(1.0-smoothstep(0.65,0.88,local.x))
+					shade -= vein*0.16
+					result = Color(shade,shade,shade,alpha)
+				image.set_pixel(x,y,result)
+		flower_texture = ImageTexture.create_from_image(image)
+	draw_texture_rect(flower_texture,Rect2(at-Vector2.ONE*radius,Vector2.ONE*radius*2.0),false,tint)
+	_disc(at,radius*0.27,Color("#b88b54"))
+	_disc(at-Vector2(0,radius*0.08),radius*0.19,Color("#fff0ba"))
 
 func _draw_woodland_air() -> void:
 	var clock := 0.0 if quieter_motion else elapsed
@@ -658,10 +676,12 @@ func _draw_woodland_air() -> void:
 				_disc(at,2.1,Color(1.0,0.89,0.57,alpha))
 				if responding: _draw_halo(at,17,Color("#ffe8a9"),2.0)
 			1,4:
-				var tint := Color("#c8b7ec") if level_index==1 else Color("#f1becd")
-				_disc(at+Vector2(-wing,0),wing,tint)
-				_disc(at+Vector2(wing,0),wing,tint)
-				draw_line(at+Vector2(0,-3),at+Vector2(0,4),Color("#ffe6ad"),1.5,true)
+				var tint := Color("#e4c9ef") if level_index==1 else Color("#ffe3b4")
+				if responding: tint = Color("#b9ffe0")
+				for side in [-1.0,1.0]:
+					_storybook_petal(at,-0.8 if side>0 else PI+0.8,wing*2.2,wing*0.85,tint)
+					_storybook_petal(at,0.65 if side>0 else PI-0.65,wing*1.5,wing*0.6,tint.darkened(0.13))
+				draw_line(at-Vector2(0,4),at+Vector2(0,4),Color("#59626c"),1.5,true)
 			2:
 				var ripple := fmod(clock*0.45+phase,1.0)
 				var water := _project(creature.home)+Vector2(0,8)
@@ -714,3 +734,55 @@ func _disc(at: Vector2, radius: float, tint: Color) -> void:
 		gradient.colors = PackedColorArray([Color.WHITE,Color.WHITE,Color(1,1,1,0)])
 		disc_texture.gradient = gradient
 	draw_texture_rect(disc_texture,Rect2(at-Vector2.ONE*radius,Vector2.ONE*radius*2),false,tint)
+
+# Build one tiny shaded petal texture, then reuse it for flowers, ferns and wings.
+# Textured quads batch across hundreds of petals; per-petal polygons do not.
+var petal_texture: ImageTexture
+func _storybook_petal(at: Vector2, angle: float, length_px: float, width: float, tint: Color) -> void:
+	if petal_texture == null:
+		var image := Image.create(96,48,false,Image.FORMAT_RGBA8)
+		for y in range(48):
+			for x in range(96):
+				var u := (float(x)+0.5)/96.0
+				var v := (float(y)+0.5)/24.0-1.0
+				var distance := Vector2((u-0.5)*2.0,v).length()
+				var alpha := 1.0-smoothstep(0.94,1.0,distance)
+				var shade := 0.89-v*0.12
+				var vein := (1.0-smoothstep(0.01,0.055,absf(v)))*smoothstep(0.08,0.2,u)*(1.0-smoothstep(0.65,0.88,u))
+				shade -= vein*0.16
+				image.set_pixel(x,y,Color(shade,shade,shade,alpha))
+		petal_texture = ImageTexture.create_from_image(image)
+	draw_set_transform(at,angle)
+	draw_texture_rect(petal_texture,Rect2(Vector2(0,-width),Vector2(length_px,width*2.0)),false,tint)
+	draw_set_transform(Vector2.ZERO)
+
+func _storybook_mushroom(foot: Vector2, radius: float, height_px: float, tint: Color, phase: float) -> void:
+	var sway := sin(elapsed*1.2+phase)*radius*0.035 if not quieter_motion else 0.0
+	var cap := foot+Vector2(sway,-height_px)
+	draw_line(foot,cap,Color("#ad93b1"),maxf(2.0,radius*0.28),true)
+	draw_line(foot-Vector2(radius*0.07,0),cap-Vector2(radius*0.07,0),Color("#e3ced5"),maxf(1.0,radius*0.10),true)
+	var shape := PackedVector2Array()
+	var shades := PackedColorArray()
+	for i in range(17):
+		var angle := PI+float(i)*PI/16.0
+		shape.append(cap+Vector2(cos(angle)*radius,sin(angle)*radius*0.72))
+		shades.append(tint.lightened(0.23) if i<9 else tint.darkened(0.15))
+	draw_polygon(shape,shades)
+	draw_set_transform(cap,0,Vector2(1,0.23))
+	_disc(Vector2.ZERO,radius,tint.darkened(0.30))
+	draw_set_transform(Vector2.ZERO)
+	draw_line(cap-Vector2(radius,0),cap+Vector2(radius,0),tint.lightened(0.26),1.5,true)
+	for i in range(3):
+		_disc(cap+Vector2((float(i)-1.0)*radius*0.48,-radius*(0.24 if i%2 else 0.38)),radius*0.09,Color("#f4e4c6"))
+	_draw_halo(cap,radius*2.2,tint,0.55)
+
+func _storybook_fern(at: Vector2, phase: float) -> void:
+	var sway := sin(elapsed*0.9+phase)*2.0 if not quieter_motion else 0.0
+	for branch in [-1.0,1.0]:
+		var tip := at+Vector2(branch*18+sway,-25)
+		draw_line(at,tip,Color("#648978"),1.1,true)
+		for i in range(1,5):
+			var center := at.lerp(tip,float(i)/5.0)
+			var length_px := 10.0-float(i)
+			_storybook_petal(center,-0.6 if branch>0 else PI+0.6,length_px,2.3,Color("#83aa8e"))
+			_storybook_petal(center,0.5 if branch>0 else PI-0.5,length_px*0.8,2.0,Color("#547d6c"))

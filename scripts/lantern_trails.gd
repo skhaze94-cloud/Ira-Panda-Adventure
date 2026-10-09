@@ -41,7 +41,7 @@ func build(owner_game: Control) -> void:
 		var x: float = [7.5,n*0.36,n*0.64][i]
 		var p := Vector2(x,game._path_y(x)+(2.0 if i % 2 == 0 else -2.0))
 		if game._blocked(p): p = _on_path(x)
-		plants.append({"pos":p,"awake":false,"index":i})
+		plants.append({"pos":p,"awake":false,"bloom":0.0,"index":i})
 	for i in range(targets.size()):
 		var target := targets[i]
 		var x := 24.5 if game.level_index == 0 else target.x-3.6
@@ -77,6 +77,9 @@ func _add_stone(pos: Vector2, target: Vector2, text: String, sequence: bool) -> 
 
 func update(dt: float) -> void:
 	if game.state != "play": return
+	for plant in plants:
+		if plant.awake:
+			plant.bloom = 1.0 if game.quieter_motion else minf(1.0,float(plant.bloom)+dt/0.8)
 	for track in tracks: track.time = maxf(0.0,float(track.time)-dt)
 	for stone in stones: stone.time = maxf(0.0,float(stone.time)-dt)
 
@@ -94,6 +97,7 @@ func shine() -> void:
 	for plant in plants:
 		if plant.awake or game.player.distance_to(plant.pos) > PLANT_RADIUS: continue
 		plant.awake = true
+		if game.quieter_motion: plant.bloom = 1.0
 		discovered += 1
 		game._burst(plant.pos)
 		var restored: bool = game.heart < 3
