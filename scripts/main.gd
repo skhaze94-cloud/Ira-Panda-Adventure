@@ -36,6 +36,7 @@ func _label(parent: Node, text: String, font_size: int, tint: Color=Color("#f8ec
 func _button(parent: Node, text: String, fn: Callable, minimum: Vector2=Vector2(150,44)) -> Button:
 	var b := Button.new()
 	b.text = text
+	b.focus_mode = Control.FOCUS_NONE
 	b.custom_minimum_size = minimum
 	b.add_theme_font_size_override("font_size",18)
 	b.add_theme_color_override("font_color",Color("#fef1d8"))
@@ -125,13 +126,15 @@ func _build_ui() -> void:
 	title_plate.anchor_top = 0.02
 	title_plate.anchor_right = 0.48
 	title_plate.anchor_bottom = 0.02
-	title_plate.offset_bottom = 125
+	title_plate.offset_bottom = 160
 	var title_col := VBoxContainer.new()
 	title_col.add_theme_constant_override("separation",3)
 	title_plate.add_child(title_col)
 	hud_chapter = _label(title_col,"CHAPTER 1 OF 5",12,Color("#eed6a1"))
 	hud_title = _label(title_col,"Whispering Woods",22)
 	hud_objective = _label(title_col,"Find the key",14)
+	hud_discoveries = _label(title_col,"Explore with your lantern",13,Color("#a9e4df"))
+	hud_discoveries.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_objective.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -229,12 +232,10 @@ func _direction_button(symbol: String, offset: Vector2, vector: Vector2) -> void
 	button.offset_right = offset.x + 57
 	button.offset_top = offset.y - 57
 	button.offset_bottom = offset.y
-	button.button_down.connect(func(): mobile_axis += vector; has_destination = false)
-	button.button_up.connect(func(): mobile_axis -= vector)
-	button.mouse_exited.connect(func():
-		if button.button_pressed:
-			mobile_axis -= vector
-	)
+	var id := button.get_instance_id()
+	button.button_down.connect(func(): _hold_direction(id, vector, true))
+	button.button_up.connect(func(): _hold_direction(id, vector, false))
+	button.mouse_exited.connect(func(): _hold_direction(id, vector, false))
 
 func _start_intro() -> void:
 	story_chapter = -1

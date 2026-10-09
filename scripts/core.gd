@@ -2,7 +2,10 @@ extends Control
 ## Godot 4 native reimplementation of the v2.4 browser game.
 ## Source reference: game.js and story-24.json; never evaluates JavaScript or embeds a webview.
 
-const SPEED := 2.3
+const SPEED := 3.15
+const ACCELERATION := 20.0
+const DECELERATION := 28.0
+const INTERACT_RADIUS := 2.4
 const GLOW_TIME := 1.05
 const GLOW_RECHARGE := 1.15
 const BASE_LEVELS = [
@@ -39,6 +42,7 @@ const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8
 
 var ui_canvas: CanvasLayer
 var atmosphere: Node2D
+var light_trails: RefCounted
 
 var tex: Dictionary = {}
 var chapter_stories: Array = []
@@ -50,6 +54,16 @@ var player := Vector2(2, 3)
 var destination := Vector2.ZERO
 var has_destination := false
 var walk_dir := Vector2.ZERO
+var velocity := Vector2.ZERO
+var camera_lead := Vector2.ZERO
+var body_lean := 0.0
+var navigation: AStarGrid2D
+var route := PackedVector2Array()
+var route_index := 0
+var stuck_time := 0.0
+var held_directions: Dictionary = {}
+var landmarks: Array = []
+var glow_buffer := 0.0
 var facing := 1.0
 var foot_time := 0.0
 var elapsed := 0.0
@@ -89,6 +103,7 @@ var hud_title: Label
 var hud_objective: Label
 var hud_hearts: Label
 var hud_glow: Label
+var hud_discoveries: Label
 var toast_label: Label
 var action_button: Button
 var glow_button: Button
@@ -141,6 +156,7 @@ func _ready() -> void:
 	ui_canvas.layer = 10
 	add_child(ui_canvas)
 	_build_ui()
+	light_trails = load("res://scripts/lantern_trails.gd").new()
 	atmosphere = load("res://scripts/atmosphere.gd").new()
 	atmosphere.game = self
 	add_child(atmosphere)
@@ -165,6 +181,7 @@ func _music(filename: String) -> AudioStreamPlayer:
 	return a
 
 func _set_state(next_state: String) -> void:
+	if next_state != "play": _reset_controls()
 	state = next_state
 	menu_layer.visible = state == "menu"
 	story_layer.visible = state == "comic"
@@ -182,7 +199,39 @@ func _set_state(next_state: String) -> void:
 	queue_redraw()
 
 func _curve(x: float) -> float:
-	return sin(x * (0.45 + level_index * 0.025) + level_index * 0.6) * (1.3 + level_index * 0.18)
+	# Each chapter has its own silhouette, with quiet approaches to both ends.
+	var envelope := smoothstep(3.0, 12.0, x) * (1.0 - smoothstep(float(BASE_LEVELS[level_index].size)-12.0, float(BASE_LEVELS[level_index].size)-3.0, x))
+	match level_index:
+		0: return sin(x * 0.24) * 2.2 * envelope
+		1: return (sin(x * 0.15) * 3.5 + sin(x * 0.39) * 0.7) * envelope
+		2: return sin(x * 0.10 + 0.5) * 4.0 * envelope
+		3: return sin(x * 0.12) * 2.8 * envelope
+		4: return sin(x * 0.19) * 2.0 * envelope
+	return 0.0
+
+func _clearing_radius(x: float) -> float:
+	match level_index:
+		0: return 3.6
+		1: return 3.5 + maxf(0.0, sin(x * 0.20)) * 3.2
+		2: return 4.2
+		3: return 7.5 if x > 58.0 else 4.2
+		4: return 7.0 if x > 69.0 else 4.0 + maxf(0.0, sin(x * 0.19)) * 1.5
+	return 3.6
+
+func _build_landmarks() -> void:
+	landmarks.clear()
+	var names: Array = [
+		["Blue Lantern Turn", "The Pale Birch Grove", "Woodland Door"],
+		["Violet Cap Clearing", "Silver Spore Circle", "Moon Scroll Lectern"],
+		["Willowbank Bend", "Pebble Pools", "Bramble's Crossing"],
+		["Falling Star Meadow", "The Open Hollow", "Constellation Circle"],
+		["Ribbon Garden", "Moonflower Walk", "Ira's Cottage"]
+	]
+	var anchors: Array = [[24.0,29.0,62.0],[18.0,39.0,69.0],[20.0,43.0,68.0],[20.0,60.0,73.0],[20.0,52.0,80.0]][level_index]
+	for i in range(3):
+		var x: float = float(anchors[i])
+		var side := 6.0 if level_index == 0 and i == 1 else -3.1 if i % 2 == 0 else 3.1
+		landmarks.append({"pos":Vector2(x, _path_y(x)+side), "name":names[level_index][i], "index":i})
 
 func _path_y(x: float) -> float:
 	return x + _curve(x)
@@ -222,7 +271,11 @@ func start_level(index: int) -> void:
 	player = Vector2(2, _path_y(2))
 	tile = clampf(size.x / 20.0,38,58)
 	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
-	walk_dir = Vector2.ZERO
+	_reset_controls()
+	camera_lead = Vector2.ZERO
+	body_lean = 0.0
+	navigation = null
+	_build_landmarks()
 	has_destination = false
 	mobile_axis = Vector2.ZERO
 	cooldown = 0.0
@@ -253,10 +306,9 @@ func start_level(index: int) -> void:
 			var p := Vector2(float(x) + 0.2 + _randseed(x + y * 36 + level_index) * 0.25, float(y) + 0.2 + _randseed(x * 7 + y + level_index) * 0.25)
 			if _key_clearing(p): continue
 			var d: float = absf(p.y - _path_y(p.x))
-			var clearing := (level_index == 1 and sin(p.x * 0.34) > 0.45) or (level_index == 4 and sin(p.x * 0.28) > 0.4)
-			if d < (4.8 if clearing else 3.4) or _randseed(x * 29 + y + level_index * 71) <= float(level.trees) or p.distance_to(exit_pos) < 2.5: continue
+			if d < _clearing_radius(p.x) or _randseed(x * 29 + y + level_index * 71) <= float(level.trees) or p.distance_to(exit_pos) < 2.5: continue
 			if level_index == 4 and (x % 3 == 1 or y % 3 == 1): continue
-			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "size":(0.78 + _randseed(x * 39 + y) * 0.45)}
+			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
 			trees.append(t)
 			var cell := Vector2i(int(floor(p.x)), int(floor(p.y)))
 			if not tree_cells.has(cell): tree_cells[cell] = []
@@ -283,6 +335,7 @@ func start_level(index: int) -> void:
 			for info in [["Star",-12,1],["Moon",-8,0],["Heart",-4,2]]:
 				var rx: float = float(n + info[1])
 				runes.append({"name":info[0], "pos":Vector2(rx,_path_y(rx)), "order":info[2], "lit":false})
+	light_trails.build(self)
 	_set_state("play")
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
@@ -311,30 +364,19 @@ func _walk(d: Vector2) -> void:
 func _process(dt: float) -> void:
 	if state == "play" or state == "menu" or state == "comic": elapsed += dt
 	tile = clampf(size.x / 20.0, 38, 58)
-	var camera_target := size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
-	camera = camera_target if quieter_motion else camera.lerp(camera_target,1.0-exp(-dt*9.0))
 	if state == "play":
 		var axis := mobile_axis
 		if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_UP): axis.y -= 1
 		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): axis.y += 1
 		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): axis.x -= 1
 		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): axis.x += 1
-		var world_axis := Vector2(axis.x + axis.y, axis.y - axis.x) * 0.70710678
-		if axis.length_squared() > 0: has_destination = false
-		elif has_destination:
-			world_axis = destination - player
-			if world_axis.length() < 0.14:
-				has_destination = false
-				world_axis = Vector2.ZERO
-		walk_dir = world_axis.normalized()
-		if walk_dir.length_squared() > 0:
-			facing = 1.0 if walk_dir.x - walk_dir.y >= 0 else -1.0
-			var before := player
-			_walk(walk_dir * SPEED * minf(dt, 0.05))
-			foot_time += before.distance_to(player) * 5.0
-			if has_destination and before.distance_to(player) < 0.0001: has_destination = false
+		_advance_movement(axis, dt)
+		light_trails.update(dt)
 		cooldown = maxf(0, cooldown - dt)
 		pulse = maxf(0, pulse - dt)
+		if glow_buffer > 0:
+			glow_buffer = maxf(0.0, glow_buffer-dt)
+			if cooldown <= 0: glow()
 		invulnerable = maxf(0, invulnerable - dt)
 		for npc in npcs:
 			var near: bool = player.distance_to(npc.home) < 4.0
@@ -342,11 +384,11 @@ func _process(dt: float) -> void:
 			npc.pos = npc.home if quieter_motion else npc.home + wander
 		_update_collectibles()
 		_update_bats(dt)
-		if level_index == 0 and player.distance_to(_exit()) < 1.8 and key_collected:
+		if level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS and key_collected:
 			action_button.text = "OPEN DOOR"
 		elif _nearest_npc() >= 0:
 			action_button.text = "TALK"
-		elif level_index > 0 and player.distance_to(_station()) < 2:
+		elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
 			action_button.text = "COMPLETE QUEST"
 		else:
 			action_button.text = "INTERACT"
@@ -356,6 +398,11 @@ func _process(dt: float) -> void:
 			toast_label.visible = toast_seconds > 0
 		hud_glow.text = "LANTERN READY" if cooldown <= 0 else "GLOW %.1fs" % cooldown
 		_update_hud()
+	var lead_target := velocity * 0.38 if state == "play" and not quieter_motion else Vector2.ZERO
+	camera_lead = camera_lead.lerp(lead_target, 1.0-exp(-dt*4.0))
+	var focus := player + camera_lead
+	var camera_target := size * Vector2(0.5, 0.55) - Vector2((focus.x-focus.y)*tile,(focus.x+focus.y)*tile*0.49)
+	camera = camera_target if quieter_motion else camera.lerp(camera_target,1.0-exp(-dt*7.0))
 	for i in range(particles.size()-1, -1, -1):
 		particles[i].life -= dt
 		if particles[i].life <= 0: particles.remove_at(i)
@@ -363,13 +410,13 @@ func _process(dt: float) -> void:
 
 func _update_collectibles() -> void:
 	if level_index == 0:
-		if key_revealed and not key_collected and player.distance_to(_key_location()) < 0.9:
+		if key_revealed and not key_collected and player.distance_to(_key_location()) < 1.15:
 			key_collected = true
 			_burst(_key_location())
 			show_toast("The brass key is yours! Follow the lanterns to the woodland door.", 4)
 	else:
 		for m in marks:
-			if not m.lit and m.revealed and level_index != 4 and player.distance_to(m.pos) < 0.95:
+			if not m.lit and m.revealed and level_index != 4 and player.distance_to(m.pos) < 1.15:
 				m.lit = true
 				quest_count += 1
 				_burst(m.pos)
@@ -386,13 +433,20 @@ func _update_bats(dt: float) -> void:
 			if heart <= 0:
 				heart = 3
 				player = Vector2(2, _path_y(2))
+				_reset_controls()
+				camera_lead = Vector2.ZERO
 				show_toast("Try again from the lantern trail. You've got this!", 3.5)
 
 func glow() -> void:
-	if state != "play" or cooldown > 0: return
+	if state != "play": return
+	if cooldown > 0:
+		glow_buffer = 0.2
+		return
+	glow_buffer = 0.0
 	cooldown = GLOW_RECHARGE
 	pulse = GLOW_TIME
 	_burst(player)
+	light_trails.shine()
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
 		key_revealed = true
 		quest_started = true
@@ -435,11 +489,11 @@ func interact() -> void:
 		_show_dialog("%s · Woodland Neighbour" % npc.name, _guide_text(npc.id), "KEEP EXPLORING", "", "resume")
 		return
 	if level_index == 0:
-		if player.distance_to(_exit()) < 1.8:
+		if player.distance_to(_exit()) < INTERACT_RADIUS:
 			if key_collected: _complete_chapter()
 			else: show_toast("The woodland door is locked. Ask Moss about the missing key.", 4)
 		return
-	if player.distance_to(_station()) < 2.0:
+	if player.distance_to(_station()) < INTERACT_RADIUS:
 		if quest_done:
 			show_toast("The path is open. Find the next lantern gate.", 3)
 		elif quest_count < 3:
@@ -450,16 +504,17 @@ func interact() -> void:
 			_finish_quest()
 
 func _guide_text(id: String) -> String:
-	if level_index > 0: return "QUEST %d: %s\n\n%s" % [level_index + 1, QUEST_TITLES[level_index], QUEST_HINTS[level_index]]
+	var light_lesson := "\n\nYour lantern reveals silver footprints. Wake blue lantern blooms for hints and a heart if you need one. At shadow stones, stand on the brass crescent and glow to see a clue."
+	if level_index > 0: return "QUEST %d: %s\n\n%s" % [level_index + 1, QUEST_TITLES[level_index], QUEST_HINTS[level_index]] + light_lesson
 	match id:
-		"pip": return "Let's find Ira! Walk with WASD / arrows, or the touch direction pad. Shine your lantern with Space or GLOW. Press E to talk. The woodland path leads to three helpful friends."
+		"pip": return "Let's find Ira! Walk with WASD / arrows, or the touch direction pad. Shine your lantern with Space or GLOW. Press E to talk. The woodland path leads to three helpful friends." + light_lesson
 		"bramble": return "The wooden door at the far end of the woods is locked. Moss knows something about a brass key near the blue lantern trail."
 		"moss": return "QUEST 1: The Lost Woodland Key\n\nThree pale birches stand beside a blue-lantern side trail. Go there, glow between their roots, then pick up the key. Return to the woodland door."
 	return QUEST_HINTS[0]
 
 func _nearest_npc() -> int:
 	var best := -1
-	var distance := 2.0
+	var distance := INTERACT_RADIUS
 	for i in range(npcs.size()):
 		var d: float = player.distance_to(npcs[i].pos)
 		if d < distance:
@@ -469,6 +524,7 @@ func _nearest_npc() -> int:
 
 func _finish_quest() -> void:
 	quest_done = true
+	navigation = null # Rebuild navigation when the bridge opens.
 	_burst(_station())
 	show_toast("Quest complete! Follow the lantern path.", 4.0)
 
@@ -492,6 +548,8 @@ func _burst(location: Vector2) -> void:
 		particles.append({"pos":location, "offset":Vector2(cos(a), sin(a)), "life":0.9, "max":0.9})
 
 func _update_hud() -> void:
+	if light_trails != null:
+		hud_discoveries.text = "Lantern discoveries %d / %d  ·  %s" % [light_trails.discovered,light_trails.total,light_trails.nearby_hint()]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
@@ -524,15 +582,148 @@ func _gui_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouseButton
 	var touch := event as InputEventScreenTouch
 	if mouse != null and mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT:
-		var v := _unproject(mouse.position)
-		if _nearest_npc() >= 0 and v.distance_to(npcs[_nearest_npc()].pos) < 1.3:
-			interact()
-		else:
-			destination = v
-			has_destination = true
+		_request_destination(_unproject(mouse.position))
 	if touch != null and touch.pressed:
-		destination = _unproject(touch.position)
-		has_destination = true
+		_request_destination(_unproject(touch.position))
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_reset_controls()
+		if state == "play": _pause()
+
+func _reset_controls() -> void:
+	velocity = Vector2.ZERO
+	walk_dir = Vector2.ZERO
+	mobile_axis = Vector2.ZERO
+	held_directions.clear()
+	route.clear()
+	route_index = 0
+	has_destination = false
+	stuck_time = 0.0
+	glow_buffer = 0.0
+
+func _hold_direction(id: int, direction: Vector2, pressed: bool) -> void:
+	if pressed and state == "play":
+		held_directions[id] = direction
+	else:
+		held_directions.erase(id)
+	mobile_axis = Vector2.ZERO
+	for value in held_directions.values(): mobile_axis += value
+
+func _screen_to_world(axis: Vector2) -> Vector2:
+	# Inverse of the actual diamond projection: diagonal keys match the screen.
+	return Vector2(axis.x + axis.y / 0.49, axis.y / 0.49 - axis.x).normalized()
+
+func _advance_movement(axis: Vector2, dt: float) -> void:
+	var remaining := minf(dt, 0.25)
+	while remaining > 0.00001:
+		var step := minf(remaining, 1.0/120.0)
+		remaining -= step
+		_movement_step(axis, step)
+
+func _movement_step(axis: Vector2, dt: float) -> void:
+	var target_velocity := Vector2.ZERO
+	if axis.length_squared() > 0.001:
+		has_destination = false
+		route.clear()
+		target_velocity = _screen_to_world(axis) * SPEED
+	elif has_destination:
+		while route_index < route.size() and player.distance_to(route[route_index]) < 0.12:
+			route_index += 1
+		if route_index >= route.size():
+			has_destination = false
+			velocity = Vector2.ZERO
+		else:
+			var delta := route[route_index] - player
+			var speed := minf(SPEED, delta.length() / dt)
+			if route_index == route.size()-1: speed = minf(speed, sqrt(2.0*DECELERATION*delta.length()))
+			target_velocity = delta.normalized() * speed
+	velocity = velocity.move_toward(target_velocity, (ACCELERATION if target_velocity != Vector2.ZERO else DECELERATION)*dt)
+	var before := player
+	_walk(velocity * dt)
+	var actual := (player-before)/dt
+	walk_dir = actual / SPEED
+	if absf(actual.x-actual.y) > 0.15: facing = signf(actual.x-actual.y)
+	body_lean = lerpf(body_lean, clampf((actual.x-actual.y)/SPEED, -1.0, 1.0)*0.045, 1.0-exp(-dt*12.0))
+	foot_time += before.distance_to(player) * 5.0
+	if has_destination and actual.length() < 0.01:
+		stuck_time += dt
+		if stuck_time > 0.5:
+			_reset_controls()
+			show_toast("That spot is tucked behind an obstacle. Try the lantern path.", 2.5)
+	else: stuck_time = 0.0
+
+func _segment_open(a: Vector2, b: Vector2) -> bool:
+	var steps := maxi(1, int(ceil(a.distance_to(b)/0.15)))
+	for i in range(steps+1):
+		if _blocked(a.lerp(b,float(i)/float(steps))): return false
+	return true
+
+func _ensure_navigation() -> void:
+	if navigation != null: return
+	navigation = AStarGrid2D.new()
+	var n: int = int(BASE_LEVELS[level_index].size)*2
+	navigation.region = Rect2i(0,0,n,n)
+	navigation.cell_size = Vector2(0.5,0.5)
+	navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	navigation.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	navigation.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	navigation.update()
+	for x in range(n):
+		for y in range(n):
+			navigation.set_point_solid(Vector2i(x,y), _blocked(Vector2(x,y)*0.5))
+
+func _nearest_walkable(point: Vector2) -> Vector2i:
+	var center := Vector2i((point*2.0).round())
+	var best := Vector2i(-1,-1)
+	var distance := INF
+	for x in range(-4,5):
+		for y in range(-4,5):
+			var id := center + Vector2i(x,y)
+			if not navigation.is_in_boundsv(id) or navigation.is_point_solid(id): continue
+			var d := point.distance_squared_to(Vector2(id)*0.5)
+			if d < distance:
+				distance = d
+				best = id
+	return best
+
+func _request_destination(point: Vector2) -> void:
+	if state != "play": return
+	var npc := _nearest_npc()
+	if npc >= 0 and point.distance_to(npcs[npc].pos) < 1.3:
+		interact()
+		return
+	route.clear()
+	route_index = 0
+	has_destination = false
+	stuck_time = 0.0
+	if _segment_open(player, point):
+		route.append(point)
+	else:
+		_ensure_navigation()
+		var from := _nearest_walkable(player)
+		var to := _nearest_walkable(point)
+		if from.x < 0 or to.x < 0:
+			show_toast("Choose a spot on the woodland floor.", 2.5)
+			return
+		var raw := navigation.get_point_path(from,to)
+		var anchor := player
+		var i := 0
+		while i < raw.size():
+			if not _segment_open(anchor,raw[i]):
+				route.clear()
+				break
+			var far := i
+			while far+1 < raw.size() and _segment_open(anchor,raw[far+1]): far += 1
+			route.append(raw[far])
+			anchor = raw[far]
+			i = far+1
+		if not route.is_empty() and _segment_open(route[route.size()-1],point): route.append(point)
+	if route.is_empty():
+		show_toast("That route is closed. Try a nearby lantern.", 2.5)
+		return
+	destination = route[route.size()-1]
+	has_destination = true
 
 func _project(p: Vector2) -> Vector2:
 	return Vector2((p.x-p.y) * tile, (p.x+p.y) * tile * 0.49) + camera

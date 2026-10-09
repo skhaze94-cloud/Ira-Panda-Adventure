@@ -27,6 +27,7 @@ func _draw() -> void:
 			if not _visible(center, tile*1.2): continue
 			_draw_ground(x,y,center)
 	_draw_level_surface()
+	_draw_lantern_clues_ground()
 	_moon_haze()
 	var entities: Array = []
 	for t in trees:
@@ -43,6 +44,12 @@ func _draw() -> void:
 		if _visible(_project(rune.pos),tile*3): entities.append({"depth":rune.pos.x+rune.pos.y,"type":"rune","data":rune})
 	for b in bats:
 		if _visible(_project(b.pos),tile*3): entities.append({"depth":b.pos.x+b.pos.y,"type":"bat","data":b})
+	for landmark in landmarks:
+		if _visible(_project(landmark.pos),tile*5): entities.append({"depth":landmark.pos.x+landmark.pos.y,"type":"landmark","data":landmark})
+	for plant in light_trails.plants:
+		if _visible(_project(plant.pos),tile*2): entities.append({"depth":plant.pos.x+plant.pos.y,"type":"light_plant","data":plant})
+	for stone in light_trails.stones:
+		if _visible(_project(stone.pos),tile*2): entities.append({"depth":stone.pos.x+stone.pos.y,"type":"shadow_stone","data":stone})
 	if level_index == 0:
 		var key_spot := Vector2(29,_path_y(29)+6)
 		entities.append({"depth":key_spot.x+key_spot.y,"type":"birches","data":{}})
@@ -67,17 +74,30 @@ func _draw() -> void:
 			"station": _draw_station()
 			"exit": _draw_exit()
 			"ara": _draw_ara()
+			"landmark": _draw_landmark(d)
+			"light_plant": _draw_lantern_plant(d)
+			"shadow_stone": _draw_shadow_stone(d)
+	_draw_landmark_names()
 	for part in particles:
 		var fade: float = part.life / part.max
 		var at: Vector2 = _project(part.pos) + part.offset * (1.0 - fade) * 90 - Vector2(0,45)
 		draw_circle(at, 3.3 * fade, Color(1.0,0.91,0.62,fade))
 	if pulse > 0:
-		var at := _project(player)-Vector2(0,55)
 		var expansion := 1.0 - pulse/GLOW_TIME
-		draw_arc(at, 50.0+125.0*expansion, 0, TAU, 64, Color(1.0,0.88,0.60,0.62 * (1.0-expansion)),4.5,true)
+		var radius := 2.4 if quieter_motion else lerpf(0.6,light_trails.REVEAL_RADIUS,expansion)
+		var wave := PackedVector2Array()
+		for i in range(65):
+			wave.append(_project(player+Vector2(radius,0).rotated(float(i)*TAU/64.0)))
+		draw_polyline(wave,Color(1.0,0.88,0.60,(0.16 if quieter_motion else 0.50)*(1.0-expansion)),2.0,true)
 	if has_destination:
 		var at := _project(destination)
 		draw_arc(at,12,0,TAU,24,Color(1,0.89,0.65,0.7),2)
+		for i in range(route_index, route.size()):
+			var waypoint := _project(route[i])
+			if _visible(waypoint,10): draw_circle(waypoint,2.5,Color(1,0.89,0.65,0.35))
+	_draw_interaction_hint()
+	_draw_shadow_inscriptions()
+	_draw_lantern_plant_names()
 
 func _cover(name: String, alpha: float=1.0) -> void:
 	var texture: Texture2D = tex.get(name)
@@ -192,6 +212,9 @@ func _draw_rune(r: Dictionary) -> void:
 	var at := _project(r.pos)
 	_draw_crop("quests-23",QUEST_RECTS[4],Rect2(at-Vector2(33,100),Vector2(66,100)))
 	_draw_halo(at-Vector2(0,55),45,Color("#fff4bc") if r.lit else Color("#b3beff"),1.0)
+	var font := ThemeDB.fallback_font
+	var width := font.get_string_size(r.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x
+	draw_string(font,at-Vector2(width*0.5,105),r.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe9b3") if r.lit else Color("#d9ddff"))
 
 func _draw_station() -> void:
 	var at := _project(_station())
@@ -267,10 +290,10 @@ func _draw_ara() -> void:
 	_rig_part(4,base+Vector2(-12,-9+gait*2),Vector2(18,14),-gait*0.15)
 	_rig_part(5,base+Vector2(12,-9-gait*2),Vector2(18,14),gait*0.15)
 	_rig_part(2,base+Vector2(-14,-52-breath),Vector2(18,34),gait*0.16,Vector2(0.42,0.10))
-	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44))
+	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44),body_lean*facing if not quieter_motion else 0.0)
 	var lift := sin((1-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
 	_rig_part(3,base+Vector2(14,-51-breath),Vector2(35,49),-lift*0.42+gait*0.04,Vector2(0.16,0.10))
-	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(sin(elapsed*1.4)*0.03 if not quieter_motion else 0.0),Vector2(0.5,0.95))
+	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(body_lean*facing*0.6+sin(elapsed*1.4)*0.03 if not quieter_motion else 0.0),Vector2(0.5,0.95))
 	_draw_halo(_lantern_tip(),62,COLORS[level_index],2.0)
 
 
@@ -289,6 +312,7 @@ func _lantern_tip() -> Vector2:
 
 func _draw_level_surface() -> void:
 	# Effects sit above the textured ground and below every depth-sorted actor.
+	_draw_chapter_landscape()
 	if level_index == 2:
 		var x: float = _station().x + 1.4
 		var a := _project(Vector2(x, _path_y(x)-5))
@@ -299,6 +323,14 @@ func _draw_level_surface() -> void:
 			var f := float(i)/18.0
 			var at := a.lerp(b,f)+side*sin((0.0 if quieter_motion else elapsed)*1.4+float(i))*0.16
 			draw_line(at-side*0.65,at+side*0.65,Color(0.53,0.87,0.92,0.13),1.4,true)
+		if quest_done:
+			# Real planks cross the full brook, rather than just an upright bridge picture.
+			for i in range(9):
+				var px := x-0.9+float(i)*0.23
+				var py := _path_y(x)
+				_world_polygon([Vector2(px,py-1.1),Vector2(px+0.18,py-1.1),Vector2(px+0.18,py+1.1),Vector2(px,py+1.1)],Color("#947054"))
+			for side_y in [-1.15,1.15]:
+				draw_line(_project(Vector2(x-0.95,_path_y(x)+side_y)),_project(Vector2(x+1.1,_path_y(x)+side_y)),Color("#deb287"),4,true)
 	for i in range(22):
 		var x: float = 3.0+float(i)*3.4
 		var p := Vector2(x,_path_y(x)+(2.7 if i%2 else -2.7))
@@ -318,3 +350,231 @@ func _draw_level_surface() -> void:
 				for petal in range(5):
 					var offset := Vector2(4,0).rotated(float(petal)*TAU/5.0)
 					draw_circle(at+offset-Vector2(0,6),2.4,Color(0.96,0.77,0.85,0.68))
+
+func _world_polygon(points: Array, tint: Color) -> void:
+	var projected := PackedVector2Array()
+	for point in points: projected.append(_project(point))
+	draw_colored_polygon(projected,tint)
+
+func _world_oval(center: Vector2, radius: Vector2, tint: Color) -> void:
+	var points: Array = []
+	for i in range(48):
+		var angle := float(i)*TAU/48.0
+		points.append(center+Vector2(cos(angle)*radius.x,sin(angle)*radius.y))
+	_world_polygon(points,tint)
+
+func _draw_chapter_landscape() -> void:
+	match level_index:
+		0:
+			# A pale-blue side trail makes the key grove discoverable from the main walk.
+			var trail := [Vector2(24,_path_y(24)),Vector2(26,_path_y(26)+3),Vector2(29,_path_y(29)+6)]
+			for i in range(2):
+				for j in range(12):
+					var p: Vector2 = trail[i].lerp(trail[i+1],float(j)/12.0)
+					if _visible(_project(p),100): _world_oval(p,Vector2(0.65,0.65),Color(0.55,0.76,0.86,0.055))
+		1:
+			for x in [18.0,39.0,55.0]:
+				var center := Vector2(x,_path_y(x))
+				if not _visible(_project(center),tile*8): continue
+				_world_oval(center,Vector2(3.7,3.7),Color(0.43,0.30,0.57,0.20))
+				for i in range(18):
+					var p := center+Vector2(3.6,0).rotated(float(i)*TAU/18.0)
+					var at := _project(p)
+					draw_line(at,at-Vector2(0,17),Color("#b4a2c8"),3,true)
+					_draw_halo(at-Vector2(0,18),24,Color("#b995ff"),0.7)
+					draw_circle(at-Vector2(0,18),7,Color("#aa7bd4"))
+					draw_circle(at-Vector2(2,20),2,Color("#ece0ff"))
+		2:
+			# Pebble pools and reeds track the brook banks, leaving the walk clear.
+			for x in [16.0,29.0,43.0,55.0]:
+				var p := Vector2(x,_path_y(x)+5.8)
+				if not _visible(_project(p),tile*5): continue
+				_world_oval(p,Vector2(2.9,1.8),Color("#527076"))
+				_world_oval(p,Vector2(2.55,1.5),Color("#214d64"))
+				for i in range(8):
+					var at := _project(p+Vector2(2.7,0).rotated(float(i)*TAU/8.0))
+					draw_circle(at,5,Color("#859f9d"))
+					draw_line(at,at+Vector2(4,-22),Color("#78978b"),2,true)
+		3:
+			var center := Vector2(70,_path_y(70))
+			if _visible(_project(center),tile*14):
+				_world_oval(center,Vector2(8,8),Color(0.28,0.29,0.46,0.26))
+				for ring in [2.8,4.5,7.5]:
+					for i in range(48):
+						var p := center+Vector2(ring,0).rotated(float(i)*TAU/48.0)
+						draw_circle(_project(p),3.0,Color(0.77,0.79,1,0.72))
+				for i in range(runes.size()-1):
+					var a := _project(runes[i].pos)-Vector2(0,60)
+					var b := _project(runes[i+1].pos)-Vector2(0,60)
+					draw_line(a,b,Color(0.81,0.83,1,0.6 if quest_done else 0.14),2,true)
+		4:
+			for x in range(70,83,3):
+				for side in [-1.0,1.0]:
+					var p := Vector2(x,_path_y(x)+side*4.0)
+					if not _visible(_project(p),tile*3): continue
+					_world_oval(p,Vector2(1.3,1.3),Color(0.33,0.25,0.29,0.55))
+					_draw_crop("quests-23",QUEST_RECTS[6],Rect2(_project(p)-Vector2(23,55),Vector2(46,55)))
+					for i in range(9):
+						var at := _project(p+Vector2(0.9,0).rotated(float(i)*TAU/9.0))
+						for petal in range(5):
+							draw_circle(at+Vector2(4,0).rotated(float(petal)*TAU/5.0)-Vector2(0,10),3.2,Color("#d8a8c5"))
+						draw_circle(at-Vector2(0,10),2.8,Color("#ffe6a0"))
+
+func _draw_landmark(mark: Dictionary) -> void:
+	var at := _project(mark.pos)
+	var i: int = int(mark.index)
+	# Existing painted assets anchor the landscape details in the original art style.
+	if level_index == 1 and i < 2:
+		_draw_crop("decor",DECOR_RECTS[0],Rect2(at-Vector2(55,112),Vector2(110,112)))
+	elif level_index == 2 and i < 2:
+		_draw_crop("decor",DECOR_RECTS[1],Rect2(at-Vector2(48,100),Vector2(96,100)))
+	elif level_index == 3 and i < 2:
+		_draw_crop("decor",DECOR_RECTS[6],Rect2(at-Vector2(40,110),Vector2(80,110)))
+	elif level_index == 4 and i < 2:
+		_draw_crop("decor",DECOR_RECTS[4],Rect2(at-Vector2(45,85),Vector2(90,85)))
+
+func _draw_landmark_names() -> void:
+	for mark in landmarks:
+		if player.distance_to(mark.pos) >= 7.0: continue
+		var at := _project(mark.pos)
+		var font := ThemeDB.fallback_font
+		var text: String = mark.name
+		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,15).x
+		var pos := at+Vector2(-width*0.5,22)
+		if not _landmark_label_clear(Rect2(pos-Vector2(10,17),Vector2(width+20,25))): continue
+		draw_style_box(_landmark_style(),Rect2(pos-Vector2(10,17),Vector2(width+20,25)))
+		draw_string(font,pos,text,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("#eee4cb"))
+
+func _landmark_label_clear(box: Rect2) -> bool:
+	# Discovery clues and toast messages take priority over scenery labels.
+	if toast_seconds > 0 and box.intersects(Rect2(size*Vector2(0.24,0.79),size*Vector2(0.52,0.14))): return false
+	if light_trails == null: return true
+	for stone in light_trails.stones:
+		if stone.time <= 0: continue
+		var at := _project(stone.pos+stone.direction*1.6)+Vector2(0,24)
+		var width := ThemeDB.fallback_font.get_string_size(stone.text,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
+		if box.intersects(Rect2(at-Vector2(width*0.5+14,23),Vector2(width+28,35))): return false
+	return true
+
+func _landmark_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.04,0.09,0.16,0.80)
+	style.set_corner_radius_all(7)
+	return style
+
+func _draw_interaction_hint() -> void:
+	if state != "play": return
+	var target := Vector2.ZERO
+	var text := ""
+	var npc := _nearest_npc()
+	if npc >= 0:
+		target = _project(npcs[npc].pos)-Vector2(0,tile*2.2)
+		text = "E · Talk to " + str(npcs[npc].name)
+	elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
+		target = _project(_station())-Vector2(0,115)
+		text = "E · Quest station"
+	elif level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS:
+		target = _project(_exit())-Vector2(0,175)
+		text = "E · Open door" if key_collected else "Door locked"
+	if text.is_empty(): return
+	var font := ThemeDB.fallback_font
+	var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x
+	draw_style_box(_landmark_style(),Rect2(target-Vector2(width*0.5+10,20),Vector2(width+20,30)))
+	draw_string(font,target-Vector2(width*0.5,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe1a1"))
+
+func _draw_lantern_clues_ground() -> void:
+	if light_trails == null: return
+	for track in light_trails.tracks:
+		if track.time <= 0: continue
+		var at := _project(track.pos)
+		if not _visible(at,30): continue
+		var direction: Vector2 = track.direction
+		var projected := Vector2(direction.x-direction.y,(direction.x+direction.y)*0.49)
+		var fade := minf(1.0,float(track.time)/3.0)
+		_draw_halo(at,18,Color("#b9f3ff"),fade*1.7)
+		draw_set_transform(at,projected.angle()-PI*0.5,Vector2(0.85,1.0))
+		draw_circle(Vector2.ZERO,5.0,Color(0.63,0.91,1.0,0.62*fade))
+		for toe in range(3):
+			draw_circle(Vector2(float(toe-1)*4.0,7.0-absf(float(toe-1))*1.0),2.1,Color(0.88,0.98,1.0,0.90*fade))
+		draw_set_transform(Vector2.ZERO)
+	for stone in light_trails.stones:
+		var at := _project(stone.pos)
+		if not _visible(at,tile*4): continue
+		var cast: Vector2 = (stone.pos-player).normalized()
+		if player.distance_to(stone.pos) > 7.0: cast = Vector2(1,0.3).normalized()
+		var lit: bool = stone.time > 0
+		if lit: cast = stone.direction
+		var side := Vector2(-cast.y,cast.x)
+		var tip: Vector2 = stone.pos+cast*2.7
+		var p: Vector2 = stone.pos
+		var shape := [p-side*0.22,p+cast*1.9-side*0.22,p+cast*1.9-side*0.65,tip,p+cast*1.9+side*0.65,p+cast*1.9+side*0.22,p+side*0.22]
+		if not lit: shape = [p-side*0.30,p+cast*1.9-side*0.16,p+cast*2.2,p+cast*1.9+side*0.16,p+side*0.30]
+		_world_polygon(shape,Color(0.015,0.03,0.08,0.76))
+		if lit:
+			var fade := minf(1.0,float(stone.time)/3.0)
+			var line := PackedVector2Array()
+			for point in shape: line.append(_project(point))
+			line.append(_project(shape[0]))
+			draw_polyline(line,Color(0.95,0.83,0.54,0.8*fade),2.0,true)
+			_draw_halo(_project(tip),32,Color("#ffe7ae"),fade)
+		# This visible marker teaches the alignment without revealing the answer.
+		var marker := _project(stone.stand)
+		draw_arc(marker,14.0,0.25,PI*1.65,24,Color(0.94,0.76,0.39,0.85),3,true)
+		draw_circle(marker+Vector2(0,-3),2,Color("#fff0bd"))
+
+func _draw_lantern_plant(plant: Dictionary) -> void:
+	var at := _project(plant.pos)
+	var awake: bool = plant.awake
+	var bob := sin(elapsed*1.6+float(plant.index))*2.0 if awake and not quieter_motion else 0.0
+	_shadow(at,15)
+	var stem := at-Vector2(0,32+bob)
+	draw_line(at,stem,Color("#699c94"),3,true)
+	for side in [-1.0,1.0]:
+		var leaf := PackedVector2Array([at-Vector2(0,9),at+Vector2(side*15,-18),at+Vector2(side*9,-5)])
+		draw_colored_polygon(leaf,Color("#83b5a4") if awake else Color("#46786b"))
+	_draw_halo(stem,70 if awake else 28,Color("#94ffe1"),2.4 if awake else 0.5)
+	if awake:
+		for petal in range(7):
+			var offset := Vector2(9,0).rotated(float(petal)*TAU/7.0)
+			draw_circle(stem+offset,6,Color("#87d6cb"))
+			draw_circle(stem+offset*1.15,2.8,Color("#c9fff0"))
+		draw_circle(stem,6.5,Color("#fff0b0"))
+	else:
+		draw_circle(stem,7,Color("#416f87"))
+		draw_arc(stem,7,-PI*0.8,-PI*0.2,12,Color("#a0d0e6"),2,true)
+
+func _draw_lantern_plant_names() -> void:
+	if light_trails == null: return
+	for plant in light_trails.plants:
+		if player.distance_to(plant.pos) >= 3.5: continue
+		var at := _project(plant.pos)
+		var font := ThemeDB.fallback_font
+		var text := "Lantern bloom" if plant.awake else "Space / GLOW"
+		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,13).x
+		draw_style_box(_landmark_style(),Rect2(at-Vector2(width*0.5+7,73),Vector2(width+14,23)))
+		draw_string(font,at-Vector2(width*0.5,57),text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("#c8ffe9"))
+
+func _draw_shadow_stone(stone: Dictionary) -> void:
+	var at := _project(stone.pos)
+	_shadow(at,24)
+	var top := at-Vector2(0,35)
+	draw_colored_polygon(PackedVector2Array([at+Vector2(-20,-3),at+Vector2(-17,-28),top,at+Vector2(17,-28),at+Vector2(21,-3),at+Vector2(0,6)]),Color("#4d6171"))
+	draw_colored_polygon(PackedVector2Array([at+Vector2(-17,-28),top,at+Vector2(17,-28),at+Vector2(0,-19)]),Color("#899fa3"))
+	draw_line(at-Vector2(0,18),at-Vector2(0,3),Color("#e9c990"),2,true)
+	draw_arc(at-Vector2(0,12),6,-PI*0.8,PI*0.2,16,Color("#e9c990"),2,true)
+	if stone.time > 0: _draw_halo(top,50,Color("#ffe5a3"),1.5)
+
+func _draw_shadow_inscriptions() -> void:
+	if light_trails == null: return
+	for stone in light_trails.stones:
+		if stone.time <= 0: continue
+		var at := _project(stone.pos+stone.direction*1.6)+Vector2(0,24)
+		if not _visible(at,100): continue
+		var text: String = stone.text
+		var font := ThemeDB.fallback_font
+		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
+		var fade := minf(1.0,float(stone.time)/3.0)
+		var box := _landmark_style()
+		box.bg_color.a *= fade
+		draw_style_box(box,Rect2(at-Vector2(width*0.5+10,19),Vector2(width+20,27)))
+		draw_string(font,at-Vector2(width*0.5,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color(1.0,0.90,0.65,fade))

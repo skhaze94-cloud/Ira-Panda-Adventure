@@ -107,6 +107,13 @@ func _process(_dt: float) -> void:
 	player_light.texture_scale = 1.05 + game.pulse * 0.45
 	# Select nearest visible lights, giving quest objects priority.
 	var sources: Array = []
+	if game.light_trails != null:
+		for plant in game.light_trails.plants:
+			if plant.awake:
+				sources.append({"at":game._project(plant.pos)-Vector2(0,34),"color":Color("#94ffe1"),"energy":0.7})
+		for stone in game.light_trails.stones:
+			if stone.time > 0:
+				sources.append({"at":game._project(stone.pos)-Vector2(0,20),"color":Color("#ffe5a3"),"energy":0.5})
 	for m in game.marks:
 		if not m.lit or game.level_index == 4:
 			sources.append({"at":game._project(m.pos)-Vector2(0,25),"color":MIST[game.level_index],"energy":0.42})
