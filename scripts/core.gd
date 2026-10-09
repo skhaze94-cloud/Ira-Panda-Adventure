@@ -155,7 +155,7 @@ func _path_y(x: float) -> float:
 	return x + _curve(x)
 
 func _exit() -> Vector2:
-	var x: float = float(BASE_LEVELS[level_index].size - 3)
+	var x: float = float(BASE_LEVELS[level_index]["size"] - 3)
 	return Vector2(x, _path_y(x))
 
 func _randseed(n: float) -> float:
@@ -211,7 +211,7 @@ func start_level(index: int) -> void:
 	bats.clear()
 	tree_cells.clear()
 	var level: Dictionary = BASE_LEVELS[level_index]
-	var n: int = level.size
+	var n: int = level["size"]
 	var exit_pos := _exit()
 	for x in range(n):
 		for y in range(n):
@@ -253,11 +253,11 @@ func start_level(index: int) -> void:
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
 
 func _station() -> Vector2:
-	var sx: float = float(BASE_LEVELS[level_index].size - (9 if level_index == 2 else 4))
+	var sx: float = float(BASE_LEVELS[level_index]["size"] - (9 if level_index == 2 else 4))
 	return Vector2(sx, _path_y(sx) + (2.1 if level_index == 4 else 0.0))
 
 func _blocked(p: Vector2) -> bool:
-	var n: float = float(BASE_LEVELS[level_index].size)
+	var n: float = float(BASE_LEVELS[level_index]["size"])
 	if p.x < 0.5 or p.y < 0.5 or p.x > n - 1 or p.y > n - 1: return true
 	if level_index == 2 and not quest_done and p.x > _station().x + 0.75: return true
 	var c := Vector2i(int(floor(p.x)), int(floor(p.y)))
