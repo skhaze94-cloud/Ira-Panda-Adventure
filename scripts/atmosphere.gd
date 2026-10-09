@@ -11,6 +11,8 @@ var fog: ColorRect
 var air: ShaderMaterial
 var motes: GPUParticles2D
 var overlay: CanvasLayer
+var finish: ColorRect
+var finish_material: ShaderMaterial
 
 func _ready() -> void:
 	ambient = CanvasModulate.new()
@@ -53,6 +55,7 @@ func _ready() -> void:
 	fog.material = air
 	overlay.add_child(fog)
 	motes = GPUParticles2D.new()
+	motes.texture = falloff
 	motes.amount = 40
 	motes.lifetime = 7.0
 	motes.preprocess = 7.0
@@ -65,8 +68,8 @@ func _ready() -> void:
 	motion.gravity = Vector3.ZERO
 	motion.initial_velocity_min = 3.0
 	motion.initial_velocity_max = 10.0
-	motion.scale_min = 1.0
-	motion.scale_max = 2.1
+	motion.scale_min = 0.009
+	motion.scale_max = 0.022
 	var fade := Gradient.new()
 	fade.offsets = PackedFloat32Array([0,0.2,0.75,1])
 	fade.colors = PackedColorArray([Color(1,1,1,0),Color(1,1,1,0.65),Color(1,1,1,0.45),Color(1,1,1,0)])
@@ -79,12 +82,26 @@ func _ready() -> void:
 	unlit.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
 	motes.material = unlit
 	overlay.add_child(motes)
+	var finish_layer := CanvasLayer.new()
+	finish_layer.layer = 2
+	add_child(finish_layer)
+	finish = ColorRect.new()
+	finish.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	finish_material = ShaderMaterial.new()
+	finish_material.shader = load("res://shaders/storybook_finish.gdshader")
+	finish.material = finish_material
+	finish_layer.add_child(finish)
 
 func _process(_dt: float) -> void:
 	var active: bool = game.state in ["play","dialog","win"]
 	ambient.color = AMBIENT[game.level_index] if active else Color.WHITE
 	fog.visible = active
 	fog.size = game.size
+	finish.size = game.size
+	finish.visible = active and game.graphics_quality > 0
+	finish_material.set_shader_parameter("quality",float(game.graphics_quality))
+	finish_material.set_shader_parameter("palette",game.COLORS[game.level_index])
+	air.set_shader_parameter("rays_amount",[0.025,0.04,0.055][game.graphics_quality])
 	air.set_shader_parameter("clock",0.0 if game.quieter_motion else game.elapsed)
 	air.set_shader_parameter("mist_tint",MIST[game.level_index])
 	air.set_shader_parameter("mist_amount",0.07 if game.level_index == 2 else 0.045)

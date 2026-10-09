@@ -1,28 +1,18 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.5 — Living Woodlands
+# Ara the Panda: Quest to Find Ira — Godot v0.3 — Graphical Masterclass
 
-This release refreshes the graphics, character animation, scenic environments
-and rendering performance of the existing **2D Godot adventure**. It includes
-all five quests, stories and v0.4 lantern discoveries. Unity 3D conversion
-remains on hold.
+This graphical edition lives on `godot-4-v0.3-graphical-masterclass` and builds
+on the current Living Woodlands source (`dd7d48d`). It preserves the five quests,
+lantern discoveries, articulated NPCs, navigation, chapter scenery and music.
 
-## New in v0.5
+New terrain detail, animated reflective water, shaded foliage, a shared panda
+animation frame, unfolding lantern blooms, canopy shafts and quality-scaled
+colour grading/glow are described in [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md).
+Balanced remains the default. Rich includes native lantern shadows, painted
+surface relief and the highlight glow pass. Light omits the screen finish and
+fine terrain grain. Gentler Motion freezes water, rays and botanical motion.
 
-- Articulated painted NPC rigs: Pip's wing wave, scarf and lantern swing;
-  Bramble's clipboard and pencil motion; Moss's tail swish and gestures.
-  Neighbours face Ara, greet her on approach and react to lantern glows.
-- Scenic clearings with ribbons, large glowcaps, lily pads, orbiting star
-  sculptures and flower arches. Fireflies, butterflies, frogs, pond ripples,
-  shooting stars and garden music notes add chapter-specific life.
-- Walking dust, quest celebrations, soft effect edges, blended trail borders
-  and warm ground lighting. Decorative props do not add collision or quest gates.
-- One-pass textured ground, batched effect discs, spatial forest culling,
-  smaller light pools and capped sparkle/creature budgets.
-- Graphics in Options: **Light** (two lights, fewer motes/creatures),
-  **Balanced** (default; three lights) and **Rich** (five lights, lantern
-  shadows and painted texture relief). Chapter art and clues remain in every mode.
-  Settings last for the current game session.
-
-See [PERFORMANCE-V0.5.md](PERFORMANCE-V0.5.md) for reproducible local measurements.
+The older [PERFORMANCE-V0.5.md](PERFORMANCE-V0.5.md) records the inherited
+renderer baseline; its numbers are not measurements of this graphical edition.
 
 ## Open and play
 

@@ -638,9 +638,10 @@ func _draw_woodland_prop(prop: Dictionary) -> void:
 				var angle := PI+float(i)*PI/6.0
 				_woodland_flower(at-Vector2(0,69)+Vector2(34,0).rotated(angle),Color("#e4b8c9") if i%2 else Color("#b8d5bc"),6)
 
-var flower_texture: ImageTexture
+var flower_textures: Dictionary = {}
 func _woodland_flower(at: Vector2, tint: Color, radius: float) -> void:
-	if flower_texture == null:
+	var key := tint.to_html()
+	if not flower_textures.has(key):
 		var image := Image.create(96,96,false,Image.FORMAT_RGBA8)
 		for y in range(96):
 			for x in range(96):
@@ -655,12 +656,14 @@ func _woodland_flower(at: Vector2, tint: Color, radius: float) -> void:
 					var shade := 0.89-v*0.12
 					var vein := (1.0-smoothstep(0.01,0.055,absf(v)))*smoothstep(0.08,0.2,local.x)*(1.0-smoothstep(0.65,0.88,local.x))
 					shade -= vein*0.16
-					result = Color(shade,shade,shade,alpha)
+					result = Color(shade*tint.r,shade*tint.g,shade*tint.b,alpha)
+				if q.length()<0.27:
+					result = Color("#b88b54")
+				if (q+Vector2(0,0.08)).length()<0.19:
+					result = Color("#fff0ba")
 				image.set_pixel(x,y,result)
-		flower_texture = ImageTexture.create_from_image(image)
-	draw_texture_rect(flower_texture,Rect2(at-Vector2.ONE*radius,Vector2.ONE*radius*2.0),false,tint)
-	_disc(at,radius*0.27,Color("#b88b54"))
-	_disc(at-Vector2(0,radius*0.08),radius*0.19,Color("#fff0ba"))
+		flower_textures[key] = ImageTexture.create_from_image(image)
+	draw_texture_rect(flower_textures[key],Rect2(at-Vector2.ONE*radius,Vector2.ONE*radius*2.0),false)
 
 func _draw_woodland_air() -> void:
 	var clock := 0.0 if quieter_motion else elapsed

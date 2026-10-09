@@ -1,29 +1,30 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.5
+# Ara the Panda: Quest to Find Ira — Godot v0.3
 
-**Living Woodlands** updates the five-chapter 2D Godot adventure with animated
-woodland neighbours, new scenic stops and a rebuilt renderer. The Godot edition
-is on `godot-4-v0.2-moonlight-depth`; the historical branch name is retained.
+**Graphical Masterclass** is a visual and animation edition of the five-chapter
+Godot adventure, on `godot-4-v0.3-graphical-masterclass`.
 
-- Pip waves and swings his lantern; Bramble scribbles and greets Ara; Moss swishes
-  his tail and gestures. All three turn toward Ara and react to her light.
-- Explore ribbon clearings, glowcap clusters, lily ponds, orbiting star sculptures
-  and flower arches, with fireflies, butterflies, frogs, ripples and shooting stars.
-- Softer effect edges, blended trail borders, warm pools of lantern light,
-  walking dust and celebratory sparkles make the woods feel alive.
-- Choose Light, Balanced (default) or Rich graphics in Options. Rich adds painted
-  surface relief and lantern shadows. Gentler Motion remains available.
-- The renderer batches effects, draws the ground in one pass, culls forest chunks,
-  and keeps lights, creatures and particles within fixed budgets.
+- World-space moss, textile grain and irregular trail edges enrich every chapter.
+- Puddlebrook's crossing and four pools have animated water, procedural moonlight
+  glints and shoreline highlights. Repaired bridge planks remain above the water.
+- Shaded ferns, dimensional glowcaps, veined moonflowers and flapping butterflies
+  replace flat scenic shapes. Lantern blooms unfold over 0.8 seconds.
+- Ara's torso, shoulders, head and lantern share one animation frame; the native
+  lantern light follows the sleeve in either facing direction. Ira breathes at
+  the reunion. Trees fade smoothly when they overlap the player.
+- Soft canopy shafts, drifting mist and textured GPU motes finish the atmosphere.
+  Balanced adds subtle colour grading; Rich adds restrained highlight glow,
+  alongside the existing native lantern shadows and painted surface relief.
 
-All v0.4 lantern discoveries, five quests, story panels, navigation and music
-are included. In local 1280×720 test views, Balanced reduced median frame times
-substantially versus v0.4; see [PERFORMANCE-V0.5.md](PERFORMANCE-V0.5.md) for the
-measurements and their limits.
+This edition starts from commit `dd7d48d` of the existing Godot branch, preserving
+its newer Living Woodlands movement, NPC animation, scenery and renderer work.
+The requested v0.3 label identifies this separate graphical edition; it does not
+replace the existing v0.5 branch or the browser project on `main`.
 
-Import `project.godot` with Godot 4.3 or newer, Compatibility renderer, wait for
-asset import and press F5. Move with WASD/arrows or click the ground, Space to
-glow, E to interact, and Escape to pause.
+Import `project.godot` with **Godot 4.3 or newer**, Compatibility renderer, wait
+for import, then press F5. Options includes Light, Balanced (default), Rich and
+Gentler Motion. All quests and clues remain available in every quality mode.
 
-[README-GODOT.md](README-GODOT.md) has full controls and validation details.
-Local verification used Godot 4.7.2. Unity 3D conversion remains on hold; the
-browser edition is maintained on `main`.
+[README-GODOT.md](README-GODOT.md) has controls and quest details.
+[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describes the chapter review,
+rendering choices, checks and performance limits. PNG assets and the explicit
+folder ZIP packaging fix are retained.
