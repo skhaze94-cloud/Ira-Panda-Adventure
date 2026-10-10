@@ -40,6 +40,21 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var sound_enabled := true
+var restoring := false
+var journal: RefCounted = preload("res://scripts/adventure_journal.gd").new()
+var personality: RefCounted = preload("res://scripts/personality.gd").new()
+var exploration: RefCounted = preload("res://scripts/exploration.gd").new()
+var soundscape: Node
+var save_clock := 0.0
+var nav_column := 0
+var nav_row := -1
+var nav_high := 0
+var navigation_ready := false
+var pending_destination := false
+var nav_build_us := 0
+var nav_slice_us := 0
+var nav_work_us := 0
 var pathways: RefCounted = preload("res://scripts/pathways.gd").new()
 var ui_canvas: CanvasLayer
 var atmosphere: Node2D
@@ -48,6 +63,7 @@ var ground_layer: ColorRect
 var graphics_quality := 1
 var relief_material: ShaderMaterial
 var tree_render_chunks: Dictionary = {}
+var foliage_focus: Array[Vector2] = []
 var visible_trees: Array = []
 var visibility_camera := Vector2(INF,INF)
 var visibility_size := Vector2.ZERO
@@ -131,6 +147,9 @@ var modal_heading: Label
 var modal_text: Label
 var modal_primary: Button
 var modal_secondary: Button
+var continue_button: Button
+var options_sound: CheckButton
+var joystick: Control
 var options_music: CheckButton
 var options_motion: CheckButton
 var options_quality: OptionButton
@@ -139,6 +158,9 @@ var game_audio: AudioStreamPlayer
 
 # Virtual UI hooks are overridden by scripts/main.gd. Declaring them in the base
 # lets Godot statically resolve callbacks from the gameplay layer.
+func _layout_ui() -> void:
+	pass
+
 func _story_advance() -> void:
 	pass
 
@@ -164,6 +186,10 @@ func _resume() -> void:
 	pass
 
 func _ready() -> void:
+	journal.attach(self)
+	personality.game=self
+	pathways.game=self
+	exploration.game=self
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	for name in ["forest","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-rig-22","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
 		tex[name] = load("res://assets/%s.png" % name)
@@ -172,6 +198,9 @@ func _ready() -> void:
 		var parsed = JSON.parse_string(file.get_as_text())
 		if parsed is Array:
 			chapter_stories = parsed
+	soundscape=preload("res://scripts/soundscape.gd").new()
+	soundscape.game=self
+	add_child(soundscape)
 	ui_canvas = CanvasLayer.new()
 	ui_canvas.layer = 10
 	add_child(ui_canvas)
@@ -183,6 +212,7 @@ func _ready() -> void:
 	relief_material = ShaderMaterial.new()
 	relief_material.shader = load("res://shaders/stitched_surface.gdshader")
 	ambience = load("res://scripts/woodland_flourishes.gd").new()
+	ambience.game=self
 	ground_layer = load("res://scripts/woodland_ground.gd").new()
 	ground_layer.game = self
 	add_child(ground_layer)
@@ -191,6 +221,8 @@ func _ready() -> void:
 	game_audio = _music("gameplay-music")
 	_set_state("menu")
 	resized.connect(queue_redraw)
+	resized.connect(_layout_ui)
+	_layout_ui()
 
 func _music(filename: String) -> AudioStreamPlayer:
 	var a := AudioStreamPlayer.new()
@@ -209,6 +241,9 @@ func _set_state(next_state: String) -> void:
 	if next_state != "play": _reset_controls()
 	state = next_state
 	menu_layer.visible = state == "menu"
+	if continue_button!=null:
+		continue_button.visible=journal.has_checkpoint()
+		if continue_button.visible: continue_button.text="CONTINUE · CHAPTER %d" % (int(journal.data.checkpoint.chapter)+1)
 	story_layer.visible = state == "comic"
 	hud_layer.visible = state == "play"
 	modal_layer.visible = state == "dialog" or state == "win"
@@ -280,6 +315,8 @@ func _key_trail(p: Vector2) -> bool:
 func start_level(index: int) -> void:
 	level_index = clampi(index, 0, 4)
 	pathways.build(self)
+	exploration.build(self)
+	personality.build(self)
 	player = Vector2(2, _path_y(2))
 	tile = clampf(size.x / 20.0,38,58)
 	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
@@ -321,6 +358,7 @@ func start_level(index: int) -> void:
 	for x in range(n):
 		for y in range(n):
 			var p := Vector2(float(x) + 0.2 + _randseed(x + y * 36 + level_index) * 0.25, float(y) + 0.2 + _randseed(x * 7 + y + level_index) * 0.25)
+			if exploration.open(p,3.0): continue
 			if _key_clearing(p) or (level_index==1 and p.distance_to(pathways.web_position())<4.8): continue
 			var d: float = pathways.distance(p)
 			if d < _clearing_radius(p.x) or (d>_clearing_radius(p.x)+2.0 and _randseed(x * 29 + y + level_index * 71) <= float(level.trees)) or p.distance_to(exit_pos) < 2.5: continue
@@ -366,6 +404,8 @@ func start_level(index: int) -> void:
 	_set_state("play")
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
+	_begin_navigation()
+	if not restoring: journal.checkpoint()
 
 func _station() -> Vector2:
 	var sx: float = float(BASE_LEVELS[level_index]["size"] - (9 if level_index == 2 else 4))
@@ -376,7 +416,7 @@ func _blocked(p: Vector2) -> bool:
 	if p.x < 0.5 or p.y < 0.5 or p.x > n - 1 or p.y > n - 1: return true
 	if level_index == 2 and not quest_done and p.x > _station().x + 0.75: return true
 	if pathways.blocked(p): return true
-	if pathways.distance(p)>_clearing_radius(p.x) and not _key_clearing(p) and not (level_index==1 and p.distance_to(pathways.web_position())<4.8): return true
+	if pathways.distance(p)>_clearing_radius(p.x) and not _key_clearing(p) and not exploration.open(p) and not (level_index==1 and p.distance_to(pathways.web_position())<4.8): return true
 	var c := Vector2i(int(floor(p.x)), int(floor(p.y)))
 	for dx in range(-1, 2):
 		for dy in range(-1, 2):
@@ -394,7 +434,7 @@ func _walk(d: Vector2) -> void:
 	if not _blocked(ny): player.y = ny.y
 
 func _process(dt: float) -> void:
-	if state == "play" or state == "menu" or state == "comic": elapsed += dt
+	if state == "play" or state == "menu" or state == "comic" or state=="win": elapsed += dt
 	tile = clampf(size.x / 20.0, 38, 58)
 	if state == "play":
 		var axis := mobile_axis
@@ -413,6 +453,11 @@ func _process(dt: float) -> void:
 		_update_npc_animation(dt)
 		ambience.update(dt)
 		pathways.update(dt)
+		exploration.visit()
+		save_clock+=dt
+		if save_clock>12:
+			save_clock=0
+			journal.checkpoint()
 		celebration = maxf(0.0,celebration-dt)
 		_update_collectibles()
 		_update_bats(dt)
@@ -421,7 +466,7 @@ func _process(dt: float) -> void:
 		elif _nearest_npc() >= 0:
 			action_button.text = "TALK"
 		elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
-			action_button.text = "COMPLETE QUEST"
+			action_button.text = "FINISH"
 		else:
 			action_button.text = "INTERACT"
 		if level_index > 0 and quest_done and player.distance_to(_exit()) < 1.15: _complete_chapter()
@@ -430,6 +475,8 @@ func _process(dt: float) -> void:
 			toast_label.visible = false
 		hud_glow.text = "LANTERN READY" if cooldown <= 0 else "GLOW %.1fs" % cooldown
 		_update_hud()
+	if state=="win": personality.update(dt)
+	soundscape.update(dt)
 	var lead_target := velocity * 0.38 if state == "play" and not quieter_motion else Vector2.ZERO
 	camera_lead = camera_lead.lerp(lead_target, 1.0-exp(-dt*4.0))
 	var focus := player + camera_lead
@@ -447,6 +494,8 @@ func _update_collectibles() -> void:
 	if level_index == 0:
 		if key_revealed and not key_collected and player.distance_to(_key_location()) < 1.15:
 			key_collected = true
+			personality.react("pickup")
+			journal.checkpoint()
 			celebration = 1.2
 			_burst(_key_location())
 			show_toast("The brass key is yours! Follow the lanterns to the woodland door.", 4)
@@ -455,6 +504,8 @@ func _update_collectibles() -> void:
 			if not m.lit and m.revealed and level_index != 4 and player.distance_to(m.pos) < 1.15:
 				m.lit = true
 				quest_count += 1
+				personality.react("pickup")
+				journal.checkpoint()
 				_burst(m.pos)
 				var noun: String = ["key","scroll page","driftwood bundle","star crystal","moonflower"][level_index]
 				show_toast("A %s! That's %d of three." % [noun,quest_count] if quest_count<3 else "All three! "+["","Time to mend the story at the lectern.","Let's make that bridge sturdy!","Now wake Moon, Star, Heart.","The cottage music box is ready."][level_index],3.0)
@@ -465,6 +516,7 @@ func _update_bats(dt: float) -> void:
 		b.pos = b.home + Vector2(sin(elapsed * 1.2 + b.phase), cos(elapsed * 1.7 + b.phase) * 0.25) * (1.2 if b.fear <= 0 else 3.4)
 		if player.distance_to(b.pos) < 0.95 and b.fear <= 0 and invulnerable <= 0:
 			heart -= 1
+			personality.react("startle",0.55)
 			invulnerable = 1.8
 			show_toast("A startled bat! Ara needs a little space.", 2.4)
 			if heart <= 0:
@@ -483,12 +535,14 @@ func glow() -> void:
 	cooldown = GLOW_RECHARGE
 	pulse = GLOW_TIME
 	_burst(player)
+	soundscape.play("glow")
 	light_trails.shine()
 	pathways.glow()
 	ambience.react_to_glow()
 	for npc in npcs:
 		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
+		if not key_revealed: personality.react("reveal",1.0)
 		key_revealed = true
 		quest_started = true
 		show_toast("Something brass glitters between the birch roots!", 3.5)
@@ -499,6 +553,8 @@ func glow() -> void:
 				if level_index == 4:
 					m.lit = true
 					quest_count += 1
+					personality.react("flower",1.0)
+					journal.checkpoint()
 					_burst(m.pos)
 					show_toast("Wake up, little moonflower! %d of three are shining." % quest_count if quest_count<3 else "All three flowers are awake! Let's play their lullaby at the cottage.",3.5)
 		if level_index == 3 and not quest_done:
@@ -509,6 +565,9 @@ func glow() -> void:
 					elif int(rune.order) == rune_step:
 						rune.lit = true
 						rune_step += 1
+						soundscape.play("rune-%d" % rune.order)
+						_burst(rune.pos)
+						journal.checkpoint()
 						if rune_step == 3: _finish_quest()
 						else: show_toast("%s awake! Glow at %s next." % [rune.name, ["Moon", "Star", "Heart"][rune_step]], 3)
 					else:
@@ -518,6 +577,8 @@ func glow() -> void:
 					break
 	for b in bats:
 		if player.distance_to(b.pos) < 4.5: b.fear = 2.4
+
+	journal.checkpoint()
 
 func interact() -> void:
 	if state != "play": return
@@ -530,6 +591,7 @@ func interact() -> void:
 		if npc.id == "moss" and level_index == 0: quest_started = true
 		if level_index > 0: quest_started = true
 		_update_hud()
+		journal.checkpoint()
 		return
 	if level_index == 0:
 		if player.distance_to(_exit()) < INTERACT_RADIUS:
@@ -558,6 +620,8 @@ func _nearest_npc() -> int:
 
 func _finish_quest() -> void:
 	quest_done = true
+	personality.react("repair" if level_index==2 else "celebrate",1.8)
+	journal.checkpoint()
 	celebration = 2.5
 	navigation = null # Rebuild navigation when the bridge opens.
 	_burst(_station())
@@ -569,8 +633,11 @@ func _complete_chapter() -> void:
 	if level_index > 0 and not quest_done: return
 	completed = true
 	if level_index == 4:
+		personality.react("reunion",2.3)
+		journal.checkpoint()
 		_reunion()
 	else:
+		journal.checkpoint(level_index+1)
 		story_chapter = level_index
 		story_page = 0
 		_show_story()
@@ -583,7 +650,7 @@ func _burst(location: Vector2) -> void:
 
 func _update_hud() -> void:
 	if light_trails != null:
-		hud_discoveries.text = "✦ Lantern discoveries  %d / %d" % [light_trails.discovered,light_trails.total]
+		hud_discoveries.text = "Discoveries %d/%d · Secret spots %d/2" % [light_trails.discovered,light_trails.total,int(exploration.found[0])+int(exploration.found[1])]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
@@ -623,6 +690,7 @@ func _gui_input(event: InputEvent) -> void:
 		_request_destination(_unproject(touch.position))
 
 func _notification(what: int) -> void:
+	if what==NOTIFICATION_WM_CLOSE_REQUEST and state=="play": journal.checkpoint()
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
 		_reset_controls()
 		if state == "play": _pause()
@@ -632,9 +700,11 @@ func _reset_controls() -> void:
 	walk_dir = Vector2.ZERO
 	mobile_axis = Vector2.ZERO
 	held_directions.clear()
+	if joystick!=null: joystick.release()
 	route.clear()
 	route_index = 0
 	has_destination = false
+	pending_destination=false
 	stuck_time = 0.0
 	glow_buffer = 0.0
 
@@ -651,6 +721,8 @@ func _screen_to_world(axis: Vector2) -> Vector2:
 	return Vector2(axis.x + axis.y / 0.49, axis.y / 0.49 - axis.x).normalized()
 
 func _advance_movement(axis: Vector2, dt: float) -> void:
+	personality.update(dt)
+	_navigation_tick(2000)
 	var remaining := minf(dt, 0.25)
 	while remaining > 0.00001:
 		var step := minf(remaining, 1.0/120.0)
@@ -658,11 +730,16 @@ func _advance_movement(axis: Vector2, dt: float) -> void:
 		_movement_step(axis, step)
 
 func _movement_step(axis: Vector2, dt: float) -> void:
+	if personality.action=="repair" and personality.action_time>0: return
+	if pending_destination:
+		if axis.length_squared()>0.001:
+			pending_destination=false;has_destination=false
+		else: return
 	var target_velocity := Vector2.ZERO
 	if axis.length_squared() > 0.001:
 		has_destination = false
 		route.clear()
-		target_velocity = _screen_to_world(axis) * SPEED * pathways.pace(player)
+		target_velocity = _screen_to_world(axis) * SPEED * pathways.pace(player) * (0.8 if personality.surface()=="wood" else 0.72 if personality.surface()=="stone" else 1.0)
 	elif has_destination:
 		while route_index < route.size() and player.distance_to(route[route_index]) < 0.015:
 			route_index += 1
@@ -671,7 +748,7 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 			velocity = Vector2.ZERO
 		else:
 			var delta := route[route_index] - player
-			var speed := minf(SPEED * pathways.pace(player), delta.length() / dt)
+			var speed := minf(SPEED * pathways.pace(player) * (0.8 if personality.surface()=="wood" else 0.72 if personality.surface()=="stone" else 1.0), delta.length() / dt)
 			if route_index == route.size()-1: speed = minf(speed, sqrt(2.0*DECELERATION*delta.length()))
 			target_velocity = delta.normalized() * speed
 	if has_destination: velocity = target_velocity
@@ -683,6 +760,7 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	if absf(actual.x-actual.y) > 0.15: facing = signf(actual.x-actual.y)
 	body_lean = lerpf(body_lean, clampf((actual.x-actual.y)/SPEED, -1.0, 1.0)*0.045, 1.0-exp(-dt*12.0))
 	pathways.visit()
+	soundscape.step(before.distance_to(player))
 	foot_time += before.distance_to(player) * 5.0
 	foot_dust += before.distance_to(player)
 	if foot_dust > 0.65:
@@ -705,31 +783,54 @@ func _segment_open(a: Vector2, b: Vector2) -> bool:
 			if _blocked(p+offset): return false
 	return true
 
-func _ensure_navigation() -> void:
-	if navigation != null: return
-	navigation = AStarGrid2D.new()
+func _begin_navigation() -> void:
+	navigation=AStarGrid2D.new()
 	var n: int = int(BASE_LEVELS[level_index].size)*4
-	navigation.region = Rect2i(0,0,n,n)
-	navigation.cell_size = Vector2(0.25,0.25)
-	navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
-	navigation.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
-	navigation.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
-	navigation.update()
-	navigation.fill_solid_region(navigation.region,true)
-	# Only the authored corridor and key spur can be traversed. Avoid testing
-	# the large solid forest square at quarter-tile resolution.
-	for x in range(2,n-3):
-		var wx := float(x)*0.25
-		var low := _nav_cell(_path_y(wx)-_clearing_radius(wx)-0.5)
-		var high := _nav_cell(_path_y(wx)+_clearing_radius(wx)+0.5)
-		if level_index==0 and wx>21 and wx<34:
-			low=mini(low,_nav_cell(_key_location().y-4))
-			high=maxi(high,_nav_cell(_key_location().y+4))
-		if level_index==1 and absf(wx-pathways.web_position().x)<5:
-			low=mini(low,_nav_cell(pathways.web_position().y-5))
-			high=maxi(high,_nav_cell(pathways.web_position().y+5))
-		for y in range(maxi(2,low),mini(n-3,high+1)):
-			navigation.set_point_solid(Vector2i(x,y),_navigation_blocked(Vector2(x,y)*0.25))
+	navigation.region=Rect2i(0,0,n,n)
+	navigation.cell_size=Vector2(.25,.25)
+	navigation.diagonal_mode=AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	navigation.default_compute_heuristic=AStarGrid2D.HEURISTIC_OCTILE
+	navigation.default_estimate_heuristic=AStarGrid2D.HEURISTIC_OCTILE
+	navigation.update();navigation.fill_solid_region(navigation.region,true)
+	nav_column=2;nav_row=-1;navigation_ready=false;nav_work_us=0;nav_slice_us=0
+
+func _navigation_tick(budget_us: int=2000) -> void:
+	if navigation==null: _begin_navigation()
+	if navigation_ready: return
+	var began := Time.get_ticks_usec()
+	var n: int = navigation.region.size.x
+	while nav_column<n-3:
+		var x := nav_column
+		var wx := float(x)*.25
+		if nav_row<0:
+			var low := _nav_cell(_path_y(wx)-_clearing_radius(wx)-.5)
+			var high := _nav_cell(_path_y(wx)+_clearing_radius(wx)+.5)
+			if level_index==0 and wx>21 and wx<34:
+				low=mini(low,_nav_cell(_key_location().y-4));high=maxi(high,_nav_cell(_key_location().y+4))
+			if level_index==1 and absf(wx-pathways.web_position().x)<5:
+				low=mini(low,_nav_cell(pathways.web_position().y-5));high=maxi(high,_nav_cell(pathways.web_position().y+5))
+			for loop in exploration.loops:
+				if wx<float(loop.points[0].x)-3 or wx>float(loop.points[3].x)+3: continue
+				for point in loop.points:
+					low=mini(low,_nav_cell(point.y-3));high=maxi(high,_nav_cell(point.y+3))
+			nav_row=maxi(2,low);nav_high=mini(n-4,high)
+		while nav_row<=nav_high:
+			navigation.set_point_solid(Vector2i(x,nav_row),_navigation_blocked(Vector2(x,nav_row)*.25))
+			nav_row+=1
+			if Time.get_ticks_usec()-began>=budget_us: break
+		if nav_row>nav_high: nav_column+=1;nav_row=-1
+		if Time.get_ticks_usec()-began>=budget_us: break
+	var work := Time.get_ticks_usec()-began
+	nav_work_us+=work;nav_slice_us=maxi(nav_slice_us,work)
+	if nav_column>=n-3:
+		navigation_ready=true;nav_build_us=nav_work_us
+		if pending_destination:
+			pending_destination=false
+			_request_destination(destination)
+
+func _ensure_navigation() -> void:
+	if navigation==null: _begin_navigation()
+	while not navigation_ready: _navigation_tick(16000)
 
 func _nav_cell(value: float) -> int:
 	return floori(value*4.0)
@@ -758,11 +859,15 @@ func _request_destination(point: Vector2) -> void:
 	route.clear()
 	route_index = 0
 	has_destination = false
+	pending_destination=false
 	stuck_time = 0.0
 	if _segment_open(player, point):
 		route.append(point)
 	else:
-		_ensure_navigation()
+		if navigation==null: _begin_navigation()
+		if not navigation_ready:
+			destination=point;pending_destination=true;has_destination=true
+			return
 		var from := _nearest_walkable(player)
 		var to := _nearest_walkable(point)
 		if from.x < 0 or to.x < 0:
@@ -800,6 +905,7 @@ func set_graphics_quality(index: int) -> void:
 	graphics_quality = clampi(index,0,2)
 	material = relief_material if graphics_quality == 2 else null
 	if atmosphere != null: atmosphere.apply_quality(graphics_quality)
+	if journal.game!=null: journal.settings()
 	queue_redraw()
 
 func _update_npc_animation(dt: float) -> void:

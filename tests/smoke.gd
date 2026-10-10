@@ -14,6 +14,7 @@ func run() -> void:
 	for asset_name in game.tex:
 		check(game.tex[asset_name] is Texture2D,"Missing texture: " + asset_name)
 	game.music_enabled = false
+	game.sound_enabled = false
 	game.menu_audio.stop()
 	game.game_audio.stop()
 	for chapter in range(5):

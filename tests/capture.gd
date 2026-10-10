@@ -6,6 +6,7 @@ func run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.music_enabled = false
+	game.sound_enabled = false
 	game.menu_audio.stop()
 	game.game_audio.stop()
 	var capture_dir := OS.get_environment("IRA_CAPTURE_DIR")

@@ -22,7 +22,8 @@ func build(owner_game: Control) -> void:
 	web_fade = 1.0
 	var n: float = game.BASE_LEVELS[game.level_index].size
 	for i in range(2):
-		var x := 3.0+(n-6.0)*(3.0 if i==0 else 7.0)/11.0
+		var fraction: float = [[.28,.65],[.32,.78],[.26,.62],[.40,.75],[.30,.74]][game.level_index][i]
+		var x := 3.0+(n-6.0)*fraction
 		var kind: String = [["bridge","stones"],["stones","log_bridge"],["bridge","stones"],["stones","bridge"],["bridge","log_bridge"]][game.level_index][i]
 		crossings.append({"x":x,"pos":Vector2(x,y(x)),"kind":kind,"width":1.15,"offset":-0.85 if kind=="stones" else 0.8})
 	if game.level_index==2:
@@ -57,6 +58,7 @@ func pace(p: Vector2) -> float:
 func glow() -> void:
 	if game.level_index==1 and not web_clear and game.player.distance_to(web_position())<4.5:
 		web_clear = true
+		game.soundscape.play("web")
 		game._burst(web_position())
 		game.show_toast("The silvery web folds into sparkles. Thank you, little spider!",3.5)
 func visit() -> void:
@@ -73,6 +75,8 @@ func visit() -> void:
 func protect_objectives() -> void:
 	var targets: Array[Vector2] = [game._station(),game._exit(),game._key_location() if game.level_index==0 else game.player]
 	for item in game.marks+game.runes+game.npcs: targets.append(item.pos)
+	for loop in game.exploration.loops:
+		targets.append(loop.points[0]);targets.append(loop.points[3])
 	for o in obstacles:
 		for shift in [0.0,2.5,-2.5,4.5,-4.5]:
 			var x: float = o.pos.x+shift

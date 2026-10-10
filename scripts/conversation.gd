@@ -142,6 +142,7 @@ func show_beat() -> void:
 	visible_letters = 0.0
 	caption.visible_characters = -1 if game.quieter_motion else 0
 	portrait.speaker = line.speaker
+	game.soundscape.play("voice-"+str(line.speaker),1.0,-16)
 	portrait.mood = line.get("mood","warm")
 	portrait.clock = 0.0
 	progress.text = "%d / %d" % [page+1,beats.size()]

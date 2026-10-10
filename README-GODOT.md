@@ -1,16 +1,15 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.5 — The Wandering Woodlands
+# Ara the Panda: Quest to Find Ira — Godot v0.6
 
-The pathways edition is on `godot-4-v0.5-pathways`, built on v0.4 (`2ca7e8d`).
-All five chapters now follow winding woodland routes with streams, bridges,
-stepping stones and physical obstacles. Glowcap Glade includes a friendly web:
-walk through gently or press **Space / GLOW** to dissolve it.
+**Little Paws, Big Personality** builds on v0.5's winding woodlands. Ara now
+balances on wood, steps over stones, crouches for treasures, builds the bridge,
+and celebrates discoveries. Original woodland sounds accompany each action.
+Ten optional side loops rejoin the main trail and reward curious little paws.
 
-[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md) records the routes, crossing behavior and tests.
-[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) and
-[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describe the inherited updates.
-NPC conversations still show one character and one caption at a time; tap or
-press **Space / Enter / E** to reveal, then advance. **Escape** returns to play.
-Balanced remains the default graphics setting.
+Continue restores chapter progress and discoveries. Music, sound, gentler motion
+and graphics preferences persist. See [PERSONALITY-V0.6.md](PERSONALITY-V0.6.md)
+for save behavior, chapter moments and test evidence. The earlier
+[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md), [QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md)
+and [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describe inherited features.
 
 ## Open and play
 
@@ -20,14 +19,14 @@ Balanced remains the default graphics setting.
 
 | Action | Controls |
 |---|---|
-| Move | WASD / arrows, or direction buttons |
+| Move | WASD / arrows, or the touch paw stick |
 | Walk to a destination | Click / tap the woodland floor |
 | Lantern glow | Space / GLOW |
 | Talk / quest station / door | E / INTERACT |
 | Pause | Escape / pause button |
 | Story | Enter / Space / Next Page / Skip |
 
-Music, Gentler Motion and Graphics are available under Options. Losing application focus
+Music, Woodland Sounds, Gentler Motion and Graphics are available under Options. Losing application focus
 pauses play. UI buttons do not capture movement or lantern keys after a click.
 
 ## Lantern discovery loop

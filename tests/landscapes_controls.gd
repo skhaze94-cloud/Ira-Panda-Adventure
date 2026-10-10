@@ -25,6 +25,7 @@ func run() -> void:
 	await process_frame
 	game.set_process(false)
 	game.music_enabled = false
+	game.sound_enabled = false
 	game.menu_audio.stop()
 	game.game_audio.stop()
 	for chapter in range(5):

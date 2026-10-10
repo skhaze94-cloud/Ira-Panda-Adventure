@@ -1,5 +1,6 @@
 extends "res://scripts/core.gd"
 
+const ADVENTURE_ART = preload("res://scripts/adventure_art.gd")
 const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
 
 # --- Art renderer: native CanvasItem / Godot Texture2D drawing ---
@@ -15,14 +16,18 @@ func _draw() -> void:
 		return
 	if not (state == "play" or state == "dialog" or state == "win"): return
 	var draw_begin := Time.get_ticks_usec()
+	foliage_focus=_focus_points()
 	_refresh_visible_trees()
 	_draw_level_surface()
 	_draw_lantern_clues_ground()
 	_moon_haze()
+	ADVENTURE_ART.signs(self)
 	var entities: Array = []
+	for loop in exploration.loops:
+		if _visible(_project(loop.pos),tile*3): entities.append({"depth":loop.pos.x+loop.pos.y,"type":"secret","data":loop})
 	for o in pathways.obstacles:
 		if _visible(_project(o.pos),tile*3): entities.append({"depth":o.pos.x+o.pos.y,"type":"path_obstacle","data":o})
-	if level_index==1 and pathways.web_fade>0.0:
+	if level_index==1:
 		var wp: Vector2 = pathways.web_position()
 		entities.append({"depth":wp.x+wp.y,"type":"web","data":{}})
 	for t in visible_trees:
@@ -60,6 +65,7 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"secret": ADVENTURE_ART.secret(self,d)
 			"path_obstacle": PATHWAY_ART.obstacle(self,d)
 			"web": PATHWAY_ART.web(self)
 			"tree": _draw_tree(d)
@@ -77,6 +83,7 @@ func _draw() -> void:
 			"light_plant": _draw_lantern_plant(d)
 			"shadow_stone": _draw_shadow_stone(d)
 			"flourish": _draw_woodland_prop(d)
+	ADVENTURE_ART.moments(self)
 	_draw_landmark_names()
 	for part in particles:
 		var fade: float = part.life / part.max
@@ -141,7 +148,11 @@ func _draw_tree(t: Dictionary) -> void:
 	_shadow(at,30*t["size"])
 	var relative := at-_project(player)
 	var overlap := (1.0-smoothstep(tile*0.65,tile*1.3,absf(relative.x)))*smoothstep(0.0,18.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
-	var alpha := lerpf(1.0,0.28,overlap)
+	for target in foliage_focus:
+		var delta := at-_project(target)
+		var cover := (1-smoothstep(tile*.55,tile*1.5,absf(delta.x)))*smoothstep(0,16,delta.y)*(1-smoothstep(h*.65,h*.95,delta.y))
+		overlap=maxf(overlap,cover)
+	var alpha := lerpf(1.0,0.12,overlap)
 	var sway: float = sin(elapsed * 0.8 + t.pos.x) * 0.013 if not quieter_motion else 0.0
 	draw_set_transform(at,sway)
 	_draw_crop("trees-v2",crop,Rect2(Vector2(-w*0.5,-h),Vector2(w,h)),Color(1,1,1,alpha))
@@ -278,7 +289,7 @@ func _draw_exit() -> void:
 		_draw_crop("decor",DECOR_RECTS[5],Rect2(at-Vector2(110,200),Vector2(220,200)))
 		if quest_done:
 			var breath := sin(elapsed*1.8)*0.012 if not quieter_motion else 0.0
-			var ira_at := at+Vector2(45,5)
+			var ira_at := at+Vector2(lerpf(45,39,personality.reunion),5)
 			_shadow(ira_at,22)
 			draw_set_transform(ira_at,0,Vector2(1.0-breath,1.0+breath))
 			_draw_png("ira",Vector2.ZERO,65,82)
@@ -299,7 +310,7 @@ func _rig_part(index: int, center: Vector2, wh: Vector2, spin: float=0.0, pivot:
 	# Mirror both the shoulder position AND the local crop around the body.
 	var root := _ara_root()
 	var mirrored := _ara_frame(center-root)
-	draw_set_transform(mirrored,spin*facing+(body_lean if not quieter_motion else 0.0),Vector2(facing,1))
+	draw_set_transform(mirrored,spin*facing+(body_lean+personality.lean() if not quieter_motion else 0.0),Vector2(facing,1))
 	_draw_crop("ara-rig-22",rect,Rect2(-wh*pivot,wh))
 	draw_set_transform(Vector2.ZERO)
 
@@ -309,13 +320,13 @@ func _draw_ara() -> void:
 	var gait := sin(foot_time) * minf(1.0,walk_dir.length()) if not quieter_motion else 0.0
 	var bounce := absf(sin(foot_time)) * minf(1.0,walk_dir.length()) * 3.2 if not quieter_motion else 0.0
 	var breath := sin(elapsed*2.0)*0.65 if not quieter_motion else 0.0
-	var base := at-Vector2(0,bounce)
+	var base := _ara_root()
 	_rig_part(4,base+Vector2(-12,-9+gait*2),Vector2(18,14),-gait*0.15)
 	_rig_part(5,base+Vector2(12,-9-gait*2),Vector2(18,14),gait*0.15)
-	_rig_part(2,base+Vector2(-14,-52-breath),Vector2(18,34),gait*0.16,Vector2(0.42,0.10))
+	_rig_part(2,base+Vector2(-14,-52-breath),Vector2(18,34),gait*0.16+personality.arm(0),Vector2(0.42,0.10))
 	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44),0.0)
 	var lift := sin((1-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
-	_rig_part(3,base+Vector2(14,-51-breath),Vector2(35,49),-lift*0.42+gait*0.04,Vector2(0.16,0.10))
+	_rig_part(3,base+Vector2(14,-51-breath),Vector2(35,49),-lift*0.42+gait*0.04+personality.arm(1),Vector2(0.16,0.10))
 	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(sin(elapsed*1.4)*0.018 if not quieter_motion else 0.0),Vector2(0.5,0.95))
 	_draw_halo(_lantern_tip(),62,COLORS[level_index],2.0)
 
@@ -323,19 +334,21 @@ func _draw_ara() -> void:
 func _ara_root() -> Vector2:
 	var motion: float = minf(1.0,walk_dir.length())
 	var bounce: float = absf(sin(foot_time))*motion*3.2 if not quieter_motion else 0.0
-	return _project(player)-Vector2(0,bounce)
+	var at := _project(player)-Vector2(0,bounce+personality.hop())+Vector2(0,personality.dip())
+	if state=="win" and level_index==4: at=at.lerp(_project(_exit())+Vector2(18,4),personality.reunion)
+	return at
 
 func _lantern_tip() -> Vector2:
 	var lift: float = sin((1.0-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
 	var breath: float = sin(elapsed*2.0)*0.65 if not quieter_motion else 0.0
 	var gait: float = sin(foot_time)*minf(1.0,walk_dir.length()) if not quieter_motion else 0.0
-	var arm_spin: float = -lift*0.42+gait*0.04
+	var arm_spin: float = -lift*0.42+gait*0.04+personality.arm(1)
 	var tip := Vector2(14,-51-breath) + Vector2(19,32).rotated(arm_spin)
 	return _ara_frame(tip)
 
 func _ara_frame(local: Vector2) -> Vector2:
 	var pivot := Vector2(0,-32)
-	var tilt := body_lean if not quieter_motion else 0.0
+	var tilt: float = body_lean+personality.lean() if not quieter_motion else 0.0
 	var mirrored := Vector2(local.x*facing,local.y)
 	return _ara_root()+pivot+(mirrored-pivot).rotated(tilt)
 
@@ -393,8 +406,8 @@ func _draw_chapter_landscape() -> void:
 					_storybook_mushroom(at,8.0,17.0,Color("#b191d4"),float(i))
 		2:
 			# Pebble pools and reeds track the brook banks, leaving the walk clear.
-			for x in [16.0,29.0,43.0,55.0]:
-				var p := Vector2(x,_path_y(x)+5.8)
+			for c in pathways.crossings:
+				var p := Vector2(c.x,c.pos.y+5.8)
 				if not _visible(_project(p),tile*5): continue
 
 				for i in range(8):
@@ -758,7 +771,7 @@ func _storybook_petal(at: Vector2, angle: float, length_px: float, width: float,
 
 func _storybook_mushroom(foot: Vector2, radius: float, height_px: float, tint: Color, phase: float) -> void:
 	var sway := sin(elapsed*1.2+phase)*radius*0.035 if not quieter_motion else 0.0
-	var cap := foot+Vector2(sway,-height_px)
+	var cap := foot+Vector2(sway,-height_px-(absf(sin(elapsed*5+phase))*minf(1,ambience.response)*4 if not quieter_motion and level_index==1 else 0.0))
 	draw_line(foot,cap,Color("#ad93b1"),maxf(2.0,radius*0.28),true)
 	draw_line(foot-Vector2(radius*0.07,0),cap-Vector2(radius*0.07,0),Color("#e3ced5"),maxf(1.0,radius*0.10),true)
 	var shape := PackedVector2Array()
@@ -786,3 +799,16 @@ func _storybook_fern(at: Vector2, phase: float) -> void:
 			var length_px := 10.0-float(i)
 			_storybook_petal(center,-0.6 if branch>0 else PI+0.6,length_px,2.3,Color("#83aa8e"))
 			_storybook_petal(center,0.5 if branch>0 else PI-0.5,length_px*0.8,2.0,Color("#547d6c"))
+
+func _focus_points() -> Array[Vector2]:
+	var points: Array[Vector2] = [player]
+	if level_index==1 and player.distance_to(pathways.web_position())<6: points.append(pathways.web_position())
+	if level_index==0 and player.distance_to(_key_location())<7: points.append(_key_location())
+	for m in marks:
+		if player.distance_to(m.pos)<6 and (not m.lit or level_index==4): points.append(m.pos)
+	for npc in npcs:
+		if player.distance_to(npc.pos)<4: points.append(npc.pos)
+	for loop in exploration.loops:
+		if player.distance_to(loop.pos)<6: points.append(loop.pos)
+	if player.distance_to(_station())<6: points.append(_station())
+	return points

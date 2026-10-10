@@ -22,6 +22,7 @@ float grain(vec2 p) {
 uniform vec4 pools[6];
 uniform vec3 pool_colors[6];
 uniform int pool_count = 0;
+uniform vec4 secret_segments[6];
 uniform float route_offsets[12];
 uniform vec4 crossings[3];
 uniform int crossing_count = 0;
@@ -52,6 +53,7 @@ void fragment() {
         vec2 c=vec2(29.0,path_y(29.0)+6.0);
         distance_to_trail=min(distance_to_trail,min(segment_distance(world,a,b),segment_distance(world,b,c))+0.7);
     }
+    for(int k=0;k<6;k++) distance_to_trail=min(distance_to_trail,segment_distance(world,secret_segments[k].xy,secret_segments[k].zw)+0.8);
     int parity=int(mod(cell.x+cell.y,2.0));
     float organic=grain(world*1.7);
     float edge=smoothstep(1.65,2.8,distance_to_trail+(organic-0.5)*0.55);

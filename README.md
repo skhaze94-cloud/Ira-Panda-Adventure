@@ -1,22 +1,26 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.5
+# Ara the Panda: Quest to Find Ira — Godot v0.6
 
-**The Wandering Woodlands** redesigns travel through all five chapters on
-`godot-4-v0.5-pathways`.
+**Little Paws, Big Personality** brings the woodland adventure to life on
+`godot-4-v0.6-little-paws-big-personality`.
 
-- Winding woodland routes with denser tree borders and distinct chapter turns.
-- Eleven stream crossings: plank bridges, stepping stones, fallen logs and the
-  original driftwood bridge repair.
-- Physical logs and boulders to weave around, protected quest locations, and a
-  friendly spiderweb that a lantern glow dissolves.
-- Animated water, mossy banks, first-crossing captions and precise tap-to-walk
-  navigation through the new routes.
+- Terrain-aware balancing and stepping, pickup crouches, bridge-building,
+  startled reactions, celebrations, and a visible sister reunion.
+- Twenty original woodland sound clips: footsteps, streams, lantern chimes,
+  character voices, musical runes and a cottage music-box lullaby.
+- Ten optional exploration loops with tiny themed discoveries and one-time
+  heart rewards, clear trails, and no extra quest requirements.
+- Improved foliage visibility, textured stepping stones, moss, bridge grain,
+  shadows, and chapter-specific magical moments.
+- Compact illustrated controls with a touch paw stick, persistent preferences,
+  autosave, Continue, and recovery from a last-good checkpoint.
+- Navigation prepared over short frame slices instead of a synchronous cold
+  build on the first long-distance tap.
 
-Includes v0.4's one-speaker quest captions, all five quests and comics, and v0.3's
-lighting, character rig, depth and graphics upgrades. Gentler Motion remains
-available. PNG assets retain the earlier import fixes.
+Includes the winding v0.5 paths, v0.4 one-speaker captions, and the inherited
+lighting and shared character rig. PNG import fixes are retained.
 
 Extract the ZIP, import **project.godot** with **Godot 4.3 or newer**, Compatibility
 renderer, wait for asset import, then press **F5**.
 
-[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md) describes routes and verification;
-[README-GODOT.md](README-GODOT.md) has controls and the inherited game features.
+[PERSONALITY-V0.6.md](PERSONALITY-V0.6.md) describes this update and validation.
+[README-GODOT.md](README-GODOT.md) has controls and the full feature guide.

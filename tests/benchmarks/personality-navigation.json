@@ -1,0 +1,32 @@
+[
+  {
+    "chapter": 1,
+    "max_slice_ms": 4.346,
+    "navigation_work_ms": 608.068,
+    "request_ms": 8.781
+  },
+  {
+    "chapter": 2,
+    "max_slice_ms": 2.221,
+    "navigation_work_ms": 508.666,
+    "request_ms": 2.511
+  },
+  {
+    "chapter": 3,
+    "max_slice_ms": 4.406,
+    "navigation_work_ms": 763.446,
+    "request_ms": 9.179
+  },
+  {
+    "chapter": 4,
+    "max_slice_ms": 5.425,
+    "navigation_work_ms": 601.152,
+    "request_ms": 2.936
+  },
+  {
+    "chapter": 5,
+    "max_slice_ms": 8.507,
+    "navigation_work_ms": 613.104,
+    "request_ms": 6.823
+  }
+]
