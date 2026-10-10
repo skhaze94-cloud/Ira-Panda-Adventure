@@ -22,14 +22,14 @@ float grain(vec2 p) {
 uniform vec4 pools[6];
 uniform vec3 pool_colors[6];
 uniform int pool_count = 0;
+uniform float route_offsets[12];
+uniform vec4 crossings[3];
+uniform int crossing_count = 0;
 float path_y(float x) {
-    float e = smoothstep(3.0,12.0,x)*(1.0-smoothstep(map_size-12.0,map_size-3.0,x));
-    float c = sin(x*0.24)*2.2;
-    if(chapter==1) c=sin(x*0.15)*3.5+sin(x*0.39)*0.7;
-    if(chapter==2) c=sin(x*0.10+0.5)*4.0;
-    if(chapter==3) c=sin(x*0.12)*2.8;
-    if(chapter==4) c=sin(x*0.19)*2.0;
-    return x+c*e;
+ float u=clamp((x-3.0)/(map_size-6.0)*11.0,0.0,11.0);
+ int i=min(10,int(floor(u)));
+ float t=u-float(i);
+ return x+mix(route_offsets[i],route_offsets[i+1],t*t*(3.0-2.0*t))*0.8;
 }
 float segment_distance(vec2 p, vec2 a, vec2 b) {
     vec2 d=b-a;
@@ -69,18 +69,13 @@ void fragment() {
     }
     float water=0.0;
     float shore=0.0;
-    if(chapter==2) {
-        vec2 river=world-vec2(water_center,path_y(water_center));
-        float bank=max(abs(river.x)-0.8,abs(river.y)-5.0);
-        water=1.0-smoothstep(-0.08,0.08,bank);
-        shore=1.0-smoothstep(0.0,0.24,abs(bank));
-        for(int j=0;j<4;j++) {
-            float x=16.0; if(j==1)x=29.0; if(j==2)x=43.0; if(j==3)x=55.0;
-            vec2 pool=(world-vec2(x,path_y(x)+5.8))/vec2(2.55,1.5);
-            float d=length(pool);
-            water=max(water,1.0-smoothstep(0.96,1.02,d));
-            shore=max(shore,1.0-smoothstep(0.02,0.13,abs(d-1.0)));
-        }
+    for(int k=0;k<3;k++) {
+        if(k>=crossing_count) break;
+        float bank=abs(world.x-crossings[k].x)-crossings[k].y;
+        water=max(water,1.0-smoothstep(-0.06,0.06,bank));
+        shore=max(shore,1.0-smoothstep(0.0,0.2,abs(bank)));
+    }
+    if(water>0.0 || shore>0.0) {
         float wave=sin(world.x*8.0+world.y*4.0+clock*1.5);
         float crosswave=sin(world.x*3.0-world.y*9.0-clock*0.8);
         float glint=pow(max(0.0,wave*0.5+crosswave*0.5),12.0);

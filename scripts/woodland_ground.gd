@@ -25,6 +25,12 @@ func sync() -> void:
 		last_chapter = game.level_index
 		surface.set_shader_parameter("chapter",last_chapter)
 		surface.set_shader_parameter("map_size",float(game.BASE_LEVELS[last_chapter].size))
+		surface.set_shader_parameter("route_offsets",PackedFloat32Array(game.pathways.OFFSETS[last_chapter]))
+		var crossings: Array[Vector4] = []
+		for c in game.pathways.crossings: crossings.append(Vector4(c.x,c.width,0,0))
+		while crossings.size()<3: crossings.append(Vector4.ZERO)
+		surface.set_shader_parameter("crossings",crossings)
+		surface.set_shader_parameter("crossing_count",game.pathways.crossings.size())
 		surface.set_shader_parameter("ambient_tint",game.atmosphere.AMBIENT[last_chapter].lightened(0.12))
 	surface.set_shader_parameter("viewport_size",game.size)
 	surface.set_shader_parameter("camera_offset",game.camera)

@@ -71,8 +71,20 @@ func _add_trail(points: Array, id: int) -> void:
 func _add_stone(pos: Vector2, target: Vector2, text: String, sequence: bool) -> void:
 	var direction := (target-pos).normalized()
 	var stand := pos-direction*1.65
-	# Clearings are authored wide enough for the stone and its light-source marker.
-	if game._blocked(pos) or game._blocked(stand): return
+	# Keep both the carved stone and its lantern standing spot clear of banks.
+	if game._navigation_blocked(pos) or game._navigation_blocked(stand):
+		var original := pos
+		for shift in [0.75,-0.75,1.5,-1.5,2.5,-2.5,3.5,-3.5]:
+			var x: float = original.x+shift
+			var candidate := Vector2(x,game._path_y(x)+0.8)
+			var facing_target := (target-candidate).normalized()
+			var safe_stand := candidate-facing_target*1.65
+			if game._navigation_blocked(candidate) or game._navigation_blocked(safe_stand): continue
+			pos=candidate
+			direction=facing_target
+			stand=safe_stand
+			break
+	if game._navigation_blocked(pos) or game._navigation_blocked(stand): return
 	stones.append({"pos":pos,"target":target,"direction":direction,"stand":stand,"text":text,"sequence":sequence,"found":false,"time":0.0})
 
 func update(dt: float) -> void:

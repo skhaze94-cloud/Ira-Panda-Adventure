@@ -76,7 +76,7 @@ func _build_ui() -> void:
 	var menu_col := VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",16)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ LITTLE TALKS, BIG ADVENTURE · v0.4 ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ THE WANDERING WOODLANDS · v0.5 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",42)
 	_label(menu_col,"Quest to Find Ira",28,Color("#fedbb3"))
 	var avatar := TextureRect.new()

@@ -1,5 +1,7 @@
 extends "res://scripts/core.gd"
 
+const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
+
 # --- Art renderer: native CanvasItem / Godot Texture2D drawing ---
 func _draw() -> void:
 	if tex.is_empty(): return
@@ -18,6 +20,11 @@ func _draw() -> void:
 	_draw_lantern_clues_ground()
 	_moon_haze()
 	var entities: Array = []
+	for o in pathways.obstacles:
+		if _visible(_project(o.pos),tile*3): entities.append({"depth":o.pos.x+o.pos.y,"type":"path_obstacle","data":o})
+	if level_index==1 and pathways.web_fade>0.0:
+		var wp: Vector2 = pathways.web_position()
+		entities.append({"depth":wp.x+wp.y,"type":"web","data":{}})
 	for t in visible_trees:
 		if _visible(_project(t.pos),tile*5): entities.append({"depth":t.pos.x+t.pos.y, "type":"tree", "data":t})
 	for t in lanterns:
@@ -53,6 +60,8 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"path_obstacle": PATHWAY_ART.obstacle(self,d)
+			"web": PATHWAY_ART.web(self)
 			"tree": _draw_tree(d)
 			"lantern": _draw_lantern(d)
 			"decor": _draw_decoration(d)
@@ -228,7 +237,7 @@ func _draw_station() -> void:
 			_draw_crop("quests-23",QUEST_RECTS[2],Rect2(at-Vector2(31,52),Vector2(62,52)))
 			_draw_halo(at-Vector2(0,26),45,Color("#c3ddff"),1.0)
 			return
-		at = _project(Vector2(_station().x+1.4,_path_y(_station().x+1.4)))+Vector2(35,30)
+		return # Repaired deck is rendered in the ground pass.
 	var art_index: int = [0,8,3,4,7][level_index]
 	var w := 175.0 if level_index == 2 else 110.0
 	var h := 120.0 if level_index == 2 else 100.0
@@ -333,16 +342,7 @@ func _ara_frame(local: Vector2) -> Vector2:
 func _draw_level_surface() -> void:
 	# Effects sit above the textured ground and below every depth-sorted actor.
 	_draw_chapter_landscape()
-	if level_index == 2:
-		var x: float = _station().x + 1.4
-		if quest_done:
-			# Real planks cross the full brook, rather than just an upright bridge picture.
-			for i in range(9):
-				var px := x-0.9+float(i)*0.23
-				var py := _path_y(x)
-				_world_polygon([Vector2(px,py-1.1),Vector2(px+0.18,py-1.1),Vector2(px+0.18,py+1.1),Vector2(px,py+1.1)],Color("#947054"))
-			for side_y in [-1.15,1.15]:
-				draw_line(_project(Vector2(x-0.95,_path_y(x)+side_y)),_project(Vector2(x+1.1,_path_y(x)+side_y)),Color("#deb287"),4,true)
+	PATHWAY_ART.crossings(self)
 	for i in range(22):
 		var x: float = 3.0+float(i)*3.4
 		var p := Vector2(x,_path_y(x)+(2.7 if i%2 else -2.7))

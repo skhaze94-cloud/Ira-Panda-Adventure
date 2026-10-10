@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var pathways: RefCounted = preload("res://scripts/pathways.gd").new()
 var ui_canvas: CanvasLayer
 var atmosphere: Node2D
 var light_trails: RefCounted
@@ -223,31 +224,10 @@ func _set_state(next_state: String) -> void:
 	queue_redraw()
 
 func _curve(x: float) -> float:
-	# Each chapter has its own silhouette, with quiet approaches to both ends.
-	var envelope := smoothstep(3.0, 12.0, x) * (1.0 - smoothstep(float(BASE_LEVELS[level_index].size)-12.0, float(BASE_LEVELS[level_index].size)-3.0, x))
-	match level_index:
-		0: return sin(x * 0.24) * 2.2 * envelope
-		1: return (sin(x * 0.15) * 3.5 + sin(x * 0.39) * 0.7) * envelope
-		2: return sin(x * 0.10 + 0.5) * 4.0 * envelope
-		3: return sin(x * 0.12) * 2.8 * envelope
-		4: return sin(x * 0.19) * 2.0 * envelope
-	return 0.0
+	return pathways.y(x)-x
 
 func _clearing_radius(x: float) -> float:
-	# Give the new scenic stops real breathing room between the canopies.
-	if level_index in [0,1]:
-		for stop in [12.0,26.0,40.0,54.0]:
-			if absf(x-stop)<3.2: return 6.8
-	if level_index == 2:
-		for stop in [16.0,29.0,43.0,55.0]:
-			if absf(x-stop)<3.4: return 8.4
-	match level_index:
-		0: return 3.6
-		1: return 3.5 + maxf(0.0, sin(x * 0.20)) * 3.2
-		2: return 4.2
-		3: return 7.5 if x > 58.0 else 4.2
-		4: return 7.0 if x > 69.0 else 4.0 + maxf(0.0, sin(x * 0.19)) * 1.5
-	return 3.6
+	return 8.0 if (level_index==3 and x>58) or (level_index==4 and x>69) else 6.0
 
 func _build_landmarks() -> void:
 	landmarks.clear()
@@ -299,6 +279,7 @@ func _key_trail(p: Vector2) -> bool:
 
 func start_level(index: int) -> void:
 	level_index = clampi(index, 0, 4)
+	pathways.build(self)
 	player = Vector2(2, _path_y(2))
 	tile = clampf(size.x / 20.0,38,58)
 	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
@@ -340,10 +321,10 @@ func start_level(index: int) -> void:
 	for x in range(n):
 		for y in range(n):
 			var p := Vector2(float(x) + 0.2 + _randseed(x + y * 36 + level_index) * 0.25, float(y) + 0.2 + _randseed(x * 7 + y + level_index) * 0.25)
-			if _key_clearing(p): continue
-			var d: float = absf(p.y - _path_y(p.x))
-			if d < _clearing_radius(p.x) or _randseed(x * 29 + y + level_index * 71) <= float(level.trees) or p.distance_to(exit_pos) < 2.5: continue
-			if level_index == 4 and (x % 3 == 1 or y % 3 == 1): continue
+			if _key_clearing(p) or (level_index==1 and p.distance_to(pathways.web_position())<4.8): continue
+			var d: float = pathways.distance(p)
+			if d < _clearing_radius(p.x) or (d>_clearing_radius(p.x)+2.0 and _randseed(x * 29 + y + level_index * 71) <= float(level.trees)) or p.distance_to(exit_pos) < 2.5: continue
+			if level_index == 4 and d>10.0 and (x % 3 == 1 or y % 3 == 1): continue
 			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
 			trees.append(t)
 			var chunk := Vector2i(floori(p.x/8.0),floori(p.y/8.0))
@@ -379,6 +360,7 @@ func start_level(index: int) -> void:
 		npc["greeting"] = 0.0
 		npc["reaction"] = 0.0
 		npc["near_before"] = false
+	pathways.protect_objectives()
 	light_trails.build(self)
 	ambience.build(self)
 	_set_state("play")
@@ -393,6 +375,8 @@ func _blocked(p: Vector2) -> bool:
 	var n: float = float(BASE_LEVELS[level_index]["size"])
 	if p.x < 0.5 or p.y < 0.5 or p.x > n - 1 or p.y > n - 1: return true
 	if level_index == 2 and not quest_done and p.x > _station().x + 0.75: return true
+	if pathways.blocked(p): return true
+	if pathways.distance(p)>_clearing_radius(p.x) and not _key_clearing(p) and not (level_index==1 and p.distance_to(pathways.web_position())<4.8): return true
 	var c := Vector2i(int(floor(p.x)), int(floor(p.y)))
 	for dx in range(-1, 2):
 		for dy in range(-1, 2):
@@ -401,6 +385,9 @@ func _blocked(p: Vector2) -> bool:
 	return false
 
 func _walk(d: Vector2) -> void:
+	if not _blocked(player+d):
+		player += d
+		return
 	var nx := player + Vector2(d.x, 0)
 	if not _blocked(nx): player.x = nx.x
 	var ny := player + Vector2(0, d.y)
@@ -425,6 +412,7 @@ func _process(dt: float) -> void:
 		invulnerable = maxf(0, invulnerable - dt)
 		_update_npc_animation(dt)
 		ambience.update(dt)
+		pathways.update(dt)
 		celebration = maxf(0.0,celebration-dt)
 		_update_collectibles()
 		_update_bats(dt)
@@ -496,6 +484,7 @@ func glow() -> void:
 	pulse = GLOW_TIME
 	_burst(player)
 	light_trails.shine()
+	pathways.glow()
 	ambience.react_to_glow()
 	for npc in npcs:
 		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
@@ -673,18 +662,19 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	if axis.length_squared() > 0.001:
 		has_destination = false
 		route.clear()
-		target_velocity = _screen_to_world(axis) * SPEED
+		target_velocity = _screen_to_world(axis) * SPEED * pathways.pace(player)
 	elif has_destination:
-		while route_index < route.size() and player.distance_to(route[route_index]) < 0.12:
+		while route_index < route.size() and player.distance_to(route[route_index]) < 0.015:
 			route_index += 1
 		if route_index >= route.size():
 			has_destination = false
 			velocity = Vector2.ZERO
 		else:
 			var delta := route[route_index] - player
-			var speed := minf(SPEED, delta.length() / dt)
+			var speed := minf(SPEED * pathways.pace(player), delta.length() / dt)
 			if route_index == route.size()-1: speed = minf(speed, sqrt(2.0*DECELERATION*delta.length()))
 			target_velocity = delta.normalized() * speed
+	if has_destination: velocity = target_velocity
 	velocity = velocity.move_toward(target_velocity, (ACCELERATION if target_velocity != Vector2.ZERO else DECELERATION)*dt)
 	var before := player
 	_walk(velocity * dt)
@@ -692,6 +682,7 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	walk_dir = actual / SPEED
 	if absf(actual.x-actual.y) > 0.15: facing = signf(actual.x-actual.y)
 	body_lean = lerpf(body_lean, clampf((actual.x-actual.y)/SPEED, -1.0, 1.0)*0.045, 1.0-exp(-dt*12.0))
+	pathways.visit()
 	foot_time += before.distance_to(player) * 5.0
 	foot_dust += before.distance_to(player)
 	if foot_dust > 0.65:
@@ -706,34 +697,53 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	else: stuck_time = 0.0
 
 func _segment_open(a: Vector2, b: Vector2) -> bool:
-	var steps := maxi(1, int(ceil(a.distance_to(b)/0.15)))
+	var steps := maxi(1, int(ceil(a.distance_to(b)/0.05)))
 	for i in range(steps+1):
-		if _blocked(a.lerp(b,float(i)/float(steps))): return false
+		var p := a.lerp(b,float(i)/float(steps))
+		if _blocked(p): return false
+		for offset in [Vector2(0.06,0),Vector2(-0.06,0),Vector2(0,0.06),Vector2(0,-0.06)]:
+			if _blocked(p+offset): return false
 	return true
 
 func _ensure_navigation() -> void:
 	if navigation != null: return
 	navigation = AStarGrid2D.new()
-	var n: int = int(BASE_LEVELS[level_index].size)*2
+	var n: int = int(BASE_LEVELS[level_index].size)*4
 	navigation.region = Rect2i(0,0,n,n)
-	navigation.cell_size = Vector2(0.5,0.5)
+	navigation.cell_size = Vector2(0.25,0.25)
 	navigation.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
 	navigation.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	navigation.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
 	navigation.update()
-	for x in range(n):
-		for y in range(n):
-			navigation.set_point_solid(Vector2i(x,y), _blocked(Vector2(x,y)*0.5))
+	navigation.fill_solid_region(navigation.region,true)
+	# Only the authored corridor and key spur can be traversed. Avoid testing
+	# the large solid forest square at quarter-tile resolution.
+	for x in range(2,n-3):
+		var wx := float(x)*0.25
+		var low := _nav_cell(_path_y(wx)-_clearing_radius(wx)-0.5)
+		var high := _nav_cell(_path_y(wx)+_clearing_radius(wx)+0.5)
+		if level_index==0 and wx>21 and wx<34:
+			low=mini(low,_nav_cell(_key_location().y-4))
+			high=maxi(high,_nav_cell(_key_location().y+4))
+		if level_index==1 and absf(wx-pathways.web_position().x)<5:
+			low=mini(low,_nav_cell(pathways.web_position().y-5))
+			high=maxi(high,_nav_cell(pathways.web_position().y+5))
+		for y in range(maxi(2,low),mini(n-3,high+1)):
+			navigation.set_point_solid(Vector2i(x,y),_navigation_blocked(Vector2(x,y)*0.25))
+
+func _nav_cell(value: float) -> int:
+	return floori(value*4.0)
 
 func _nearest_walkable(point: Vector2) -> Vector2i:
-	var center := Vector2i((point*2.0).round())
+	var center := Vector2i((point*4.0).round())
 	var best := Vector2i(-1,-1)
 	var distance := INF
 	for x in range(-4,5):
 		for y in range(-4,5):
 			var id := center + Vector2i(x,y)
 			if not navigation.is_in_boundsv(id) or navigation.is_point_solid(id): continue
-			var d := point.distance_squared_to(Vector2(id)*0.5)
+			if not _blocked(point) and not _segment_open(point,Vector2(id)*0.25): continue
+			var d := point.distance_squared_to(Vector2(id)*0.25)
 			if d < distance:
 				distance = d
 				best = id
@@ -824,3 +834,9 @@ func _refresh_visible_trees() -> void:
 				var height: float = tile*3.9*float(tree["size"])
 				if at.x>-tile*1.8 and at.x<size.x+tile*1.8 and at.y>-20 and at.y<size.y+height+20:
 					visible_trees.append(tree)
+
+func _navigation_blocked(p: Vector2) -> bool:
+	for dx in [-0.16,0.0,0.16]:
+		for dy in [-0.16,0.0,0.16]:
+			if _blocked(p+Vector2(dx,dy)): return true
+	return false

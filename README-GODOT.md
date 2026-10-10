@@ -1,18 +1,16 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.4 — Little Talks, Big Adventure
+# Ara the Panda: Quest to Find Ira — Godot v0.5 — The Wandering Woodlands
 
-The quest and captions edition is on `godot-4-v0.4-quests-and-captions`, built
-on v0.3 (`deb7f8a`). All five quests, stories, discoveries, character rigs,
-movement, scenery, music and graphical effects remain included.
+The pathways edition is on `godot-4-v0.5-pathways`, built on v0.4 (`2ca7e8d`).
+All five chapters now follow winding woodland routes with streams, bridges,
+stepping stones and physical obstacles. Glowcap Glade includes a friendly web:
+walk through gently or press **Space / GLOW** to dissolve it.
 
-NPC conversations now use one speaker portrait and one short caption at a time.
-Tap the caption or press **Space / Enter / E** to reveal it, then advance. Use
-**Back to Woods / Escape** to leave a conversation. Gameplay pauses while talking.
-Discovery captions can be tapped to continue or dismiss. Gentler Motion reveals
-text instantly and stops portrait movement and fades.
-
-[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) describes the dialogue, responsive
-layout and tests. [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) records the
-inherited v0.3 graphical work. Balanced remains the default graphics setting.
+[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md) records the routes, crossing behavior and tests.
+[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) and
+[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describe the inherited updates.
+NPC conversations still show one character and one caption at a time; tap or
+press **Space / Enter / E** to reveal, then advance. **Escape** returns to play.
+Balanced remains the default graphics setting.
 
 ## Open and play
 
@@ -62,7 +60,7 @@ expanding ripple or decorative plant bobbing.
 
 ## Distinct landscapes
 
-- **Whispering Woods:** taller woodland trees, gentle bends, a pale-blue side
+- **Whispering Woods:** taller woodland trees, winding bends, a pale-blue side
   trail to the original key grove, and named navigation landmarks.
 - **Glowcap Glade:** broader mushroom clearings, violet cap rings and a silver
   spore circle along a new rolling route.
