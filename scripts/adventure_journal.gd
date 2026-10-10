@@ -47,7 +47,7 @@ func checkpoint(next_chapter: int=-1) -> void:
 		for plant in game.light_trails.plants: plants.append(plant.awake)
 		var stones: Array=[]
 		for stone in game.light_trails.stones: stones.append(stone.found)
-		data["checkpoint"]={"chapter":game.level_index,"pos":[game.player.x,game.player.y],"heart":game.heart,"started":game.quest_started,"done":game.quest_done,"count":game.quest_count,"key":game.key_collected,"revealed":game.key_revealed,"rune_step":game.rune_step,"marks":marks,"npcs":npc_flags,"runes":rune_flags,"plants":plants,"stones":stones,"trails":game.light_trails.trail_found.values(),"web":game.pathways.web_clear,"explored":game.exploration.found.duplicate()}
+		data["checkpoint"]={"chapter":game.level_index,"pos":[game.player.x,game.player.y],"heart":game.heart,"started":game.quest_started,"done":game.quest_done,"count":game.quest_count,"key":game.key_collected,"revealed":game.key_revealed,"rune_step":game.rune_step,"marks":marks,"npcs":npc_flags,"runes":rune_flags,"plants":plants,"stones":stones,"trails":game.light_trails.trail_found.values(),"web":game.pathways.web_clear,"explored":game.exploration.found.duplicate(),"living":game.living.saved()}
 	settings()
 func reset_checkpoint() -> void:
 	data.erase("checkpoint");settings()
@@ -82,6 +82,7 @@ func resume() -> void:
 	if pos.size()==2 and pos[0] is float and pos[1] is float:
 		var p := Vector2(pos[0],pos[1])
 		if is_finite(p.x) and is_finite(p.y) and not game._blocked(p): game.player=p
+	game.living.restore(saved.get("living",{}) if saved.get("living",{}) is Dictionary else {})
 	game.navigation=null;game._begin_navigation()
 	game.camera=game.size*Vector2(.5,.55)-Vector2((game.player.x-game.player.y)*game.tile,(game.player.x+game.player.y)*game.tile*.49)
 	game.restoring=false

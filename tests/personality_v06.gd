@@ -70,6 +70,6 @@ func run() -> void:
 	journal.enabled=false;OS.set_environment("IRA_SAVE_PATH","off")
 	for suffix in ["",".backup",".tmp"]: DirAccess.remove_absolute(ProjectSettings.globalize_path(journal.path+suffix))
 	print("NAVIGATION PROFILE ",JSON.stringify(profile))
-	var file:=FileAccess.open("res://tests/benchmarks/personality-navigation.json",FileAccess.WRITE);file.store_string(JSON.stringify(profile,"  "));file.close()
+	var file:=FileAccess.open("res://tests/benchmarks/living-navigation.json",FileAccess.WRITE);file.store_string(JSON.stringify(profile,"  "));file.close()
 	game.queue_free();await process_frame
 	print("PERSONALITY / SAVE / TOUCH FAILURES: ",failures);quit(failures)

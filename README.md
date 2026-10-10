@@ -1,26 +1,26 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.6
+# Ara the Panda: Quest to Find Ira — Godot v0.7
 
-**Little Paws, Big Personality** brings the woodland adventure to life on
-`godot-4-v0.6-little-paws-big-personality`.
+**The Living Woodland** makes the woods respond to little paws, on
+`godot-4-v0.7-living-woodland`.
 
-- Terrain-aware balancing and stepping, pickup crouches, bridge-building,
-  startled reactions, celebrations, and a visible sister reunion.
-- Twenty original woodland sound clips: footsteps, streams, lantern chimes,
-  character voices, musical runes and a cottage music-box lullaby.
-- Ten optional exploration loops with tiny themed discoveries and one-time
-  heart rewards, clear trails, and no extra quest requirements.
-- Improved foliage visibility, textured stepping stones, moss, bridge grain,
-  shadows, and chapter-specific magical moments.
-- Compact illustrated controls with a touch paw stick, persistent preferences,
-  autosave, Continue, and recovery from a last-good checkpoint.
-- Navigation prepared over short frame slices instead of a synchronous cold
-  build on the first long-distance tap.
+- Pip welcomes Ara, Bramble potters and checks his clipboard, and Moss tends
+  mushrooms with a tiny watering can. Neighbours turn toward Ara and celebrate
+  her quest progress when she returns.
+- Five firefly guides wait for Ara and lead her toward optional clearings.
+  Leaves rustle underfoot, curious rabbits, moths and a frog notice her, and
+  three musical pebbles make Stargazer Hollow playful.
+- Fifteen clues left by Ira—ribbons, pillow prints and biscuits—bring the
+  sisters closer through every chapter, with new character dialogue.
+- Light and mist blend near clearings and brooks; the cottage grows warmer.
+  A gentle original woodland sound bed fades beside water and toward home.
+- New discoveries survive Continue, and v0.6 checkpoints remain compatible.
+  Gentler Motion and all three graphics settings remain available.
 
-Includes the winding v0.5 paths, v0.4 one-speaker captions, and the inherited
-lighting and shared character rig. PNG import fixes are retained.
+Includes the v0.6 animations, sound, save system and paw controls, v0.5 winding
+paths, and the earlier caption, lighting and image-import improvements.
 
-Extract the ZIP, import **project.godot** with **Godot 4.3 or newer**, Compatibility
+Extract the ZIP, import **project.godot** in **Godot 4.3 or newer**, Compatibility
 renderer, wait for asset import, then press **F5**.
 
-[PERSONALITY-V0.6.md](PERSONALITY-V0.6.md) describes this update and validation.
-[README-GODOT.md](README-GODOT.md) has controls and the full feature guide.
+[LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) describes the update and checks.
+[README-GODOT.md](README-GODOT.md) has controls and the full game guide.

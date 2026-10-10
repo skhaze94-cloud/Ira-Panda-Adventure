@@ -1,15 +1,17 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.6
+# Ara the Panda: Quest to Find Ira — Godot v0.7
 
-**Little Paws, Big Personality** builds on v0.5's winding woodlands. Ara now
-balances on wood, steps over stones, crouches for treasures, builds the bridge,
-and celebrates discoveries. Original woodland sounds accompany each action.
-Ten optional side loops rejoin the main trail and reward curious little paws.
+**The Living Woodland** adds neighbours with routines, curious creatures,
+fireflies that wait for little paws, musical pebbles and rustling leaves.
+Fifteen clues left by Ira build anticipation across the five chapters. Woodland
+light, mist and ambient sound blend gently near clearings, water and home.
 
-Continue restores chapter progress and discoveries. Music, sound, gentler motion
-and graphics preferences persist. See [PERSONALITY-V0.6.md](PERSONALITY-V0.6.md)
-for save behavior, chapter moments and test evidence. The earlier
-[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md), [QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md)
-and [GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) describe inherited features.
+Continue preserves the new discoveries and accepts v0.6 saves. Balanced remains
+the default; Gentler Motion keeps everything playable with quieter visuals.
+See [LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) for the update and validation,
+[PERSONALITY-V0.6.md](PERSONALITY-V0.6.md) for saves and character actions,
+[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md) for winding paths,
+[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) for conversations, and
+[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) for inherited graphics.
 
 ## Open and play
 

@@ -92,7 +92,7 @@ func _build_ui() -> void:
 	menu_col = VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",10)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ LITTLE PAWS, BIG PERSONALITY · v0.6 ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ THE LIVING WOODLAND · v0.7 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",34)
 	_label(menu_col,"Quest to Find Ira",24,Color("#fedbb3"))
 	var avatar := TextureRect.new()

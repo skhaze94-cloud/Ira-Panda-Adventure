@@ -94,17 +94,20 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	var active: bool = game.state in ["play","dialog","win"]
-	ambient.color = AMBIENT[game.level_index] if active else Color.WHITE
+	var woodland_tint: Color=AMBIENT[game.level_index].lightened(game.living.clearing*.055)
+	woodland_tint=woodland_tint.lerp(Color("#8baebc"),game.living.brook*.075)
+	woodland_tint=woodland_tint.lerp(Color("#d5bca1"),game.living.home_warmth*.19)
+	ambient.color = woodland_tint if active else Color.WHITE
 	fog.visible = active
 	fog.size = game.size
 	finish.size = game.size
 	finish.visible = active and game.graphics_quality > 0
 	finish_material.set_shader_parameter("quality",float(game.graphics_quality))
 	finish_material.set_shader_parameter("palette",game.COLORS[game.level_index])
-	air.set_shader_parameter("rays_amount",[0.025,0.04,0.055][game.graphics_quality])
+	air.set_shader_parameter("rays_amount",[0.025,0.04,0.055][game.graphics_quality]*(1+game.living.clearing*.35))
 	air.set_shader_parameter("clock",0.0 if game.quieter_motion else game.elapsed)
 	air.set_shader_parameter("mist_tint",MIST[game.level_index])
-	air.set_shader_parameter("mist_amount",0.07 if game.level_index == 2 else 0.045)
+	air.set_shader_parameter("mist_amount",(0.07 if game.level_index == 2 else 0.045)*(1-game.living.clearing*.25)+game.living.brook*.018)
 	air.set_shader_parameter("drift",game.camera / Vector2(8000,8000))
 	motes.visible = active and not game.quieter_motion
 	motes.emitting = active and not game.quieter_motion and game.state == "play"
@@ -124,6 +127,8 @@ func _process(_dt: float) -> void:
 	player_light.texture_scale = 1.05 + game.pulse * 0.45
 	# Select nearest visible lights, giving quest objects priority.
 	var sources: Array = []
+	if not game.living.guide.is_empty() and game.living.guide.pos.distance_to(game.player)<6:
+		sources.append({"at":game._project(game.living.guide.pos)-Vector2(0,36),"color":Color("#ffe3a1"),"energy":.45})
 	if game.light_trails != null:
 		for plant in game.light_trails.plants:
 			if plant.awake:

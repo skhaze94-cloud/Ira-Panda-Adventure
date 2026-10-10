@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var living: RefCounted = preload("res://scripts/living_woodland.gd").new()
 var sound_enabled := true
 var restoring := false
 var journal: RefCounted = preload("res://scripts/adventure_journal.gd").new()
@@ -188,6 +189,7 @@ func _resume() -> void:
 func _ready() -> void:
 	journal.attach(self)
 	personality.game=self
+	living.game=self
 	pathways.game=self
 	exploration.game=self
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -401,6 +403,7 @@ func start_level(index: int) -> void:
 	pathways.protect_objectives()
 	light_trails.build(self)
 	ambience.build(self)
+	living.build(self)
 	_set_state("play")
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
@@ -452,6 +455,7 @@ func _process(dt: float) -> void:
 		invulnerable = maxf(0, invulnerable - dt)
 		_update_npc_animation(dt)
 		ambience.update(dt)
+		living.update(dt)
 		pathways.update(dt)
 		exploration.visit()
 		save_clock+=dt
@@ -539,6 +543,7 @@ func glow() -> void:
 	light_trails.shine()
 	pathways.glow()
 	ambience.react_to_glow()
+	living.glow()
 	for npc in npcs:
 		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
@@ -650,7 +655,7 @@ func _burst(location: Vector2) -> void:
 
 func _update_hud() -> void:
 	if light_trails != null:
-		hud_discoveries.text = "Discoveries %d/%d · Secret spots %d/2" % [light_trails.discovered,light_trails.total,int(exploration.found[0])+int(exploration.found[1])]
+		hud_discoveries.text = "Discoveries %d/%d · Secrets %d/2 · Ira %d/3" % [light_trails.discovered,light_trails.total,int(exploration.found[0])+int(exploration.found[1]),living.count_clues()]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
@@ -909,16 +914,7 @@ func set_graphics_quality(index: int) -> void:
 	queue_redraw()
 
 func _update_npc_animation(dt: float) -> void:
-	for npc in npcs:
-		var near: bool = player.distance_to(npc.home) < 4.5
-		if near and not npc.near_before: npc.greeting = 1.8
-		npc.near_before = near
-		npc.greeting = maxf(0.0,float(npc.greeting)-dt)
-		npc.reaction = maxf(0.0,float(npc.reaction)-dt)
-		var screen_side: float = (player.x-player.y)-(npc.home.x-npc.home.y)
-		if near and absf(screen_side)>0.45: npc.facing = signf(screen_side)
-		var wander := Vector2(sin(elapsed*0.7+npc.home.x),cos(elapsed*0.9+npc.home.x))*(0.12 if near else 0.28)
-		npc.pos = npc.home if quieter_motion else npc.home+wander
+	living.update_npcs(dt)
 
 func _refresh_visible_trees() -> void:
 	if state not in ["play","dialog","win"]: return

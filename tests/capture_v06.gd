@@ -37,7 +37,7 @@ func run() -> void:
 	# Run audio for actual frames, validate bounded voices and mute.
 	game.sound_enabled=true;game.soundscape.play("pickup");game.soundscape.play("rune-0")
 	await create_timer(.8).timeout
-	assert(game.soundscape.voices.size()==8 and game.soundscape.clips.size()==20)
+	assert(game.soundscape.voices.size()==8 and game.soundscape.clips.size()==21)
 	var played: int=game.soundscape.played
 	game.sound_enabled=false;game.soundscape.silence();game.soundscape.play("glow")
 	assert(game.soundscape.played==played)

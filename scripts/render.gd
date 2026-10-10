@@ -1,5 +1,6 @@
 extends "res://scripts/core.gd"
 
+const LIVING_ART = preload("res://scripts/living_art.gd")
 const ADVENTURE_ART = preload("res://scripts/adventure_art.gd")
 const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
 
@@ -22,7 +23,11 @@ func _draw() -> void:
 	_draw_lantern_clues_ground()
 	_moon_haze()
 	ADVENTURE_ART.signs(self)
+	LIVING_ART.ground(self)
 	var entities: Array = []
+	for clue in living.clues:
+		if _visible(_project(clue.pos),tile*2): entities.append({"depth":clue.pos.x+clue.pos.y,"type":"ira_clue","data":clue})
+	if not living.visitor.is_empty() and _visible(_project(living.visitor.pos),tile*2): entities.append({"depth":living.visitor.pos.x+living.visitor.pos.y,"type":"visitor","data":{}})
 	for loop in exploration.loops:
 		if _visible(_project(loop.pos),tile*3): entities.append({"depth":loop.pos.x+loop.pos.y,"type":"secret","data":loop})
 	for o in pathways.obstacles:
@@ -65,6 +70,8 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"ira_clue": LIVING_ART.clue(self,d)
+			"visitor": LIVING_ART.visitor(self)
 			"secret": ADVENTURE_ART.secret(self,d)
 			"path_obstacle": PATHWAY_ART.obstacle(self,d)
 			"web": PATHWAY_ART.web(self)
@@ -84,6 +91,7 @@ func _draw() -> void:
 			"shadow_stone": _draw_shadow_stone(d)
 			"flourish": _draw_woodland_prop(d)
 	ADVENTURE_ART.moments(self)
+	LIVING_ART.guide(self)
 	_draw_landmark_names()
 	for part in particles:
 		var fade: float = part.life / part.max
@@ -147,12 +155,12 @@ func _draw_tree(t: Dictionary) -> void:
 	var w: float = minf(tile*2.25,h*float(crop[2])/float(crop[3]))
 	_shadow(at,30*t["size"])
 	var relative := at-_project(player)
-	var overlap := (1.0-smoothstep(tile*0.65,tile*1.3,absf(relative.x)))*smoothstep(0.0,18.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
+	var overlap := (1.0-smoothstep(maxf(tile*.65,w*.32+24),maxf(tile*1.3,w*.70+24),absf(relative.x)))*smoothstep(0.0,6.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
 	for target in foliage_focus:
 		var delta := at-_project(target)
 		var cover := (1-smoothstep(tile*.55,tile*1.5,absf(delta.x)))*smoothstep(0,16,delta.y)*(1-smoothstep(h*.65,h*.95,delta.y))
 		overlap=maxf(overlap,cover)
-	var alpha := lerpf(1.0,0.12,overlap)
+	var alpha := lerpf(1.0,0.055,overlap)
 	var sway: float = sin(elapsed * 0.8 + t.pos.x) * 0.013 if not quieter_motion else 0.0
 	draw_set_transform(at,sway)
 	_draw_crop("trees-v2",crop,Rect2(Vector2(-w*0.5,-h),Vector2(w,h)),Color(1,1,1,alpha))
@@ -195,29 +203,32 @@ func _draw_npc(n: Dictionary) -> void:
 	var joy: float = minf(1.0,float(n.reaction))*motion
 	var breath := sin(phase*2.0)*1.2*motion
 	var head_tilt := (sin(phase*1.3)*0.025+sin(phase*7.0)*greeting*0.055)*motion
-	var hop := absf(sin(phase*7.0))*joy*5.0
+	var hop := (absf(sin(phase*7.0))*joy*5.0+absf(sin(phase*5.0))*float(n.get("stride",0))*2.2)*motion
+	var work: float=float(n.get("work",0))*motion
+	LIVING_ART.npc_props(self,n)
 	_shadow(at,25)
 	match n.id:
 		"pip":
 			_npc_part(n,2,Vector2(-24,-49-breath-hop),Vector2(39,31),sin(phase*6.0)*greeting*0.6,Vector2(0.8,0.18))
 			_npc_part(n,1,Vector2(0,-35-breath-hop),Vector2(62,60))
 			_npc_part(n,4,Vector2(19,-55-breath-hop),Vector2(25,30),sin(phase*2.5)*0.10*motion,Vector2(0.35,0.1))
-			_npc_part(n,3,Vector2(23,-48-breath-hop),Vector2(34,41),sin(phase*2.1)*0.07*motion-greeting*0.25,Vector2(0.18,0.12))
+			_npc_part(n,3,Vector2(23,-48-breath-hop),Vector2(34,41),sin(phase*2.1)*0.07*motion-greeting*0.25-work*.12,Vector2(0.18,0.12))
 			_npc_part(n,0,Vector2(0,-80-breath-hop),Vector2(69,56),head_tilt)
 			_draw_halo(at+Vector2(33*float(n.facing),-56-hop),35,Color("#ffe0a0"),1.0)
 		"bramble":
 			_npc_part(n,9,Vector2(0,-38-hop),Vector2(58,60),sin(phase*1.3)*0.025*motion)
 			_npc_part(n,6,Vector2(0,-32-breath-hop),Vector2(63,51))
 			_npc_part(n,7,Vector2(-20,-40-hop),Vector2(49,37),sin(phase*1.5)*0.035*motion,Vector2(0.28,0.2))
-			var scribble := sin(phase*10.0)*0.10*motion if greeting<0.1 else sin(phase*7.0)*greeting*0.5
+			var scribble := sin(phase*10.0)*(.10+work*.10)*motion if greeting<0.1 else sin(phase*7.0)*greeting*0.5
 			_npc_part(n,8,Vector2(23,-41-hop),Vector2(31,35),scribble,Vector2(0.24,0.15))
 			_npc_part(n,5,Vector2(0,-75-breath-hop),Vector2(65,53),head_tilt)
 		"moss":
 			_npc_part(n,14,Vector2(22,-28-hop),Vector2(47,48),sin(phase*2.4)*0.12*motion,Vector2(0.35,0.8))
 			_npc_part(n,11,Vector2(0,-33-breath-hop),Vector2(65,56))
 			_npc_part(n,13,Vector2(-20,-48-hop),Vector2(29,31),sin(phase*2.0)*0.045*motion,Vector2(0.75,0.12))
-			_npc_part(n,12,Vector2(21,-48-hop),Vector2(40,31),-greeting*0.25+sin(phase*3.0)*0.04*motion,Vector2(0.14,0.2))
+			_npc_part(n,12,Vector2(21,-48-hop),Vector2(40,31),-greeting*0.25+sin(phase*3.0)*0.04*motion+work*.3,Vector2(0.14,0.2))
 			_npc_part(n,10,Vector2(0,-82-breath-hop),Vector2(66,60),head_tilt)
+	LIVING_ART.npc_hands(self,n)
 
 func _draw_item(m: Dictionary) -> void:
 	if m.lit and level_index != 4: return
@@ -810,5 +821,8 @@ func _focus_points() -> Array[Vector2]:
 		if player.distance_to(npc.pos)<4: points.append(npc.pos)
 	for loop in exploration.loops:
 		if player.distance_to(loop.pos)<6: points.append(loop.pos)
+	for clue in living.clues:
+		if player.distance_to(clue.pos)<5: points.append(clue.pos)
+	if not living.visitor.is_empty() and player.distance_to(living.visitor.pos)<5: points.append(living.visitor.pos)
 	if player.distance_to(_station())<6: points.append(_station())
 	return points

@@ -4,6 +4,12 @@ static func beat(speaker: String, text: String, mood: String="warm") -> Dictiona
 	return {"speaker":speaker,"text":text,"mood":mood}
 
 static func talk(game: Control, id: String) -> Array:
+	var lines: Array=quest_talk(game,id)
+	if game.living.count_clues()>0 and not game.quest_done and not game.key_collected:
+		lines.insert(1,beat(id,["Ira passed this way. I recognise that very determined little bounce!","She asked whether mushrooms make good umbrellas. I think you know who I mean.","A small cushion crossed here humming. The brook hummed back!","Someone has been counting the stars and leaving biscuit crumbs.","Your sister is very close. I heard two biscuits being carefully counted."][game.level_index],"happy"))
+	return lines
+
+static func quest_talk(game: Control, id: String) -> Array:
 	var chapter: int = game.level_index
 	if chapter==0:
 		if game.key_collected:

@@ -27,4 +27,18 @@ fade=rate//5
 for i in range(fade):
  a=i/fade;samples[i]=samples[i]*a+samples[-fade+i]*(1-a)
 with wave.open(str(root/'water.wav'),'wb') as w:w.setparams((1,2,rate,0,'NONE','not compressed'));w.writeframes(struct.pack('<'+'h'*len(samples),*[int(v*32767) for v in samples]))
+# A quiet woodland bed: filtered leaf air and two distant bird phrases.
+samples=[];air=0.0;duration=5.0
+for i in range(int(rate*duration)):
+ t=i/rate;air=air*.96+rng.uniform(-1,1)*.04
+ v=air*.13
+ for onset in [1.1,3.2]:
+  age=t-onset
+  if 0<age<.3:
+   v+=math.sin(2*math.pi*(1450*age+380*age*age))*math.sin(age/.3*math.pi)**2*.018
+ envelope=min(1,t/.1,(duration-t)/.1)
+ samples.append(int(max(-1,min(1,v*envelope))*32767))
+with wave.open(str(root/'woodland.wav'),'wb') as w:
+ w.setparams((1,2,rate,0,'NONE','not compressed'))
+ w.writeframes(struct.pack('<'+'h'*len(samples),*samples))
 print('Created',len(list(root.glob('*.wav'))),'original sound effects')
