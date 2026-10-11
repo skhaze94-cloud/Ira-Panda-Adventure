@@ -15,7 +15,7 @@ func walk_to(target: Vector2) -> void:
 		if game._blocked(game.player):
 			check(false,"Walking entered water, wood or forest")
 			break
-	check(game.player.distance_to(target)<0.2,"Did not reach crossing approach "+str(target))
+	check(game.player.distance_to(target)<0.2,"Did not reach crossing approach "+str(target)+" from "+str(game.player)+" chapter "+str(game.level_index)+" obstacles "+str(game.pathways.obstacles))
 func run() -> void:
 	game=load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)

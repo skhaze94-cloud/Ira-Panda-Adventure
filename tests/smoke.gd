@@ -27,6 +27,7 @@ func run() -> void:
 		# by landscapes_controls.gd and pathways.gd rather than a straight-line test.
 		if chapter == 0:
 			game.player = game._key_location()
+			game.interact()
 			game.cooldown = 0
 			game.glow()
 			game._update_collectibles()
@@ -35,6 +36,7 @@ func run() -> void:
 			for mark in game.marks:
 				check(not game._blocked(mark.pos),"Quest item blocked")
 				game.player = mark.pos
+				if mark.has("chest"): game.interact()
 				game.cooldown = 0
 				game.glow()
 				game._update_collectibles()

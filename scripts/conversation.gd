@@ -171,7 +171,7 @@ func close() -> void:
 	var ending := destination
 	dismiss()
 	if ending=="replay":
-		game._show_dialog("One very big hug", "Ara and Ira are together again. Adventure tastes even better with biscuits!", "PLAY AGAIN", "TITLE SCREEN", "replay")
+		game._show_dialog("One very big hug", "Ara and Ira are together again. Adventure tastes even better with biscuits!\n"+game.beauty.result(), "PLAY AGAIN", "TITLE SCREEN", "replay")
 		game.state = "win"
 	else:
 		game._set_state("play")

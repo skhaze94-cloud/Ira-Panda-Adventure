@@ -1,5 +1,7 @@
 extends "res://scripts/core.gd"
 
+var beauty_art = preload("res://scripts/hidden_wonders_art.gd").new()
+
 const LIVING_ART = preload("res://scripts/living_art.gd")
 const ADVENTURE_ART = preload("res://scripts/adventure_art.gd")
 const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
@@ -24,7 +26,14 @@ func _draw() -> void:
 	_moon_haze()
 	ADVENTURE_ART.signs(self)
 	LIVING_ART.ground(self)
+	beauty_art.paths(self)
 	var entities: Array = []
+	for prop in beauty.scenery:
+		if _visible(_project(prop.pos),tile*3): entities.append({"depth":prop.pos.x+prop.pos.y,"type":"beauty_prop","data":prop})
+	for chest in beauty.chests:
+		if _visible(_project(chest.pos),tile*3): entities.append({"depth":chest.pos.x+chest.pos.y,"type":"treasure","data":chest})
+	for star in beauty.stars:
+		if not star.found and _visible(_project(star.pos),tile): entities.append({"depth":star.pos.x+star.pos.y,"type":"star","data":star})
 	for clue in living.clues:
 		if _visible(_project(clue.pos),tile*2): entities.append({"depth":clue.pos.x+clue.pos.y,"type":"ira_clue","data":clue})
 	if not living.visitor.is_empty() and _visible(_project(living.visitor.pos),tile*2): entities.append({"depth":living.visitor.pos.x+living.visitor.pos.y,"type":"visitor","data":{}})
@@ -44,7 +53,7 @@ func _draw() -> void:
 	for npc in npcs:
 		if _visible(_project(npc.pos),tile*3): entities.append({"depth":npc.pos.x+npc.pos.y,"type":"npc","data":npc})
 	for m in marks:
-		if _visible(_project(m.pos),tile*3): entities.append({"depth":m.pos.x+m.pos.y,"type":"item","data":m})
+		if beauty.item_available(m) and _visible(_project(m.pos),tile*3): entities.append({"depth":m.pos.x+m.pos.y,"type":"item","data":m})
 	for rune in runes:
 		if _visible(_project(rune.pos),tile*3): entities.append({"depth":rune.pos.x+rune.pos.y,"type":"rune","data":rune})
 	for b in bats:
@@ -70,6 +79,9 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"beauty_prop": beauty_art.scenery(self,d)
+			"treasure": beauty_art.chest(self,d)
+			"star": beauty_art.star(self,d)
 			"ira_clue": LIVING_ART.clue(self,d)
 			"visitor": LIVING_ART.visitor(self)
 			"secret": ADVENTURE_ART.secret(self,d)
@@ -153,6 +165,9 @@ func _draw_tree(t: Dictionary) -> void:
 	var h: float = tile*3.9*float(t["size"])
 	var crop: Array = TREE_RECTS[level_index*3 + int(t.variant)]
 	var w: float = minf(tile*2.25,h*float(crop[2])/float(crop[3]))
+	if t.get("beauty",false):
+		var region: Array=beauty_art.regions[level_index][0]
+		w=h*float(region[2])/float(region[3])
 	_shadow(at,30*t["size"])
 	var relative := at-_project(player)
 	var overlap := (1.0-smoothstep(maxf(tile*.65,w*.32+24),maxf(tile*1.3,w*.70+24),absf(relative.x)))*smoothstep(0.0,6.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
@@ -162,6 +177,9 @@ func _draw_tree(t: Dictionary) -> void:
 		overlap=maxf(overlap,cover)
 	var alpha := lerpf(1.0,0.055,overlap)
 	var sway: float = sin(elapsed * 0.8 + t.pos.x) * 0.013 if not quieter_motion else 0.0
+	if t.get("beauty",false):
+		beauty_art.tree(self,t,alpha,sway)
+		return
 	draw_set_transform(at,sway)
 	_draw_crop("trees-v2",crop,Rect2(Vector2(-w*0.5,-h),Vector2(w,h)),Color(1,1,1,alpha))
 	draw_set_transform(Vector2.ZERO)
@@ -284,9 +302,9 @@ func _draw_bat(b: Dictionary) -> void:
 
 func _draw_birches() -> void:
 	var at := _project(Vector2(29,_path_y(29)+6))
-	_draw_png("key-birches",at,tile*3.2,tile*3.6)
+	_draw_png("key-birches",at,tile*3.2,tile*3.6,.18 if player.distance_to(_key_location())<4 else 1.0)
 	_draw_halo(at-Vector2(0,35),72,Color("#a1dfff"),1.0)
-	if key_revealed and not key_collected:
+	if key_revealed and not key_collected and beauty.key_available():
 		var k := _project(_key_location())
 		_draw_png("woodland-key",k-Vector2(0,13+(sin(elapsed*3)*4 if not quieter_motion else 0.0)),39,40)
 		_draw_halo(k-Vector2(0,37),40,Color("#ffe99f"),1.7)
@@ -503,7 +521,11 @@ func _draw_interaction_hint() -> void:
 	var target := Vector2.ZERO
 	var text := ""
 	var npc := _nearest_npc()
-	if npc >= 0:
+	var chest: int=beauty.nearest_chest()
+	if chest>=0:
+		target=_project(beauty.chests[chest].pos)-Vector2(0,90)
+		text="E · Open treasure"
+	elif npc >= 0:
 		target = _project(npcs[npc].pos)-Vector2(0,tile*2.2)
 		text = "E · Talk to " + str(npcs[npc].name)
 	elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
@@ -821,6 +843,8 @@ func _focus_points() -> Array[Vector2]:
 		if player.distance_to(npc.pos)<4: points.append(npc.pos)
 	for loop in exploration.loops:
 		if player.distance_to(loop.pos)<6: points.append(loop.pos)
+	for chest in beauty.chests:
+		if player.distance_to(chest.pos)<6: points.append(chest.pos)
 	for clue in living.clues:
 		if player.distance_to(clue.pos)<5: points.append(clue.pos)
 	if not living.visitor.is_empty() and player.distance_to(living.visitor.pos)<5: points.append(living.visitor.pos)

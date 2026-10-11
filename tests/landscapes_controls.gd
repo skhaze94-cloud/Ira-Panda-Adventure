@@ -33,12 +33,14 @@ func run() -> void:
 		check(game.landmarks.size() == 3,"Missing chapter landmarks")
 		if chapter == 0:
 			walk_to(game._key_location())
+			game.interact()
 			game.glow()
 			game._update_collectibles()
 			check(game.key_collected,"Key navigation/collection failed")
 		else:
 			for mark in game.marks:
 				walk_to(mark.pos)
+				if mark.has("chest"): game.interact()
 				game.cooldown = 0.0
 				game.glow()
 				game._update_collectibles()

@@ -1,26 +1,26 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.7
+# Ara the Panda: Quest to Find Ira — Godot v0.8
 
-**The Living Woodland** makes the woods respond to little paws, on
-`godot-4-v0.7-living-woodland`.
+**Hidden Wonders** gives little explorers room to wander: a lighter forest,
+three generous secret loops in each chapter, and twenty new original illustrated
+assets integrated into the native Godot woodland layers.
 
-- Pip welcomes Ara, Bramble potters and checks his clipboard, and Moss tends
-  mushrooms with a tiny watering can. Neighbours turn toward Ara and celebrate
-  her quest progress when she returns.
-- Five firefly guides wait for Ara and lead her toward optional clearings.
-  Leaves rustle underfoot, curious rabbits, moths and a frog notice her, and
-  three musical pebbles make Stargazer Hollow playful.
-- Fifteen clues left by Ira—ribbons, pillow prints and biscuits—bring the
-  sisters closer through every chapter, with new character dialogue.
-- Light and mist blend near clearings and brooks; the cottage grows warmer.
-  A gentle original woodland sound bed fades beside water and toward home.
-- New discoveries survive Continue, and v0.6 checkpoints remain compatible.
-  Gentler Motion and all three graphics settings remain available.
-
-Includes the v0.6 animations, sound, save system and paw controls, v0.5 winding
-paths, and the earlier caption, lighting and image-import improvements.
+- Each chapter adds its own tree, plant patch, treasure chest and landmark.
+- Follow collectible stars into tucked-away alcoves. Open a chest with **E** or
+  **OPEN CHEST**; the lantern makes its clasp glimmer. One chest per chapter
+  holds a required quest treasure, with a short clue from the neighbours.
+- Find **18 stars**, open **3 chests**, and finish the quest for **400 points**
+  and a woodland crown. Points never depend on speed or remaining hearts.
+- **CHAPTERS** on the title screen opens your woodland album. Revisit unlocked
+  chapters to earn a crown; best scores survive replay and new adventures.
+- Continue remembers opened lids and collected stars. Existing v0.6/v0.7 saves
+  retain completed quest items, and every graphics and motion option remains.
 
 Extract the ZIP, import **project.godot** in **Godot 4.3 or newer**, Compatibility
-renderer, wait for asset import, then press **F5**.
+renderer, wait for asset import, then press **F5**. All images are PNG and folders
+are explicitly included for Godot Project Manager ZIP import.
 
-[LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) describes the update and checks.
-[README-GODOT.md](README-GODOT.md) has controls and the full game guide.
+See [HIDDEN-WONDERS-V0.8.md](HIDDEN-WONDERS-V0.8.md) for the chapter artwork,
+scoring and validation, [README-GODOT.md](README-GODOT.md) for controls and
+[ASSET-PROMPTS-V0.8.md](ASSET-PROMPTS-V0.8.md) for the original asset prompt set.
+
+Published branch: `godot-4-v0.8-hidden-wonders`.

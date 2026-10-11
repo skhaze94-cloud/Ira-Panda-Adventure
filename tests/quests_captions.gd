@@ -33,7 +33,7 @@ func run() -> void:
 		check(not game.modal_layer.visible and not game.hud_layer.visible,"Generic modal / HUD overlaps dialogue")
 		check(game.velocity==Vector2.ZERO and game.mobile_axis==Vector2.ZERO,"Conversation retained movement input")
 		check(game.conversation.portrait.speaker==npc.id,"Wrong first speaker")
-		check(game.conversation.beats.size()==3,"First quest greeting lost introduction")
+		check(game.conversation.beats.size()==4,"First quest greeting lost introduction")
 		var position: Vector2 = game.player
 		var pulse_before: float = game.pulse
 		game._process(0.5)
@@ -48,7 +48,7 @@ func run() -> void:
 		if chapter>0:
 			game.quest_count = 2
 			game.interact()
-			check(game.conversation.beats.size()==2,"Progress reminder repeats full introduction")
+			check(game.conversation.beats.size()==3,"Progress reminder repeats full introduction")
 			check(game.conversation.beats[1].text.contains("2 of three"),"Reminder ignores actual quest progress")
 			finish_talk()
 			game.quest_count = 3
@@ -72,7 +72,7 @@ func run() -> void:
 		game.player = npc.home
 		game.interact()
 		check(game.conversation.portrait.speaker==npc.id,"Chapter one neighbour portrait mismatch")
-		check(game.conversation.beats.size()==3,"Chapter one neighbour lost tailored conversation")
+		check(game.conversation.beats.size()==4,"Chapter one neighbour lost tailored conversation")
 		game.conversation.close()
 	game.start_level(4)
 	game.quest_done = true

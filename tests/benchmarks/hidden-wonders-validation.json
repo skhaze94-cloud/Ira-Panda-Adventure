@@ -1,0 +1,56 @@
+{
+  "engine": "Godot 4.3 stable, Compatibility",
+  "runtime_suites": [
+    {
+      "suite": "smoke",
+      "exit_code": 0
+    },
+    {
+      "suite": "landscapes_controls",
+      "exit_code": 0
+    },
+    {
+      "suite": "pathways",
+      "exit_code": 0
+    },
+    {
+      "suite": "lantern",
+      "exit_code": 0
+    },
+    {
+      "suite": "masterclass",
+      "exit_code": 0
+    },
+    {
+      "suite": "quests_captions",
+      "exit_code": 0
+    },
+    {
+      "suite": "graphics_v05",
+      "exit_code": 0
+    },
+    {
+      "suite": "personality_v06",
+      "exit_code": 0
+    },
+    {
+      "suite": "living_woodland",
+      "exit_code": 0
+    },
+    {
+      "suite": "hidden_wonders",
+      "exit_code": 0
+    }
+  ],
+  "chapters": 5,
+  "walked_secret_loops": 15,
+  "opened_chests": 15,
+  "collected_stars": 90,
+  "trees_per_chapter": [
+    1028,
+    1105,
+    1206,
+    1458,
+    725
+  ]
+}

@@ -76,16 +76,20 @@ func protect_objectives() -> void:
 	var targets: Array[Vector2] = [game._station(),game._exit(),game._key_location() if game.level_index==0 else game.player]
 	for item in game.marks+game.runes+game.npcs: targets.append(item.pos)
 	for loop in game.exploration.loops:
-		targets.append(loop.points[0]);targets.append(loop.points[3])
+		for point in loop.points: targets.append(point)
+	for loop in game.beauty.paths:
+		for point in loop.points: targets.append(point)
 	for o in obstacles:
-		for shift in [0.0,2.5,-2.5,4.5,-4.5]:
+		for shift in [0.0,2.5,-2.5,4.5,-4.5,7.0,-7.0,9.0,-9.0,12.0,-12.0,15.0,-15.0,18.0,-18.0]:
 			var x: float = o.pos.x+shift
 			var p := Vector2(x,y(x)+0.2)
-			var safe := true
+			var safe: bool=x>7 and x<game._station().x-4
+			for other in obstacles:
+				if other!=o and p.distance_to(other.pos)<3: safe=false
 			for target in targets:
 				if p.distance_to(target)<2.8: safe = false
 			for c in crossings:
-				if absf(x-c.x)<c.width+1.5: safe = false
+				if absf(x-c.x)<c.width+2.8: safe = false
 			if safe:
 				o.pos = p
 				break

@@ -1,5 +1,9 @@
 extends "res://scripts/render.gd"
 
+var album: ScrollContainer
+var album_col: VBoxContainer
+var album_buttons: Array = []
+
 var menu_card: PanelContainer
 var menu_col: VBoxContainer
 var menu_avatar: TextureRect
@@ -83,6 +87,7 @@ func _center(control: Control, width_percent: float, height_percent: float) -> v
 	control.offset_bottom = 0
 
 func _build_ui() -> void:
+	beauty_art.load_assets()
 	menu_layer = Control.new()
 	menu_layer.mouse_filter = Control.MOUSE_FILTER_PASS
 	ui_canvas.add_child(menu_layer)
@@ -92,7 +97,7 @@ func _build_ui() -> void:
 	menu_col = VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",10)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ THE LIVING WOODLAND · v0.7 ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ HIDDEN WONDERS · v0.8 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",34)
 	_label(menu_col,"Quest to Find Ira",24,Color("#fedbb3"))
 	var avatar := TextureRect.new()
@@ -110,8 +115,9 @@ func _build_ui() -> void:
 	menu_row.alignment=BoxContainer.ALIGNMENT_CENTER
 	menu_row.add_theme_constant_override("separation",12)
 	menu_col.add_child(menu_row)
-	_button(menu_row,"OPTIONS",_open_options,Vector2(160,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Ara and Ira's artwork, five original woodland chapters, and the music from the 2.4 Storybook edition.\n\nA moonlit adventure for little explorers. Original woodland sounds and tiny surprises around every bend.","BACK", "", "menu"),Vector2(160,42))
+	_button(menu_row,"OPTIONS",_open_options,Vector2(130,42))
+	_button(menu_row,"CHAPTERS",_open_album,Vector2(130,42))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Ara and Ira's artwork, five original woodland chapters, and the music from the 2.4 Storybook edition.\n\nA moonlit adventure for little explorers. Original woodland sounds and tiny surprises around every bend.","BACK", "", "menu"),Vector2(130,42))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)
@@ -239,6 +245,19 @@ func _build_ui() -> void:
 	modal_heading = _label(dcol,"Pause",28)
 	modal_text = _label(dcol,"",19)
 	modal_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	album=ScrollContainer.new()
+	album.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	album.custom_minimum_size=Vector2(0,200)
+	album.visible=false
+	dcol.add_child(album)
+	album_col=VBoxContainer.new()
+	album_col.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	album_col.add_theme_constant_override("separation",6)
+	album.add_child(album_col)
+	for chapter in range(5):
+		var chapter_button: Button=_button(album_col,"",func(): _choose_chapter(chapter),Vector2(0,44))
+		chapter_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		album_buttons.append(chapter_button)
 	options_music = CheckButton.new()
 	options_music.text = "Play music"
 	options_music.button_pressed = music_enabled
@@ -315,6 +334,7 @@ func _show_story() -> void:
 	var p: Dictionary = pages[story_page]
 	story_title.text = p.get("title", "The story continues")
 	story_caption.text = p.get("caption", "") + "  ·  %d / %d" % [story_page + 1, pages.size()]
+	if story_chapter>=0 and story_chapter==level_index: story_caption.text=beauty.result()
 	story_body.text = p.get("text", "")
 	story_bubble.text = "“%s”" % p.get("bubble", "")
 	var scene: String = p.get("scene", "")
@@ -343,6 +363,8 @@ func _story_end() -> void:
 
 func _show_dialog(title: String, body: String, primary: String, secondary: String, action: String) -> void:
 	conversation.dismiss()
+	album.visible=false
+	modal_text.visible=true
 	dialog_from = action
 	if action=="replay":
 		dialog_card.anchor_left=.20;dialog_card.anchor_right=.80
@@ -366,6 +388,9 @@ func _resume() -> void:
 	if conversation.active:
 		conversation.close()
 		return
+	if dialog_from.begins_with("travel-"):
+		start_level(int(dialog_from.trim_prefix("travel-")))
+		return
 	if dialog_from=="newgame":
 		_start_intro()
 		return
@@ -386,6 +411,21 @@ func _pause() -> void:
 	if state != "play": return
 	journal.checkpoint()
 	_show_dialog("A little breather", ("Progress saved. " if journal.last_error==OK else "Your progress could not be saved this time. ")+"The woods can wait.\n\nWASD / arrows to move · Space to glow · E to talk.\nUse the paw stick or tap a destination.","KEEP ADVENTURING","TITLE SCREEN","resume")
+
+func _open_album() -> void:
+	_show_dialog("Your woodland album", "Revisit a chapter to find every hidden wonder.
+A crown needs 18 stars, 3 chests, and the chapter quest.", "BACK", "", "menu")
+	album.visible=true
+	var scores: Array=journal.data.get("best_scores",[0,0,0,0,0])
+	var unlocked: int=maxi(int(journal.data.get("unlocked",0)),int(journal.data.get("checkpoint",{}).get("chapter",0)))
+	for i in range(5):
+		var best: int=int(scores[i]) if i<scores.size() else 0
+		album_buttons[i].text="%d · %s · %s" % [i+1,BASE_LEVELS[i].title,"CROWN · 400" if best==400 else str(best)+" / 400" if i<=unlocked else "Not visited yet"]
+		album_buttons[i].disabled=i>unlocked
+	album.scroll_vertical=0
+func _choose_chapter(chapter: int) -> void:
+	if chapter>maxi(int(journal.data.get("unlocked",0)),int(journal.data.get("checkpoint",{}).get("chapter",0))): return
+	_show_dialog("A fresh little expedition", "Return to "+str(BASE_LEVELS[chapter].title)+"? This replaces your current trail checkpoint. Your best scores and crowns stay in the album.","LET'S GO","TITLE SCREEN","travel-"+str(chapter))
 
 func _open_options() -> void:
 	_show_dialog("Options", "Choose how your moonlit adventure feels.", "BACK", "", "menu")
@@ -436,5 +476,6 @@ func _add_icon(button: Button, kind: String) -> void:
 			button.add_theme_stylebox_override(state_name,other)
 
 func _layout_ui() -> void:
+	if album!=null: album.custom_minimum_size.y=clampf(size.y*.31,140,235)
 	if menu_avatar!=null: menu_avatar.visible=size.y>=600
 	if menu_col!=null: menu_col.add_theme_constant_override("separation",8 if size.y<600 else 10)

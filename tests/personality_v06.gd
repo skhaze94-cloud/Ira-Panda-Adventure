@@ -9,7 +9,7 @@ func walk(target: Vector2) -> void:
 	for frame in range(20000):
 		if not game.has_destination: break
 		game._advance_movement(Vector2.ZERO,1.0/60)
-	check(game.player.distance_to(target)<0.2,"Optional route unreachable: "+str(target))
+	check(game.player.distance_to(target)<0.2,"Optional route unreachable: "+str(target)+" from "+str(game.player)+" chapter "+str(game.level_index)+" obstacles "+str(game.pathways.obstacles))
 func run() -> void:
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game)
 	await process_frame

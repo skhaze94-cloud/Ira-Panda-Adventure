@@ -23,6 +23,7 @@ uniform vec4 pools[6];
 uniform vec3 pool_colors[6];
 uniform int pool_count = 0;
 uniform vec4 secret_segments[6];
+uniform vec4 beauty_segments[9];
 uniform float route_offsets[12];
 uniform vec4 crossings[3];
 uniform int crossing_count = 0;
@@ -54,6 +55,10 @@ void fragment() {
         distance_to_trail=min(distance_to_trail,min(segment_distance(world,a,b),segment_distance(world,b,c))+0.7);
     }
     for(int k=0;k<6;k++) distance_to_trail=min(distance_to_trail,segment_distance(world,secret_segments[k].xy,secret_segments[k].zw)+0.8);
+    float wonder_distance=999.0;
+    for(int k=0;k<9;k++) wonder_distance=min(wonder_distance,segment_distance(world,beauty_segments[k].xy,beauty_segments[k].zw));
+    float main_distance=distance_to_trail;
+    distance_to_trail=min(distance_to_trail,wonder_distance+1.1);
     int parity=int(mod(cell.x+cell.y,2.0));
     float organic=grain(world*1.7);
     float edge=smoothstep(1.65,2.8,distance_to_trail+(organic-0.5)*0.55);
@@ -69,6 +74,8 @@ void fragment() {
         float fibers=grain(world*29.0);
         base*=0.96+fibers*0.08;
     }
+    float wonder_edge=(1.0-smoothstep(0.7,2.1,wonder_distance))*smoothstep(2.0,3.0,main_distance);
+    base=mix(base,base*vec3(1.10,1.06,0.96),wonder_edge*0.50);
     float water=0.0;
     float shore=0.0;
     for(int k=0;k<3;k++) {

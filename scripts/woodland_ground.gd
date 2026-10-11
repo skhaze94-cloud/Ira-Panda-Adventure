@@ -26,6 +26,7 @@ func sync() -> void:
 		surface.set_shader_parameter("chapter",last_chapter)
 		surface.set_shader_parameter("map_size",float(game.BASE_LEVELS[last_chapter].size))
 		surface.set_shader_parameter("secret_segments",game.exploration.segments())
+		surface.set_shader_parameter("beauty_segments",game.beauty.segments())
 		surface.set_shader_parameter("route_offsets",PackedFloat32Array(game.pathways.OFFSETS[last_chapter]))
 		var crossings: Array[Vector4] = []
 		for c in game.pathways.crossings: crossings.append(Vector4(c.x,c.width,0,0))

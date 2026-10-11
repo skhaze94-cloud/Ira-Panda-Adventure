@@ -5,6 +5,8 @@ static func beat(speaker: String, text: String, mood: String="warm") -> Dictiona
 
 static func talk(game: Control, id: String) -> Array:
 	var lines: Array=quest_talk(game,id)
+	if not game.beauty.chests.is_empty() and not game.beauty.chests[1].open:
+		lines.append(beat(id,"One quest treasure is tucked in a chest off the trail. Follow the little stars; shine to see its golden clasp, then press E to open it.","curious"))
 	if game.living.count_clues()>0 and not game.quest_done and not game.key_collected:
 		lines.insert(1,beat(id,["Ira passed this way. I recognise that very determined little bounce!","She asked whether mushrooms make good umbrellas. I think you know who I mean.","A small cushion crossed here humming. The brook hummed back!","Someone has been counting the stars and leaving biscuit crumbs.","Your sister is very close. I heard two biscuits being carefully counted."][game.level_index],"happy"))
 	return lines
@@ -17,7 +19,7 @@ static func quest_talk(game: Control, id: String) -> Array:
 		match id:
 			"pip": return [beat("pip","A missing pillow sister? That is a very important owl emergency!","happy"),beat("ara","She's called Ira. Small, squishy, surprisingly sneaky."),beat("pip","Follow the lanterns to Bramble and Moss. Move with the arrows or tap the path; Space makes your lantern shine.")]
 			"bramble": return [beat("bramble","I checked my clipboard. The woodland door is definitely locked."),beat("ara","Does your clipboard know where the key went?","curious"),beat("bramble","Moss saw it near the blue lanterns. He remembers everything. Except where he leaves his tea.","happy")]
-			"moss": return [beat("moss","Three pale birches are keeping a little brass secret.","curious"),beat("ara","A key-sized secret?"),beat("moss","Take the blue-lantern side trail. Shine between their roots, pick up the key, then open the woodland door.")]
+			"moss": return [beat("moss","Three pale birches are keeping a little brass secret.","curious"),beat("ara","A key-sized secret?"),beat("moss","Take the blue-lantern side trail. Open the little chest between their roots, shine, and pick up the key, then open the woodland door.")]
 	if game.quest_done:
 		return [beat(id,["","The moon scroll is whole again. Even the moon likes a happy ending!","That bridge is steady now. My clipboard gives it three very firm ticks!","Moon, Star, Heart. The whole hollow is smiling!","The lullaby is playing. Ira must be just beside the cottage."][chapter],"happy"),beat("ara","Follow the lanterns. I'm getting closer!","happy")]
 	if game.quest_count>=3:

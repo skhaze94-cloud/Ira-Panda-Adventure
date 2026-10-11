@@ -68,7 +68,7 @@ func run() -> void:
 			check(count == clues.discovered,"Shadow discovery counted twice")
 		for track in clues.tracks: shine_at(track.pos)
 		check(clues.discovered == clues.total,"All discoveries do not match total")
-		check(game.quest_count == (3 if chapter == 4 else 0),"Exploration broke original collection rules")
+		check(game.quest_count == (2 if chapter == 4 else 0),"Exploration broke original collection rules")
 		var track: Dictionary = clues.tracks[0]
 		shine_at(track.pos)
 		game._pause()

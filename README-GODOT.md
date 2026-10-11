@@ -1,17 +1,17 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.7
+# Ara the Panda: Quest to Find Ira — Godot v0.8
 
-**The Living Woodland** adds neighbours with routines, curious creatures,
-fireflies that wait for little paws, musical pebbles and rustling leaves.
-Fifteen clues left by Ira build anticipation across the five chapters. Woodland
-light, mist and ambient sound blend gently near clearings, water and home.
+**Hidden Wonders** adds twenty new illustrations, a thinner forest, fifteen
+secret treasure loops, ninety collectible stars and fifteen animated chests.
+Each chapter has its own tree, plant, chest and landmark. Best scores and crowns
+live in the new chapter album; Continue remembers your current treasure hunt.
 
-Continue preserves the new discoveries and accepts v0.6 saves. Balanced remains
-the default; Gentler Motion keeps everything playable with quieter visuals.
-See [LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) for the update and validation,
-[PERSONALITY-V0.6.md](PERSONALITY-V0.6.md) for saves and character actions,
-[PATHWAYS-V0.5.md](PATHWAYS-V0.5.md) for winding paths,
-[QUESTS-AND-CAPTIONS.md](QUESTS-AND-CAPTIONS.md) for conversations, and
-[GRAPHICAL-MASTERCLASS.md](GRAPHICAL-MASTERCLASS.md) for inherited graphics.
+One required quest item is tucked inside a chest in each chapter. Follow the
+stars off the lantern road, shine to make the clasp glimmer, and press E or
+OPEN CHEST. Then collect the treasure or shine to wake its moonflower.
+Finishing the story never requires every optional star or chest.
+
+See [HIDDEN-WONDERS-V0.8.md](HIDDEN-WONDERS-V0.8.md) for this update and
+[LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) for the inherited world routines.
 
 ## Open and play
 
@@ -24,7 +24,7 @@ See [LIVING-WOODLAND-V0.7.md](LIVING-WOODLAND-V0.7.md) for the update and valida
 | Move | WASD / arrows, or the touch paw stick |
 | Walk to a destination | Click / tap the woodland floor |
 | Lantern glow | Space / GLOW |
-| Talk / quest station / door | E / INTERACT |
+| Talk / chest / quest station / door | E / INTERACT |
 | Pause | Escape / pause button |
 | Story | Enter / Space / Next Page / Skip |
 

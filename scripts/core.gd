@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var beauty: RefCounted = preload("res://scripts/hidden_wonders.gd").new()
 var living: RefCounted = preload("res://scripts/living_woodland.gd").new()
 var sound_enabled := true
 var restoring := false
@@ -190,6 +191,7 @@ func _ready() -> void:
 	journal.attach(self)
 	personality.game=self
 	living.game=self
+	beauty.game=self
 	pathways.game=self
 	exploration.game=self
 	mouse_filter = Control.MOUSE_FILTER_PASS
@@ -319,6 +321,7 @@ func start_level(index: int) -> void:
 	pathways.build(self)
 	exploration.build(self)
 	personality.build(self)
+	beauty.layout(self)
 	player = Vector2(2, _path_y(2))
 	tile = clampf(size.x / 20.0,38,58)
 	camera = size * Vector2(0.5, 0.55) - Vector2((player.x-player.y)*tile,(player.x+player.y)*tile*0.49)
@@ -360,12 +363,13 @@ func start_level(index: int) -> void:
 	for x in range(n):
 		for y in range(n):
 			var p := Vector2(float(x) + 0.2 + _randseed(x + y * 36 + level_index) * 0.25, float(y) + 0.2 + _randseed(x * 7 + y + level_index) * 0.25)
-			if exploration.open(p,3.0): continue
+			if exploration.open(p,3.0) or beauty.open_floor(p,3.0): continue
+			if _randseed(x*71+y*83+level_index*129)<.42: continue
 			if _key_clearing(p) or (level_index==1 and p.distance_to(pathways.web_position())<4.8): continue
 			var d: float = pathways.distance(p)
 			if d < _clearing_radius(p.x) or (d>_clearing_radius(p.x)+2.0 and _randseed(x * 29 + y + level_index * 71) <= float(level.trees)) or p.distance_to(exit_pos) < 2.5: continue
 			if level_index == 4 and d>10.0 and (x % 3 == 1 or y % 3 == 1): continue
-			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
+			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "beauty":_randseed(x*39+y*87)>.60, "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
 			trees.append(t)
 			var chunk := Vector2i(floori(p.x/8.0),floori(p.y/8.0))
 			if not tree_render_chunks.has(chunk): tree_render_chunks[chunk] = []
@@ -404,6 +408,8 @@ func start_level(index: int) -> void:
 	light_trails.build(self)
 	ambience.build(self)
 	living.build(self)
+	beauty.finish_layout()
+	pathways.protect_objectives()
 	_set_state("play")
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
@@ -419,7 +425,7 @@ func _blocked(p: Vector2) -> bool:
 	if p.x < 0.5 or p.y < 0.5 or p.x > n - 1 or p.y > n - 1: return true
 	if level_index == 2 and not quest_done and p.x > _station().x + 0.75: return true
 	if pathways.blocked(p): return true
-	if pathways.distance(p)>_clearing_radius(p.x) and not _key_clearing(p) and not exploration.open(p) and not (level_index==1 and p.distance_to(pathways.web_position())<4.8): return true
+	if pathways.distance(p)>_clearing_radius(p.x) and not _key_clearing(p) and not exploration.open(p) and not beauty.open_floor(p) and not (level_index==1 and p.distance_to(pathways.web_position())<4.8): return true
 	var c := Vector2i(int(floor(p.x)), int(floor(p.y)))
 	for dx in range(-1, 2):
 		for dy in range(-1, 2):
@@ -456,6 +462,7 @@ func _process(dt: float) -> void:
 		_update_npc_animation(dt)
 		ambience.update(dt)
 		living.update(dt)
+		beauty.update(dt)
 		pathways.update(dt)
 		exploration.visit()
 		save_clock+=dt
@@ -467,6 +474,8 @@ func _process(dt: float) -> void:
 		_update_bats(dt)
 		if level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS and key_collected:
 			action_button.text = "OPEN DOOR"
+		elif beauty.nearest_chest()>=0:
+			action_button.text="OPEN CHEST"
 		elif _nearest_npc() >= 0:
 			action_button.text = "TALK"
 		elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
@@ -496,8 +505,9 @@ func _process(dt: float) -> void:
 
 func _update_collectibles() -> void:
 	if level_index == 0:
-		if key_revealed and not key_collected and player.distance_to(_key_location()) < 1.15:
+		if key_revealed and not key_collected and beauty.key_available() and player.distance_to(_key_location()) < 1.15:
 			key_collected = true
+			beauty.bank()
 			personality.react("pickup")
 			journal.checkpoint()
 			celebration = 1.2
@@ -505,7 +515,7 @@ func _update_collectibles() -> void:
 			show_toast("The brass key is yours! Follow the lanterns to the woodland door.", 4)
 	else:
 		for m in marks:
-			if not m.lit and m.revealed and level_index != 4 and player.distance_to(m.pos) < 1.15:
+			if not m.lit and m.revealed and beauty.item_available(m) and level_index != 4 and player.distance_to(m.pos) < 1.15:
 				m.lit = true
 				quest_count += 1
 				personality.react("pickup")
@@ -544,6 +554,7 @@ func glow() -> void:
 	pathways.glow()
 	ambience.react_to_glow()
 	living.glow()
+	beauty.shine()
 	for npc in npcs:
 		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
@@ -553,7 +564,7 @@ func glow() -> void:
 		show_toast("Something brass glitters between the birch roots!", 3.5)
 	if level_index > 0:
 		for m in marks:
-			if not m.lit and player.distance_to(m.pos) < 2.5:
+			if not m.lit and beauty.item_available(m) and player.distance_to(m.pos) < 2.5:
 				if level_index == 1: m.revealed = true
 				if level_index == 4:
 					m.lit = true
@@ -587,6 +598,7 @@ func glow() -> void:
 
 func interact() -> void:
 	if state != "play": return
+	if beauty.interact(): return
 	var ni := _nearest_npc()
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]
@@ -625,6 +637,7 @@ func _nearest_npc() -> int:
 
 func _finish_quest() -> void:
 	quest_done = true
+	beauty.bank()
 	personality.react("repair" if level_index==2 else "celebrate",1.8)
 	journal.checkpoint()
 	celebration = 2.5
@@ -637,6 +650,7 @@ func _complete_chapter() -> void:
 	if level_index == 0 and not key_collected: return
 	if level_index > 0 and not quest_done: return
 	completed = true
+	beauty.bank()
 	if level_index == 4:
 		personality.react("reunion",2.3)
 		journal.checkpoint()
@@ -655,12 +669,12 @@ func _burst(location: Vector2) -> void:
 
 func _update_hud() -> void:
 	if light_trails != null:
-		hud_discoveries.text = "Discoveries %d/%d · Secrets %d/2 · Ira %d/3" % [light_trails.discovered,light_trails.total,int(exploration.found[0])+int(exploration.found[1]),living.count_clues()]
+		hud_discoveries.text = "Stars %d/18 · Chests %d/3 · %d/400" % [beauty.star_count(),beauty.chest_count(),beauty.score()]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
 	if level_index == 0:
-		hud_objective.text = "Quest 1 · " + ("Open the woodland door" if key_collected else "Collect the shimmering key" if key_revealed else "Search the birches near the blue lantern" if quest_started else "Meet your woodland neighbours")
+		hud_objective.text = "Quest 1 · " + ("Open the woodland door" if key_collected else "Collect the shimmering key" if key_revealed and beauty.key_available() else "Open the chest between the birches" if key_revealed else "Search the birches near the blue lantern" if quest_started else "Meet your woodland neighbours")
 	else:
 		var verb: String = ["", "Collect moon-scroll pages", "Collect driftwood", "Collect star crystals", "Wake moonflowers"][level_index]
 		hud_objective.text = ("Quest complete · Follow the lantern path" if quest_done else "Quest %d · %s · %d / 3" % [level_index + 1, verb, quest_count] if quest_count < 3 else "Glow: Moon → Star → Heart" if level_index == 3 else "Use the quest station near the end of the path")
@@ -814,7 +828,7 @@ func _navigation_tick(budget_us: int=2000) -> void:
 				low=mini(low,_nav_cell(_key_location().y-4));high=maxi(high,_nav_cell(_key_location().y+4))
 			if level_index==1 and absf(wx-pathways.web_position().x)<5:
 				low=mini(low,_nav_cell(pathways.web_position().y-5));high=maxi(high,_nav_cell(pathways.web_position().y+5))
-			for loop in exploration.loops:
+			for loop in exploration.loops+beauty.paths:
 				if wx<float(loop.points[0].x)-3 or wx>float(loop.points[3].x)+3: continue
 				for point in loop.points:
 					low=mini(low,_nav_cell(point.y-3));high=maxi(high,_nav_cell(point.y+3))
