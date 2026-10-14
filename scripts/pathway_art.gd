@@ -2,69 +2,7 @@ extends RefCounted
 ## Native CanvasItem art. Dimensions match the collision lanes in pathways.gd.
 static func crossings(g: Control) -> void:
 	for c in g.pathways.crossings:
-		if not g._visible(g._project(c.pos),g.tile*7): continue
-		var open: bool = c.kind!="repair" or g.quest_done
-		var w: float = c.width+0.3
-		for ring in range(3,0,-1): g._world_oval(c.pos+Vector2(0,c.offset+.1),Vector2(w+.25,2.3)*float(ring)/3,Color(0.015,.055,.05,.05))
-		for side in [-1.0,1.0]:
-			var x: float = c.x+side*(w+0.2)
-			var bank := Vector2(x,g.pathways.crossing_y(c,x)+c.offset)
-			for k in range(6):
-				var at: Vector2 = g._project(bank+Vector2(0,(float(k)-2.5)*1.05))
-				g._world_oval(bank+Vector2(0,(float(k)-2.5)*1.05),Vector2(0.22,0.3),Color("#95b0a5"))
-				g.draw_line(at,at+Vector2(4,-18-float(k%2)*10),Color("#658e7b"),2,true)
-		if c.kind=="stones":
-			for i in range(7):
-				for lane in range(3):
-					var x: float = c.x-w+float(i)*w*2/6.0
-					var p := Vector2(x,g.pathways.crossing_y(c,x)+c.offset+(lane-1)*1.15)
-					p+=Vector2(g._randseed(i*43+lane*7)*.08,g._randseed(i*13+lane*19)*.12)
-					_stone(g,p,Vector2(.26,.51),i*7+lane)
-			continue
-		if c.kind=="log_bridge":
-			for log_index in range(6):
-				var lane := -1.7+float(log_index)*0.68
-				var bark := PackedVector2Array()
-				for i in range(17):
-					var x: float = c.x-w+float(i)*w/8.0
-					bark.append(g._project(Vector2(x,g.pathways.crossing_y(c,x)+c.offset+lane)))
-				g.draw_polyline(bark,Color("#503e35"),g.tile*0.48,true)
-				g.draw_polyline(bark,Color("#9e7c56"),g.tile*0.34,true)
-				var lit := PackedVector2Array()
-				for point in bark: lit.append(point-Vector2(0,5))
-				g.draw_polyline(lit,Color("#c1ac75"),2,true)
-				g._disc(bark[-1],g.tile*0.17,Color("#d6b080"))
-				g.draw_arc(bark[-1],g.tile*0.1,0,TAU,12,Color("#8b6448"),1.4,true)
-			for side in [-1.0,1.0]:
-				var x: float = c.x+side*0.75
-				var center := Vector2(x,g.pathways.crossing_y(c,x)+c.offset)
-				g.draw_line(g._project(center+Vector2(0,-2)),g._project(center+Vector2(0,2)),Color("#473c35"),5,true)
-				g.draw_line(g._project(center+Vector2(0,-2))-Vector2(0,2),g._project(center+Vector2(0,2))-Vector2(0,2),Color("#ccb68b"),2,true)
-			continue
-		for i in range(16):
-			if not open and i in [5,6,7,8,9,10]: continue
-			if c.kind=="repair" and open and i>int(g.personality.repair*16): continue
-			var x: float = c.x-w+float(i)*w*2/16.0
-			var nx: float = x+w*2/16.0-0.02
-			var a := Vector2(x,g.pathways.crossing_y(c,x)+c.offset)
-			var b := Vector2(nx,g.pathways.crossing_y(c,nx)+c.offset)
-			g._world_polygon([a+Vector2(0,-2),b+Vector2(0,-2),b+Vector2(0,2),a+Vector2(0,2)],Color("#916752") if i%2 else Color("#b48b66"))
-			g.draw_line(g._project(a+Vector2(0,-2)),g._project(a+Vector2(0,2)),Color("#dfbd86"),1.3,true)
-			for j in range(3):
-				var along := -.9+float(j)*.8
-				var p: Vector2 = g._project(a+Vector2(.055,along))
-				g.draw_line(p,p+Vector2(5,2),Color(.34,.24,.18,.48),1,true)
-			if i%5==0: g._disc(g._project(a+Vector2(.03,1.6)),2,Color("#a2ac74"))
-		for side in [-1.0,1.0]:
-			var rope := PackedVector2Array()
-			for i in range(13):
-				var x: float = c.x-w+float(i)*w/6.0
-				var foot: Vector2 = g._project(Vector2(x,g.pathways.crossing_y(c,x)+c.offset+side*2.05))
-				rope.append(foot-Vector2(0,25-5*sin(float(i)*PI/12.0)))
-				if i%6==0:
-					g.draw_line(foot,foot-Vector2(0,32),Color("#705648"),5,true)
-					g._disc(foot-Vector2(0,33),4,Color("#e6c78d"))
-			g.draw_polyline(rope,Color("#e5c390") if c.kind!="log_bridge" else Color("#674e46"),2,true)
+		if g._visible(g._project(c.pos),g.tile*7):g.object_art.crossing(g,c)
 
 static func _stone(g: Control, p: Vector2, radius: Vector2, seed_value: int) -> void:
 	var top := PackedVector2Array()

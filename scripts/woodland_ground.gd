@@ -54,6 +54,8 @@ func sync() -> void:
 	for plant in game.light_trails.plants:
 		if plant.awake and plant.pos.distance_squared_to(game.player) < 65:
 			sources.append({"pos":plant.pos,"color":Color("#94ffe1")})
+	for item in game.objects.items:
+		if item.kind=="pumpkin" and item.pos.distance_squared_to(game.player)<65: sources.append({"pos":item.pos,"color":Color("#ffc77e")})
 	sources.sort_custom(func(a,b): return a.pos.distance_squared_to(game.player)<b.pos.distance_squared_to(game.player))
 	var count := mini(sources.size(),6)
 	for i in range(6):

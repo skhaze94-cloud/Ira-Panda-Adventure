@@ -40,6 +40,8 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var object_art = preload("res://scripts/object_art.gd").new()
+var objects = preload("res://scripts/object_upgrade.gd").new()
 var beauty: RefCounted = preload("res://scripts/hidden_wonders.gd").new()
 var living: RefCounted = preload("res://scripts/living_woodland.gd").new()
 var sound_enabled := true
@@ -318,6 +320,7 @@ func _key_trail(p: Vector2) -> bool:
 
 func start_level(index: int) -> void:
 	level_index = clampi(index, 0, 4)
+	object_art.ensure_chapter(level_index)
 	pathways.build(self)
 	exploration.build(self)
 	personality.build(self)
@@ -409,6 +412,7 @@ func start_level(index: int) -> void:
 	ambience.build(self)
 	living.build(self)
 	beauty.finish_layout()
+	objects.build(self)
 	pathways.protect_objectives()
 	_set_state("play")
 	_update_hud()
@@ -463,6 +467,7 @@ func _process(dt: float) -> void:
 		ambience.update(dt)
 		living.update(dt)
 		beauty.update(dt)
+		objects.update(dt)
 		pathways.update(dt)
 		exploration.visit()
 		save_clock+=dt
@@ -476,6 +481,8 @@ func _process(dt: float) -> void:
 			action_button.text = "OPEN DOOR"
 		elif beauty.nearest_chest()>=0:
 			action_button.text="OPEN CHEST"
+		elif objects.nearest()>=0:
+			action_button.text="SAY BOO" if objects.items[objects.nearest()].kind=="pumpkin" else "LOOK"
 		elif _nearest_npc() >= 0:
 			action_button.text = "TALK"
 		elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
@@ -555,6 +562,7 @@ func glow() -> void:
 	ambience.react_to_glow()
 	living.glow()
 	beauty.shine()
+	objects.glow()
 	for npc in npcs:
 		if player.distance_to(npc.pos)<5.0: npc.reaction = 1.6
 	if level_index == 0 and not key_collected and player.distance_to(_key_location()) < 3.0:
@@ -599,6 +607,7 @@ func glow() -> void:
 func interact() -> void:
 	if state != "play": return
 	if beauty.interact(): return
+	if objects.interact(): return
 	var ni := _nearest_npc()
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]

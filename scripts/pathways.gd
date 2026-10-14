@@ -70,7 +70,7 @@ func visit() -> void:
 		if game.player.distance_to(c.pos)<1.8 and not seen.has(i) and (c.kind!="repair" or game.quest_done):
 			seen[i] = true
 			game._burst(game.player)
-			game.show_toast("Tiptoe over the stepping stones!" if c.kind=="stones" else "A fallen tree makes a splendid little bridge!" if c.kind=="log_bridge" else "Little paws, big crossing!",2.5)
+			game.show_toast("Tiptoe over the little carved bridge!" if c.kind=="stones" else "A tiny storybook bridge, just the right size for paws!" if c.kind=="log_bridge" else "Little paws, big crossing!",2.5)
 
 func protect_objectives() -> void:
 	var targets: Array[Vector2] = [game._station(),game._exit(),game._key_location() if game.level_index==0 else game.player]

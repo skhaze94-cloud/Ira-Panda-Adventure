@@ -88,6 +88,7 @@ func _center(control: Control, width_percent: float, height_percent: float) -> v
 
 func _build_ui() -> void:
 	beauty_art.load_assets()
+	object_art.load_assets()
 	menu_layer = Control.new()
 	menu_layer.mouse_filter = Control.MOUSE_FILTER_PASS
 	ui_canvas.add_child(menu_layer)
@@ -97,7 +98,7 @@ func _build_ui() -> void:
 	menu_col = VBoxContainer.new()
 	menu_col.add_theme_constant_override("separation",10)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ HIDDEN WONDERS · v0.8 ✦",17,Color("#e8d6a4"))
+	_label(menu_col,"✦ WOODLAND WHIMSY · v0.9 ✦",17,Color("#e8d6a4"))
 	_label(menu_col,"ARA THE PANDA",34)
 	_label(menu_col,"Quest to Find Ira",24,Color("#fedbb3"))
 	var avatar := TextureRect.new()

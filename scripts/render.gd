@@ -28,6 +28,10 @@ func _draw() -> void:
 	LIVING_ART.ground(self)
 	beauty_art.paths(self)
 	var entities: Array = []
+	for prop in objects.items:
+		if _visible(_project(prop.pos),tile*3): entities.append({"depth":prop.pos.x+prop.pos.y,"type":"whimsy","data":prop})
+	for crossing in pathways.crossings:
+		if _visible(_project(crossing.pos),tile*7): entities.append({"depth":crossing.pos.x+crossing.pos.y+crossing.offset+2.0,"type":"bridge_front","data":crossing})
 	for prop in beauty.scenery:
 		if _visible(_project(prop.pos),tile*3): entities.append({"depth":prop.pos.x+prop.pos.y,"type":"beauty_prop","data":prop})
 	for chest in beauty.chests:
@@ -79,6 +83,8 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"whimsy": object_art.prop(self,d)
+			"bridge_front": object_art.rail(self,d,1)
 			"beauty_prop": beauty_art.scenery(self,d)
 			"treasure": beauty_art.chest(self,d)
 			"star": beauty_art.star(self,d)
@@ -525,6 +531,10 @@ func _draw_interaction_hint() -> void:
 	if chest>=0:
 		target=_project(beauty.chests[chest].pos)-Vector2(0,90)
 		text="E · Open treasure"
+	elif objects.nearest()>=0:
+		var item: Dictionary=objects.items[objects.nearest()]
+		target=_project(item.pos)-Vector2(0,105)
+		text="E · Say boo" if item.kind=="pumpkin" else "E · Look closer"
 	elif npc >= 0:
 		target = _project(npcs[npc].pos)-Vector2(0,tile*2.2)
 		text = "E · Talk to " + str(npcs[npc].name)
@@ -843,6 +853,8 @@ func _focus_points() -> Array[Vector2]:
 		if player.distance_to(npc.pos)<4: points.append(npc.pos)
 	for loop in exploration.loops:
 		if player.distance_to(loop.pos)<6: points.append(loop.pos)
+	for prop in objects.items:
+		if player.distance_to(prop.pos)<5: points.append(prop.pos)
 	for chest in beauty.chests:
 		if player.distance_to(chest.pos)<6: points.append(chest.pos)
 	for clue in living.clues:
