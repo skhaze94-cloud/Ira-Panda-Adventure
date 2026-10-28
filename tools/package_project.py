@@ -17,7 +17,7 @@ for file in files:
         parent = parent.parent
 
 def entry(name, directory=False):
-    info = zipfile.ZipInfo(name, date_time=(2026, 10, 9, 12, 0, 0))
+    info = zipfile.ZipInfo(name, date_time=(2026, 10, 28, 12, 0, 0))
     info.create_system = 0
     info.external_attr = 0x10 if directory else 0x20
     info.compress_type = zipfile.ZIP_STORED if directory else zipfile.ZIP_DEFLATED

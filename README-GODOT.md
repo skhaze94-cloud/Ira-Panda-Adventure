@@ -1,4 +1,11 @@
-# Ara the Panda: Quest to Find Ira — Godot v0.8
+# Ara the Panda: Quest to Find Ira — Godot v0.9
+
+**Woodland Whimsy — Object Upgrade Pack** adds twenty illustrated assets,
+forty-five playful trail encounters and eleven reworked bridge crossings.
+Pumpkins, signs and friendly spooky displays respond to E / INTERACT and the
+lantern, with short captions and saved discovery flags. Only the current
+chapter's four object textures stay loaded. See
+[OBJECT-UPGRADE-V0.9.md](OBJECT-UPGRADE-V0.9.md) for this release.
 
 **Hidden Wonders** adds twenty new illustrations, a thinner forest, fifteen
 secret treasure loops, ninety collectible stars and fifteen animated chests.
@@ -24,7 +31,7 @@ See [HIDDEN-WONDERS-V0.8.md](HIDDEN-WONDERS-V0.8.md) for this update and
 | Move | WASD / arrows, or the touch paw stick |
 | Walk to a destination | Click / tap the woodland floor |
 | Lantern glow | Space / GLOW |
-| Talk / chest / quest station / door | E / INTERACT |
+| Talk / chest / object / quest station / door | E / INTERACT |
 | Pause | Escape / pause button |
 | Story | Enter / Space / Next Page / Skip |
 
@@ -91,7 +98,9 @@ repeated release events cannot leave a phantom direction held.
 
 ## Validation
 
-Validated locally with Godot **4.7.2**:
+The inherited checks below describe earlier releases. v0.9 is validated with
+**Godot 4.3 stable, Compatibility**; see `tests/benchmarks/object-upgrade-validation.json`
+for the current runtime results.
 
 - All five original quest smoke checks passed.
 - Lantern checks passed in every chapter: hidden initial state, reveal range,
@@ -121,6 +130,8 @@ godot --headless --path . --script res://tests/smoke.gd
 godot --headless --path . --script res://tests/landscapes_controls.gd
 godot --headless --path . --script res://tests/lantern.gd
 godot --headless --path . --script res://tests/graphics_v05.gd
+godot --headless --path . --script res://tests/hidden_wonders.gd
+godot --headless --path . --script res://tests/object_upgrade.gd
 godot --path . --disable-vsync --max-fps 0 --script res://tests/benchmark.gd
 godot --path . --script res://tests/capture_v05.gd
 godot --path . --script res://tests/capture_lantern.gd --max-fps 60
@@ -131,8 +142,7 @@ elsewhere. `tools/package_project.py` makes a ZIP with explicit directory
 records and excludes generated import caches.
 
 This release has not been device-tested on mobile, tested with physical touch,
-or exported to a platform build. Godot 4.3 compatibility has not been re-tested;
-the local engine used was 4.7.2. Audio playback still needs a listening check.
+or exported to a platform build. Audio playback still needs a listening check.
 `REVIEW-V0.2.md` is retained as the historical review of the earlier release.
 The Godot edition is maintained on GitHub branch
-`godot-4-v0.2-moonlight-depth`; the browser edition remains on `main`.
+`godot-4-v0.9-object-upgrade`; the browser edition remains on `main`.

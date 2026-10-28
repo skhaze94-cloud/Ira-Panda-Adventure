@@ -1,0 +1,80 @@
+{
+  "release": "0.9.0",
+  "engine": "Godot 4.3 stable, Compatibility",
+  "runtime_suites": [
+    {
+      "suite": "smoke",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 2.68
+    },
+    {
+      "suite": "landscapes_controls",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 18.72
+    },
+    {
+      "suite": "pathways",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 13.53
+    },
+    {
+      "suite": "lantern",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 34.65
+    },
+    {
+      "suite": "masterclass",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 1.87
+    },
+    {
+      "suite": "quests_captions",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 2.49
+    },
+    {
+      "suite": "graphics_v05",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 2.33
+    },
+    {
+      "suite": "personality_v06",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 10.7
+    },
+    {
+      "suite": "living_woodland",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 21.86
+    },
+    {
+      "suite": "hidden_wonders",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 37.69
+    },
+    {
+      "suite": "object_upgrade",
+      "exit_code": 0,
+      "errors": [],
+      "seconds": 15.21
+    }
+  ],
+  "chapters": 5,
+  "original_object_illustrations": 20,
+  "walked_and_interacted_encounters": 45,
+  "reworked_crossings": 11,
+  "native_capture_count": 24,
+  "tested_legacy_checkpoint": true,
+  "tested_repair_gate": true,
+  "mobile_device_tested": false
+}
