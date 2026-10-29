@@ -33,7 +33,7 @@ func play(name: String, pitch: float=1.0, volume: float=-8.0) -> void:
 	if not game.sound_enabled or voices.is_empty() or not clips.has(name): return
 	var voice: AudioStreamPlayer = voices[next_voice]
 	next_voice=(next_voice+1)%voices.size()
-	voice.stream=clips[name];voice.pitch_scale=pitch;voice.volume_db=volume
+	voice.stream=clips[name];voice.pitch_scale=pitch;voice.volume_db=volume+linear_to_db(game.effects_volume)
 	voice.play();played+=1
 func step(distance: float) -> void:
 	steps+=distance
@@ -44,14 +44,14 @@ func step(distance: float) -> void:
 func update(dt: float) -> void:
 	var active: bool=game.sound_enabled and game.state=="play"
 	var target: float=-22-game.living.brook*8-game.living.home_warmth*4 if active else -60.0
-	bed_level=lerpf(bed_level,target,1-exp(-dt*1.4));bed.volume_db=bed_level
+	bed_level=lerpf(bed_level,target,1-exp(-dt*1.4));bed.volume_db=bed_level+linear_to_db(game.effects_volume)
 	if active and not bed.playing: bed.play()
 	if not active and bed_level<-57: bed.stop()
 	var near := 0.0
 	if game.sound_enabled and game.state=="play":
 		for c in game.pathways.crossings: near=maxf(near,1.0-smoothstep(2,9,game.player.distance_to(c.pos)))
 	water_level=lerpf(water_level,-44+near*19 if near>0 else -60,1-exp(-dt*3))
-	water.volume_db=water_level
+	water.volume_db=water_level+linear_to_db(game.effects_volume)
 	if near>0.01 and not water.playing: water.play()
 	if near<=0.01 and water_level<-57: water.stop()
 func silence() -> void:

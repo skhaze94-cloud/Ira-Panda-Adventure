@@ -1,0 +1,26 @@
+{
+  "version": "0.11.0",
+  "engine": "4.5.1",
+  "native_capture_count": 25,
+  "viewports": [
+    [
+      1280,
+      720
+    ],
+    [
+      854,
+      480
+    ],
+    [
+      740,
+      360
+    ]
+  ],
+  "targeted_navigation_save_settings_tests": "passed",
+  "smoke": "passed",
+  "limitations": [
+    "Exit-time resource cleanup warnings in targeted harness.",
+    "Timing-sensitive broader suite was affected by concurrent rendering load; clean full-suite result not claimed.",
+    "Physical-device performance not measured."
+  ]
+}

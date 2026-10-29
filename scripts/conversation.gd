@@ -119,8 +119,8 @@ func _layout() -> void:
 	caption.custom_minimum_size.y = 70 if compact else 102
 	next_button.custom_minimum_size = Vector2(130,42) if compact else Vector2(168,48)
 	close_button.custom_minimum_size = Vector2(140,42) if compact else Vector2(170,48)
-	notice_panel.position = Vector2(size.x*0.24,size.y*0.76)
-	notice_panel.size = Vector2(size.x*0.52,maxf(108.0,size.y*0.18))
+	notice_panel.position = Vector2(size.x*0.23,maxf(12,size.y-maxf(94,size.y*.18)-18))
+	notice_panel.size = Vector2(size.x*0.54,maxf(94.0,size.y*0.18))
 
 func start(lines: Array, ending: String="play") -> void:
 	if lines.is_empty(): return

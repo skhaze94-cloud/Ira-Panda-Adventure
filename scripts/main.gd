@@ -1,5 +1,9 @@
 extends "res://scripts/render.gd"
 
+var options_origin := "menu"
+var volume_music: HSlider
+var volume_effects: HSlider
+var text_size: OptionButton
 var album: ScrollContainer
 var album_col: VBoxContainer
 var album_buttons: Array = []
@@ -55,7 +59,7 @@ func _label(parent: Node, text: String, font_size: int, tint: Color=Color("#f8ec
 func _button(parent: Node, text: String, fn: Callable, minimum: Vector2=Vector2(150,44)) -> Button:
 	var b := Button.new()
 	b.text = text
-	b.focus_mode = Control.FOCUS_NONE
+	b.focus_mode = Control.FOCUS_ALL
 	b.custom_minimum_size = minimum
 	b.add_theme_font_size_override("font_size",18)
 	b.add_theme_color_override("font_color",Color("#fef1d8"))
@@ -76,8 +80,23 @@ func _button(parent: Node, text: String, fn: Callable, minimum: Vector2=Vector2(
 	pressed.bg_color=Color("#224d48")
 	pressed.border_color=Color("#f2d393")
 	b.add_theme_stylebox_override("pressed",pressed)
+	var focus: StyleBoxFlat = style.duplicate()
+	focus.bg_color=Color(0,0,0,0)
+	focus.border_color=Color("#fff0af")
+	focus.set_border_width_all(3)
+	b.add_theme_stylebox_override("focus",focus)
+	var disabled: StyleBoxFlat = style.duplicate()
+	disabled.bg_color=Color("#d9d3bc")
+	disabled.shadow_size=0
+	b.add_theme_stylebox_override("disabled",disabled)
+	b.add_theme_color_override("font_disabled_color",Color("#666d5a"))
 	parent.add_child(b)
 	b.pressed.connect(fn)
+	b.mouse_entered.connect(func():
+		if not quieter_motion:
+			var t := create_tween()
+			t.tween_property(b,"self_modulate",Color("#fff0cb"),.12))
+	b.mouse_exited.connect(func(): b.self_modulate=Color.WHITE)
 	b.button_down.connect(func(): _button_feedback(b,true))
 	b.button_up.connect(func(): _button_feedback(b,false))
 	return b
@@ -112,9 +131,9 @@ func _build_ui() -> void:
 	menu_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	menu_col.add_theme_constant_override("separation",10)
 	menu_card.add_child(menu_col)
-	menu_edition = _label(menu_col,"✦  THE MOONLIT KEEPSAKE EDITION  ✦",13,Color("#8f7340"))
-	menu_title = _label(menu_col,"Ara the Panda",38,Color("#244e48"))
-	_label(menu_col,"Quest to Find Ira",25,Color("#67735c"))
+	menu_edition = _label(menu_col,"✦  THE STORYBOOK WELCOME EDITION  ✦",13,Color("#8f7340"))
+	menu_title = _label(menu_col,"Ara the Panda",40,Color("#244e48"))
+	_label(menu_col,"✧  Quest to Find Ira  ✧",25,Color("#67735c"))
 	menu_cast = HBoxContainer.new()
 	menu_cast.alignment = BoxContainer.ALIGNMENT_CENTER
 	menu_cast.add_theme_constant_override("separation",8)
@@ -129,25 +148,56 @@ func _build_ui() -> void:
 	_label(menu_col,"Five little chapters. One very big hug.",17,Color("#5c6b5b"))
 	continue_button=_button(menu_col,"CONTINUE ADVENTURE",journal.resume,Vector2(220,48))
 	continue_button.visible=journal.has_checkpoint()
-	_button(menu_col,"NEW ADVENTURE",_new_adventure,Vector2(220,48))
+	var start_button := _button(menu_col,"NEW ADVENTURE",_new_adventure,Vector2(220,48))
+	start_button.name="NewAdventure"
+	if journal.has_checkpoint():
+		var secondary: StyleBoxFlat=start_button.get_theme_stylebox("normal").duplicate()
+		secondary.bg_color=Color("#e5ddc6")
+		start_button.add_theme_stylebox_override("normal",secondary)
+		start_button.add_theme_color_override("font_color",Color("#345c50"))
+		start_button.add_theme_color_override("font_hover_color",Color("#fef1d8"))
 	var menu_row := HBoxContainer.new()
 	menu_row.alignment=BoxContainer.ALIGNMENT_CENTER
 	menu_row.add_theme_constant_override("separation",12)
 	menu_col.add_child(menu_row)
-	_button(menu_row,"OPTIONS",_open_options,Vector2(110,42))
-	_button(menu_row,"CHAPTERS",_open_album,Vector2(110,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.10.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
-	_label(menu_col,"A LITTLE LIGHT. A LOVELY ADVENTURE.  ·  v0.10.0",11,Color("#8b846d"))
+	_button(menu_row,"SETTINGS",_open_options,Vector2(110,42))
+	_button(menu_row,"ALBUM",_open_album,Vector2(110,42))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.11.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
+	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.11.0",11,Color("#8b846d"))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)
 	_fill(story_layer)
+	var theme := Theme.new()
+	theme.default_font_size=17
+	for state_name in ["on","off"]:
+		theme.set_icon(state_name,"CheckButton",load("res://assets/ui/toggle-"+state_name+".svg"))
+	var option_paper := StyleBoxFlat.new()
+	option_paper.bg_color=Color("#38695e");option_paper.border_color=Color("#d6bc80")
+	option_paper.set_border_width_all(1);option_paper.set_corner_radius_all(10)
+	option_paper.set_content_margin_all(8)
+	for state_name in ["normal","hover","pressed","focus"]:
+		theme.set_stylebox(state_name,"OptionButton",option_paper)
+	var track := StyleBoxFlat.new()
+	track.bg_color=Color("#c4b58a");track.set_corner_radius_all(3)
+	theme.set_stylebox("slider","HSlider",track)
+	for kind in ["CheckButton","OptionButton","HSlider"]:
+		theme.set_color("font_color",kind,Color("#f5eddc"))
+		theme.set_font_size("font_size",kind,17)
+	ui_canvas.get_parent().theme=theme
 	var comic_card := _panel(story_layer,Color(0.97,0.948,0.894,0.98),25)
 	story_card = comic_card
 	_center(comic_card,0.72,0.91)
 	var story_col := VBoxContainer.new()
 	story_col.add_theme_constant_override("separation",10)
-	comic_card.add_child(story_col)
+	var story_outer := VBoxContainer.new()
+	comic_card.add_child(story_outer)
+	var story_scroll := ScrollContainer.new()
+	story_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	story_scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	story_outer.add_child(story_scroll)
+	story_col.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	story_scroll.add_child(story_col)
 	story_caption = _label(story_col,"A bedtime story",15,Color("#8a734c"))
 	story_title = _label(story_col,"The beginning",28,Color("#2b554e"))
 	story_image = TextureRect.new()
@@ -162,10 +212,11 @@ func _build_ui() -> void:
 	var story_row := HBoxContainer.new()
 	story_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	story_row.add_theme_constant_override("separation",12)
-	story_col.add_child(story_row)
+	story_outer.add_child(story_row)
 	story_back = _button(story_row,"BACK",_story_back)
 	story_next = _button(story_row,"NEXT PAGE",_story_advance,Vector2(180,46))
-	_button(story_col,"SKIP STORY",_story_end,Vector2(100,35))
+	var skip := _button(story_row,"SKIP",_story_end,Vector2(80,44))
+	skip.add_theme_font_size_override("font_size",14)
 
 	hud_layer = Control.new()
 	hud_layer.mouse_filter = Control.MOUSE_FILTER_PASS
@@ -188,13 +239,13 @@ func _build_ui() -> void:
 	hud_chapter.visible = true
 	hud_title = _label(title_col,"Whispering Woods",17)
 	hud_objective = _label(title_col,"Find the key",13)
-	hud_discoveries = _label(title_col,"Explore with your lantern",11,Color("#a9e4df"))
+	hud_discoveries = _label(title_col,"Explore with your lantern",14,Color("#a9e4df"))
 	hud_discoveries.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_objective.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	hud_chapter.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var hearts_plate := _panel(hud_layer,Color(0.06,0.14,0.19,0.82),16)
-	hearts_plate.anchor_left = 0.83
+	hearts_plate.anchor_left = 0.81
 	hearts_plate.anchor_right = 0.97
 	hearts_plate.anchor_top = 0.02
 	hearts_plate.anchor_bottom = 0.02
@@ -202,7 +253,8 @@ func _build_ui() -> void:
 	var health_col := VBoxContainer.new()
 	hearts_plate.add_child(health_col)
 	hud_hearts = _label(health_col,"♥ ♥ ♥",18,Color("#ffb9bc"))
-	hud_glow = _label(health_col,"LANTERN READY",11,Color("#ffde9f"))
+	hud_hearts.autowrap_mode=TextServer.AUTOWRAP_OFF
+	hud_glow = _label(health_col,"GLOW READY",13,Color("#ffde9f"))
 	var pause_button := _button(hud_layer,"",_pause,Vector2(48,48))
 	_add_icon(pause_button,"pause")
 	pause_button.anchor_left = 0.78
@@ -237,6 +289,10 @@ func _build_ui() -> void:
 	action_button.offset_top = -80
 	action_button.offset_bottom = -24
 	_add_icon(glow_button,"lantern")
+	var readiness := preload("res://scripts/readiness_ring.gd").new()
+	readiness.game=self
+	glow_button.add_child(readiness)
+	readiness.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_add_icon(action_button,"hand")
 	glow_button.add_theme_font_size_override("font_size",13)
 	action_button.add_theme_font_size_override("font_size",12)
@@ -255,20 +311,28 @@ func _build_ui() -> void:
 	dim.color = Color(0,0,0,0.42)
 	modal_layer.add_child(dim)
 	_fill(dim)
-	var dialog := _panel(modal_layer,Color(0.065,0.13,0.18,0.98),26)
+	var dialog := _panel(modal_layer,Color("#244e48"),26)
 	dialog_card=dialog
 	_center(dialog,0.66,0.80)
 	var dcol := VBoxContainer.new()
 	dcol.alignment = BoxContainer.ALIGNMENT_CENTER
 	dcol.add_theme_constant_override("separation",10)
-	dialog.add_child(dcol)
+	var outer := VBoxContainer.new()
+	dialog.add_child(outer)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	outer.add_child(scroll)
+	dcol.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	scroll.add_child(dcol)
 	_label(dcol,"✦ A LITTLE MOMENT BY MOONLIGHT ✦",15,Color("#f8d79e"))
 	modal_heading = _label(dcol,"Pause",28)
 	modal_text = _label(dcol,"",19)
-	modal_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	modal_text.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	album=ScrollContainer.new()
 	album.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
 	album.custom_minimum_size=Vector2(0,200)
+	album.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	album.visible=false
 	dcol.add_child(album)
 	album_col=VBoxContainer.new()
@@ -276,7 +340,11 @@ func _build_ui() -> void:
 	album_col.add_theme_constant_override("separation",6)
 	album.add_child(album_col)
 	for chapter in range(5):
-		var chapter_button: Button=_button(album_col,"",func(): _choose_chapter(chapter),Vector2(0,44))
+		var chapter_button: Button=_button(album_col,"",func(): _choose_chapter(chapter),Vector2(0,82))
+		chapter_button.icon=load("res://screenshots/%s.png" % ["woods","glade","brook","hollow","garden"][chapter])
+		chapter_button.expand_icon=true
+		chapter_button.add_theme_constant_override("icon_max_width",90)
+		chapter_button.alignment=HORIZONTAL_ALIGNMENT_LEFT
 		chapter_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 		album_buttons.append(chapter_button)
 	options_music = CheckButton.new()
@@ -307,16 +375,26 @@ func _build_ui() -> void:
 	dcol.add_child(options_quality)
 	options_quality.item_selected.connect(set_graphics_quality)
 
+	volume_music=_volume_row(dcol,"Music volume",func(value: float): music_volume=value;menu_audio.volume_db=linear_to_db(value);game_audio.volume_db=linear_to_db(value);journal.settings())
+	volume_effects=_volume_row(dcol,"Woodland volume",func(value: float): effects_volume=value;journal.settings())
+	text_size=OptionButton.new()
+	text_size.add_item("Text: Standard")
+	text_size.add_item("Text: Larger")
+	text_size.visible=false
+	dcol.add_child(text_size)
+	text_size.item_selected.connect(func(index: int): large_text=index==1;_apply_reading_size();journal.settings())
 	var drow := HBoxContainer.new()
 	drow.alignment = BoxContainer.ALIGNMENT_CENTER
 	drow.add_theme_constant_override("separation",12)
-	dcol.add_child(drow)
-	modal_primary = _button(drow,"CONTINUE",_resume,Vector2(175,50))
-	modal_secondary = _button(drow,"TITLE",_return_menu,Vector2(175,50))
+	outer.add_child(drow)
+	modal_primary = _button(drow,"CONTINUE",_resume,Vector2(145,46))
+	modal_secondary = _button(drow,"TITLE",_return_menu,Vector2(145,46))
+	_button(drow,"SETTINGS",func(): options_origin="resume";_open_options(),Vector2(110,46)).name="PauseSettings"
 
 	conversation = load("res://scripts/conversation.gd").new()
 	conversation.game = self
 	ui_canvas.add_child(conversation)
+	_apply_reading_size()
 
 func _talk(npc: Dictionary) -> void:
 	conversation.start(load("res://scripts/quest_dialogue.gd").talk(self,npc.id))
@@ -385,6 +463,10 @@ func _story_end() -> void:
 func _show_dialog(title: String, body: String, primary: String, secondary: String, action: String) -> void:
 	conversation.dismiss()
 	album.visible=false
+	volume_music.get_parent().visible=false
+	volume_effects.get_parent().visible=false
+	text_size.visible=false
+	dialog_card.find_child("PauseSettings",true,false).visible=action=="resume"
 	modal_text.visible=true
 	dialog_from = action
 	if action=="replay":
@@ -418,7 +500,8 @@ func _resume() -> void:
 	if state == "win":
 		start_level(0)
 		return
-	if dialog_from == "menu": _set_state("menu")
+	if dialog_from == "options-pause": _set_state("play");_pause()
+	elif dialog_from == "menu": _set_state("menu")
 	elif dialog_from == "replay": start_level(0)
 	else: _set_state("play")
 
@@ -449,7 +532,15 @@ func _choose_chapter(chapter: int) -> void:
 	_show_dialog("A fresh little expedition", "Return to "+str(BASE_LEVELS[chapter].title)+"? This replaces your current trail checkpoint. Your best scores and crowns stay in the album.","LET'S GO","TITLE SCREEN","travel-"+str(chapter))
 
 func _open_options() -> void:
+	var from_pause: bool = state=="dialog" and dialog_from=="resume"
 	_show_dialog("Options", "Choose how your moonlit adventure feels.", "BACK", "", "menu")
+	if from_pause: dialog_from="options-pause"
+	volume_music.get_parent().visible=true
+	volume_effects.get_parent().visible=true
+	volume_music.set_value_no_signal(music_volume)
+	volume_effects.set_value_no_signal(effects_volume)
+	text_size.visible=true
+	text_size.selected=int(large_text)
 	options_music.button_pressed = music_enabled
 	options_motion.button_pressed = quieter_motion
 	options_music.visible = true
@@ -497,7 +588,10 @@ func _add_icon(button: Button, kind: String) -> void:
 			button.add_theme_stylebox_override(state_name,other)
 
 func _layout_ui() -> void:
-	if album!=null: album.custom_minimum_size.y=clampf(size.y*.31,140,235)
+	if album!=null: album.custom_minimum_size.y=clampf(size.y*.45,100,340)
+	if hud_title!=null:
+		hud_title.add_theme_font_size_override("font_size",15 if size.y<500 else 17)
+		hud_objective.add_theme_font_size_override("font_size",13 if size.y<500 else 15)
 	if menu_cast!=null: menu_cast.visible=size.y>=600
 	if menu_col!=null: menu_col.add_theme_constant_override("separation",7 if size.y<600 else 12)
 	if menu_title!=null: menu_title.add_theme_font_size_override("font_size",32 if size.y<600 else 38)
@@ -509,11 +603,48 @@ func _layout_ui() -> void:
 	if story_card!=null:
 		var compact: bool = size.y<600
 		_center(story_card,.88 if compact else .72,.95 if compact else .91)
-		story_image.custom_minimum_size=Vector2(260,108 if compact else 225)
-		story_bubble.visible=not compact
+		story_image.custom_minimum_size=Vector2(260,180 if compact else 225)
+		story_bubble.visible=true
+		story_bubble.add_theme_font_size_override("font_size",16 if compact else 21)
 		story_body.custom_minimum_size.y=38 if compact else 68
 		story_title.add_theme_font_size_override("font_size",21 if compact else 28)
 		story_body.add_theme_font_size_override("font_size",16 if compact else 18)
 		story_caption.add_theme_font_size_override("font_size",13 if compact else 15)
 		var story_col: VBoxContainer = story_card.get_child(0)
-		story_col.add_theme_constant_override("separation",5 if compact else 10)
+		story_col.add_theme_constant_override("separation",4 if size.y<400 else 5 if compact else 10)
+		if size.y<400:
+			story_image.custom_minimum_size.y=160
+			story_body.custom_minimum_size.y=30
+			story_body.add_theme_font_size_override("font_size",15)
+			story_title.add_theme_font_size_override("font_size",19)
+			var paper: StyleBoxFlat=story_card.get_theme_stylebox("panel").duplicate()
+			paper.content_margin_top=10;paper.content_margin_bottom=10
+			story_card.add_theme_stylebox_override("panel",paper)
+
+func _volume_row(parent: Node, title: String, change: Callable) -> HSlider:
+	var row := HBoxContainer.new()
+	parent.add_child(row)
+	row.visible=false
+	var label := _label(row,title,17)
+	label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
+	var slider := HSlider.new()
+	slider.min_value=0.01;slider.max_value=1.0;slider.step=0.01
+	slider.custom_minimum_size=Vector2(160,28)
+	row.add_child(slider)
+	slider.value_changed.connect(change)
+	return slider
+
+func _apply_reading_size() -> void:
+	modal_text.add_theme_font_size_override("font_size",21 if large_text else 19)
+	story_body.add_theme_font_size_override("font_size",20 if large_text else 18)
+	if conversation!=null: conversation.caption.add_theme_font_size_override("font_size",27 if large_text else 23)
+
+func _input(event: InputEvent) -> void:
+	if joystick==null: return
+	if event is InputEventScreenTouch:
+		joystick.visible=true
+		glow_button.text="GLOW"
+	elif event is InputEventKey and event.pressed:
+		joystick.visible=false
+		glow_button.text="SPACE · GLOW"

@@ -1,3 +1,9 @@
+# Ara the Panda: Quest to Find Ira
+
+## Current version: v0.11.0 — Storybook Welcome
+
+Import `project.godot` in Godot 4.3+ and press F5. See [release notes](STORYBOOK-WELCOME-V0.11.md).
+
 # Ara the Panda: Quest to Find Ira — Godot v0.10.0
 
 ## Moonlit Keepsake

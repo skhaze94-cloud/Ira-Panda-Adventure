@@ -16,3 +16,13 @@ func _draw() -> void:
 		var star: Vector2 = corner + direction * 7
 		draw_line(star - Vector2(3, 0), star + Vector2(3, 0), ink, 1, true)
 		draw_line(star - Vector2(0, 3), star + Vector2(0, 3), ink, 1, true)
+
+	var c := Vector2(size.x*.5,14)
+	draw_arc(c+Vector2(0,-2),5,PI,TAU,16,ink,1.5,true)
+	draw_rect(Rect2(c+Vector2(-5,0),Vector2(10,12)),Color("#d7ac59"),false,1.5)
+	draw_line(c+Vector2(0,3),c+Vector2(0,8),Color("#e6b7ac"),3,true)
+	for side in [-1,1]:
+		var a := c+Vector2(side*10,7)
+		draw_polyline(PackedVector2Array([a,a+Vector2(side*10,-4),a+Vector2(side*7,3),a+Vector2(side*13,7)]),Color("#c89792"),1.5,true)
+	for x in range(65,int(size.x)-65,8):
+		draw_line(Vector2(x,size.y-12),Vector2(x+3,size.y-12),Color(ink,.28),1,true)

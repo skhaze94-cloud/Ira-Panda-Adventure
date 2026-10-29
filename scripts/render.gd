@@ -9,7 +9,7 @@ const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
 # --- Art renderer: native CanvasItem / Godot Texture2D drawing ---
 func _draw() -> void:
 	if tex.is_empty(): return
-	if state == "menu" or state == "comic" or (state == "dialog" and (dialog_from in ["menu","newgame"] or dialog_from.begins_with("travel-"))):
+	if state == "menu" or state == "comic" or (state == "dialog" and not conversation.active and (dialog_from in ["menu","newgame"] or dialog_from.begins_with("travel-"))):
 		_cover("keepsake-cover")
 		_moon_haze()
 		for i in range(28):

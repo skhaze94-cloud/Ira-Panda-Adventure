@@ -22,6 +22,9 @@ func attach(owner_game: Control) -> void:
 			if parsed is Dictionary and int(parsed.get("version",0))==VERSION:
 				data=parsed;break
 	var prefs: Dictionary = data.get("settings",{}) if data.get("settings",{}) is Dictionary else {}
+	game.music_volume=float(prefs.get("music_volume",.35))
+	game.effects_volume=float(prefs.get("effects_volume",.75))
+	game.large_text=bool(prefs.get("large_text",false))
 	game.music_enabled=bool(prefs.get("music",true))
 	game.sound_enabled=bool(prefs.get("sound",true))
 	game.quieter_motion=bool(prefs.get("motion",false))
@@ -30,7 +33,7 @@ func has_checkpoint() -> bool:
 	return data.get("checkpoint",null) is Dictionary and int(data.checkpoint.get("chapter",-1)) in range(5)
 func settings() -> void:
 	data["version"]=VERSION
-	data["settings"]={"music":game.music_enabled,"sound":game.sound_enabled,"motion":game.quieter_motion,"quality":game.graphics_quality}
+	data["settings"]={"music":game.music_enabled,"sound":game.sound_enabled,"motion":game.quieter_motion,"quality":game.graphics_quality,"music_volume":game.music_volume,"effects_volume":game.effects_volume,"large_text":game.large_text}
 	write()
 func checkpoint(next_chapter: int=-1) -> void:
 	if game.trees.is_empty(): return

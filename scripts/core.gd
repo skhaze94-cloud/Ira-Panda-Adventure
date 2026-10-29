@@ -80,6 +80,9 @@ var foot_dust := 0.0
 var tex: Dictionary = {}
 var chapter_stories: Array = []
 var level_index := 0
+var music_volume := 0.35
+var effects_volume := 0.75
+var large_text := false
 var state := "menu"
 var story_chapter := -1
 var story_page := 0
@@ -187,6 +190,9 @@ func _show_story() -> void:
 func _pause() -> void:
 	pass
 
+func _return_menu() -> void:
+	pass
+
 func _resume() -> void:
 	pass
 
@@ -236,7 +242,7 @@ func _music(filename: String) -> AudioStreamPlayer:
 	var a := AudioStreamPlayer.new()
 	a.name = filename
 	a.bus = "Master"
-	a.volume_db = -9.0
+	a.volume_db = linear_to_db(music_volume)
 	var stream = load("res://assets/%s.mp3" % filename)
 	if stream is AudioStreamMP3:
 		stream.loop = true
@@ -249,6 +255,10 @@ func _set_state(next_state: String) -> void:
 	if next_state != "play": _reset_controls()
 	state = next_state
 	menu_layer.visible = state == "menu"
+	if state=="menu" and menu_layer.get_child_count()>0 and not quieter_motion:
+		menu_layer.get_child(0).modulate.a=0.0
+		create_tween().tween_property(menu_layer.get_child(0),"modulate:a",1.0,.3)
+	if state=="play": dialog_from=""
 	if continue_button!=null:
 		continue_button.visible=journal.has_checkpoint()
 		if continue_button.visible: continue_button.text="CONTINUE · CHAPTER %d" % (int(journal.data.checkpoint.chapter)+1)
@@ -496,7 +506,7 @@ func _process(dt: float) -> void:
 		if toast_seconds > 0:
 			toast_seconds -= dt
 			toast_label.visible = false
-		hud_glow.text = "LANTERN READY" if cooldown <= 0 else "GLOW %.1fs" % cooldown
+		hud_glow.text = "GLOW READY" if cooldown <= 0 else "%.1fs" % cooldown
 		_update_hud()
 	if state=="win": personality.update(dt)
 	soundscape.update(dt)
@@ -681,7 +691,7 @@ func _burst(location: Vector2) -> void:
 
 func _update_hud() -> void:
 	if light_trails != null:
-		hud_discoveries.text = "Stars %d/18 · Chests %d/3 · %d/400" % [beauty.star_count(),beauty.chest_count(),beauty.score()]
+		hud_discoveries.text = "★ %d/18 · Chests %d/3 · Score %d/400" % [beauty.star_count(),beauty.chest_count(),beauty.score()]
 	hud_chapter.text = "CHAPTER %d OF 5" % (level_index + 1)
 	hud_title.text = BASE_LEVELS[level_index].title
 	hud_hearts.text = "♥ ".repeat(heart) + "♡ ".repeat(3-heart)
@@ -703,7 +713,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if conversation!=null and conversation.active: return
 	if key.keycode == KEY_ESCAPE:
 		if state == "play": _pause()
-		elif state == "dialog": _resume()
+		elif state == "dialog":
+			if dialog_from=="newgame" or dialog_from.begins_with("travel-"): _return_menu()
+			else: _resume()
 		elif state == "comic": _set_state("menu")
 	elif state == "play":
 		if key.keycode == KEY_SPACE: glow()
