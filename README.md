@@ -1,3 +1,9 @@
+# Ara & Ira · v0.11.1 Reliability Patch
+
+Open `project.godot` in Godot 4.3+ and press F5. Validated with Godot 4.5.1.
+
+All 14 automated checks pass. See [reliability report](RELIABILITY-V0.11.1.md) for fixes, save-recovery coverage, software-rendering measurements and device-performance limits.
+
 # Ara the Panda: Quest to Find Ira
 
 ## Current version: v0.11.0 — Storybook Welcome

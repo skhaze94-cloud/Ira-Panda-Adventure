@@ -115,7 +115,7 @@ func _layout() -> void:
 	panel.size = Vector2(size.x*0.84,maxf(220.0,size.y*0.43))
 	panel.position = Vector2(size.x*0.08,maxf(16.0,size.y-panel.size.y-24))
 	portrait.custom_minimum_size = Vector2(120,142) if compact else Vector2(160,178)
-	caption.add_theme_font_size_override("font_size",21 if compact else 25)
+	caption.add_theme_font_size_override("font_size",(21 if compact else 25)+(2 if game.large_text else 0))
 	caption.custom_minimum_size.y = 70 if compact else 102
 	next_button.custom_minimum_size = Vector2(130,42) if compact else Vector2(168,48)
 	close_button.custom_minimum_size = Vector2(140,42) if compact else Vector2(170,48)

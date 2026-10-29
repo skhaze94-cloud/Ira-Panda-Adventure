@@ -30,5 +30,7 @@ func run() -> void:
 	game.queue_free();game=null;key=null
 	await process_frame
 	await process_frame
+	# Audio playback is released by the mixer asynchronously.
+	await create_timer(.2).timeout
 	print("STORYBOOK UI REGRESSIONS PASSED")
 	quit()

@@ -22,8 +22,8 @@ func attach(owner_game: Control) -> void:
 			if parsed is Dictionary and int(parsed.get("version",0))==VERSION:
 				data=parsed;break
 	var prefs: Dictionary = data.get("settings",{}) if data.get("settings",{}) is Dictionary else {}
-	game.music_volume=float(prefs.get("music_volume",.35))
-	game.effects_volume=float(prefs.get("effects_volume",.75))
+	game.music_volume=clampf(float(prefs.get("music_volume",.35)),.01,1.0)
+	game.effects_volume=clampf(float(prefs.get("effects_volume",.75)),.01,1.0)
 	game.large_text=bool(prefs.get("large_text",false))
 	game.music_enabled=bool(prefs.get("music",true))
 	game.sound_enabled=bool(prefs.get("sound",true))

@@ -1,0 +1,108 @@
+{
+  "engine": "4.5.1-stable (official)",
+  "profiles": [
+    {
+      "chapter": 1,
+      "chapter_build_ms": 425.859,
+      "chapter_first_frame_ms": 692.9,
+      "draw_cpu_p95_ms": 4.47,
+      "frame_median_ms": 113.181,
+      "frame_p95_ms": 158.889,
+      "godot_static_memory_bytes": 50232669,
+      "quality": "Balanced"
+    },
+    {
+      "chapter": 1,
+      "chapter_build_ms": 425.859,
+      "chapter_first_frame_ms": 692.9,
+      "draw_cpu_p95_ms": 2.9,
+      "frame_median_ms": 154.486,
+      "frame_p95_ms": 185.13,
+      "godot_static_memory_bytes": 50239897,
+      "quality": "Rich"
+    },
+    {
+      "chapter": 2,
+      "chapter_build_ms": 576.205,
+      "chapter_first_frame_ms": 757.699,
+      "draw_cpu_p95_ms": 2.6,
+      "frame_median_ms": 110.314,
+      "frame_p95_ms": 173.195,
+      "godot_static_memory_bytes": 51516449,
+      "quality": "Balanced"
+    },
+    {
+      "chapter": 2,
+      "chapter_build_ms": 576.205,
+      "chapter_first_frame_ms": 757.699,
+      "draw_cpu_p95_ms": 5.812,
+      "frame_median_ms": 148.536,
+      "frame_p95_ms": 169.858,
+      "godot_static_memory_bytes": 51517333,
+      "quality": "Rich"
+    },
+    {
+      "chapter": 3,
+      "chapter_build_ms": 374.154,
+      "chapter_first_frame_ms": 554.338,
+      "draw_cpu_p95_ms": 7.355,
+      "frame_median_ms": 102.838,
+      "frame_p95_ms": 262.952,
+      "godot_static_memory_bytes": 52308150,
+      "quality": "Balanced"
+    },
+    {
+      "chapter": 3,
+      "chapter_build_ms": 374.154,
+      "chapter_first_frame_ms": 554.338,
+      "draw_cpu_p95_ms": 4.875,
+      "frame_median_ms": 194.467,
+      "frame_p95_ms": 246.588,
+      "godot_static_memory_bytes": 52308706,
+      "quality": "Rich"
+    },
+    {
+      "chapter": 4,
+      "chapter_build_ms": 344.648,
+      "chapter_first_frame_ms": 503.002,
+      "draw_cpu_p95_ms": 5.425,
+      "frame_median_ms": 128.57,
+      "frame_p95_ms": 191.495,
+      "godot_static_memory_bytes": 53207566,
+      "quality": "Balanced"
+    },
+    {
+      "chapter": 4,
+      "chapter_build_ms": 344.648,
+      "chapter_first_frame_ms": 503.002,
+      "draw_cpu_p95_ms": 2.714,
+      "frame_median_ms": 175.853,
+      "frame_p95_ms": 241.416,
+      "godot_static_memory_bytes": 53208386,
+      "quality": "Rich"
+    },
+    {
+      "chapter": 5,
+      "chapter_build_ms": 455.811,
+      "chapter_first_frame_ms": 611.335,
+      "draw_cpu_p95_ms": 6.04,
+      "frame_median_ms": 96.515,
+      "frame_p95_ms": 279.924,
+      "godot_static_memory_bytes": 53222278,
+      "quality": "Balanced"
+    },
+    {
+      "chapter": 5,
+      "chapter_build_ms": 455.811,
+      "chapter_first_frame_ms": 611.335,
+      "draw_cpu_p95_ms": 1.621,
+      "frame_median_ms": 102.501,
+      "frame_p95_ms": 202.785,
+      "godot_static_memory_bytes": 53223098,
+      "quality": "Rich"
+    }
+  ],
+  "renderer": "GL Compatibility; Linux software rendering",
+  "samples_per_scene": 30,
+  "startup_first_frame_ms": 2856.054
+}

@@ -162,8 +162,8 @@ func _build_ui() -> void:
 	menu_col.add_child(menu_row)
 	_button(menu_row,"SETTINGS",_open_options,Vector2(110,42))
 	_button(menu_row,"ALBUM",_open_album,Vector2(110,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.11.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
-	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.11.0",11,Color("#8b846d"))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.11.1\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
+	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.11.1",11,Color("#8b846d"))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)
@@ -617,9 +617,13 @@ func _layout_ui() -> void:
 			story_body.custom_minimum_size.y=30
 			story_body.add_theme_font_size_override("font_size",15)
 			story_title.add_theme_font_size_override("font_size",19)
-			var paper: StyleBoxFlat=story_card.get_theme_stylebox("panel").duplicate()
-			paper.content_margin_top=10;paper.content_margin_bottom=10
+		var margin: float=10.0 if size.y<400 else 18.0
+		var current: StyleBoxFlat=story_card.get_theme_stylebox("panel")
+		if current.content_margin_top!=margin:
+			var paper: StyleBoxFlat=current.duplicate()
+			paper.content_margin_top=margin;paper.content_margin_bottom=margin
 			story_card.add_theme_stylebox_override("panel",paper)
+		_apply_reading_size()
 
 func _volume_row(parent: Node, title: String, change: Callable) -> HSlider:
 	var row := HBoxContainer.new()
@@ -637,8 +641,9 @@ func _volume_row(parent: Node, title: String, change: Callable) -> HSlider:
 
 func _apply_reading_size() -> void:
 	modal_text.add_theme_font_size_override("font_size",21 if large_text else 19)
-	story_body.add_theme_font_size_override("font_size",20 if large_text else 18)
-	if conversation!=null: conversation.caption.add_theme_font_size_override("font_size",27 if large_text else 23)
+	var reading: int=15 if size.y<400 else 16 if size.y<600 else 18
+	story_body.add_theme_font_size_override("font_size",reading+(2 if large_text else 0))
+	if conversation!=null: conversation._layout()
 
 func _input(event: InputEvent) -> void:
 	if joystick==null: return

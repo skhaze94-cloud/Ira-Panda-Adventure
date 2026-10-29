@@ -980,3 +980,11 @@ func _navigation_blocked(p: Vector2) -> bool:
 		for dy in [-0.16,0.0,0.16]:
 			if _blocked(p+Vector2(dx,dy)): return true
 	return false
+
+func _exit_tree() -> void:
+	# Release active playback before the audio nodes leave the tree.
+	for player in [menu_audio,game_audio]:
+		if is_instance_valid(player):
+			player.stop()
+			player.stream=null
+	if is_instance_valid(soundscape): soundscape.silence()
