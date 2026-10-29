@@ -1,3 +1,5 @@
+> Current edition: **v0.10.0 Moonlit Keepsake**. See [README.md](README.md) for the current artwork, import steps, review and validation. The port notes below document the original implementation.
+
 # Ara the Panda: Quest to Find Ira — Godot v0.8
 
 **Hidden Wonders** adds twenty new illustrations, a thinner forest, fifteen

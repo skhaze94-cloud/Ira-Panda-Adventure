@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var keepsake = preload("res://scripts/keepsake_art.gd").new()
 var object_art = preload("res://scripts/object_art.gd").new()
 var objects = preload("res://scripts/object_upgrade.gd").new()
 var beauty: RefCounted = preload("res://scripts/hidden_wonders.gd").new()
@@ -199,6 +200,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	for name in ["forest","ground-v2","trees-v2","lamps-v2","decor","atlas","ara-rig-22","ara","ira","npc-rig-22","key-birches","woodland-key","woodland-door","quests-23","comic-1","comic-2","comic-3","interlude-1-1","interlude-1-2","interlude-2-1","interlude-2-2","interlude-3-1","interlude-3-2","interlude-4-1","interlude-4-2"]:
 		tex[name] = load("res://assets/%s.png" % name)
+	tex["keepsake-cover"] = load("res://assets/keepsake/cover.png")
 	var file := FileAccess.open("res://story-24.json", FileAccess.READ)
 	if file:
 		var parsed = JSON.parse_string(file.get_as_text())
@@ -320,6 +322,7 @@ func _key_trail(p: Vector2) -> bool:
 
 func start_level(index: int) -> void:
 	level_index = clampi(index, 0, 4)
+	keepsake.ensure_chapter(level_index)
 	object_art.ensure_chapter(level_index)
 	pathways.build(self)
 	exploration.build(self)

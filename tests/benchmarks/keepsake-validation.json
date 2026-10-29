@@ -1,0 +1,186 @@
+{
+  "version": "0.10.0",
+  "engine": "Godot 4.3.stable.official.77dcf97d8",
+  "checked_at_utc": "2026-10-28T16:19:38.602777+00:00",
+  "passed": true,
+  "suites": [
+    {
+      "suite": "smoke",
+      "exit_code": 0,
+      "seconds": 2.23,
+      "passed": true,
+      "evidence": [
+        "CHECKED CHAPTER 1",
+        "CHECKED CHAPTER 2",
+        "CHECKED CHAPTER 3",
+        "CHECKED CHAPTER 4",
+        "CHECKED CHAPTER 5",
+        "SMOKE FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "landscapes_controls",
+      "exit_code": 0,
+      "seconds": 16.57,
+      "passed": true,
+      "evidence": [
+        "LANDSCAPE / CONTROL FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "lantern",
+      "exit_code": 0,
+      "seconds": 34.79,
+      "passed": true,
+      "evidence": [
+        "LANTERN CHECKED CHAPTER 1",
+        "LANTERN CHECKED CHAPTER 2",
+        "LANTERN CHECKED CHAPTER 3",
+        "LANTERN CHECKED CHAPTER 4",
+        "LANTERN CHECKED CHAPTER 5",
+        "LANTERN FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "quests_captions",
+      "exit_code": 0,
+      "seconds": 3.64,
+      "passed": true,
+      "evidence": [
+        "QUEST / CAPTION CHECKED CHAPTER 1",
+        "QUEST / CAPTION CHECKED CHAPTER 2",
+        "QUEST / CAPTION CHECKED CHAPTER 3",
+        "QUEST / CAPTION CHECKED CHAPTER 4",
+        "QUEST / CAPTION CHECKED CHAPTER 5",
+        "QUEST / CAPTION FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "masterclass",
+      "exit_code": 0,
+      "seconds": 2.54,
+      "passed": true,
+      "evidence": [
+        "MASTERCLASS CHECKED CHAPTER 1",
+        "MASTERCLASS CHECKED CHAPTER 2",
+        "MASTERCLASS CHECKED CHAPTER 3",
+        "MASTERCLASS CHECKED CHAPTER 4",
+        "MASTERCLASS CHECKED CHAPTER 5",
+        "MASTERCLASS FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "pathways",
+      "exit_code": 0,
+      "seconds": 12.11,
+      "passed": true,
+      "evidence": [
+        "PATHWAYS CROSSINGS CHECKED CHAPTER 1",
+        "PATHWAYS CROSSINGS CHECKED CHAPTER 2",
+        "PATHWAYS CROSSINGS CHECKED CHAPTER 3",
+        "PATHWAYS CROSSINGS CHECKED CHAPTER 4",
+        "PATHWAYS CROSSINGS CHECKED CHAPTER 5",
+        "PATHWAY FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "graphics_v05",
+      "exit_code": 0,
+      "seconds": 2.33,
+      "passed": true,
+      "evidence": [
+        "GRAPHICS CHECKED CHAPTER 1",
+        "GRAPHICS CHECKED CHAPTER 2",
+        "GRAPHICS CHECKED CHAPTER 3",
+        "GRAPHICS CHECKED CHAPTER 4",
+        "GRAPHICS CHECKED CHAPTER 5",
+        "GRAPHICS V0.5 FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "personality_v06",
+      "exit_code": 0,
+      "seconds": 10.14,
+      "passed": true,
+      "evidence": [
+        "PERSONALITY / SAVE / TOUCH FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "living_woodland",
+      "exit_code": 0,
+      "seconds": 24.48,
+      "passed": true,
+      "evidence": [
+        "LIVING WOODLAND CHECKED CHAPTER 1",
+        "LIVING WOODLAND CHECKED CHAPTER 2",
+        "LIVING WOODLAND CHECKED CHAPTER 3",
+        "LIVING WOODLAND CHECKED CHAPTER 4",
+        "LIVING WOODLAND CHECKED CHAPTER 5",
+        "LIVING WOODLAND FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "hidden_wonders",
+      "exit_code": 0,
+      "seconds": 34.51,
+      "passed": true,
+      "evidence": [
+        "HIDDEN WONDERS FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "object_upgrade",
+      "exit_code": 0,
+      "seconds": 13.2,
+      "passed": true,
+      "evidence": [
+        "OBJECT UPGRADE CHAPTER 1",
+        "OBJECT UPGRADE CHAPTER 2",
+        "OBJECT UPGRADE CHAPTER 3",
+        "OBJECT UPGRADE CHAPTER 4",
+        "OBJECT UPGRADE CHAPTER 5",
+        "OBJECT UPGRADE FAILURES: 0"
+      ],
+      "errors": []
+    },
+    {
+      "suite": "keepsake",
+      "exit_code": 0,
+      "seconds": 2.67,
+      "passed": true,
+      "evidence": [
+        "KEEPSAKE LAYOUT (1280, 720)",
+        "KEEPSAKE LAYOUT (854, 480)",
+        "MOONLIT KEEPSAKE FAILURES: 0"
+      ],
+      "errors": []
+    }
+  ],
+  "scope": "Native headless integration; OpenGL visual capture is checked separately.",
+  "post_polish_checks": {
+    "keepsake_integration": "passed after final visual adjustments",
+    "opengl_captures": 28,
+    "logical_viewports": [
+      [
+        1280,
+        720
+      ],
+      [
+        854,
+        480
+      ]
+    ],
+    "physical_phone_tested": false
+  }
+}

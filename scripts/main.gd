@@ -9,6 +9,11 @@ var menu_col: VBoxContainer
 var menu_avatar: TextureRect
 var dialog_card: PanelContainer
 var modal_dim: ColorRect
+var menu_cast: HBoxContainer
+var menu_title: Label
+var menu_edition: Label
+var story_card: PanelContainer
+var heading_font: Font = preload("res://assets/fonts/DejaVuSerif.ttf")
 
 # --- User interface: Godot native Control nodes (no HTML overlay) ---
 func _panel(parent: Control, bg: Color=Color(0.04,0.09,0.16,0.9), radius: int=22) -> PanelContainer:
@@ -24,7 +29,10 @@ func _panel(parent: Control, bg: Color=Color(0.04,0.09,0.16,0.9), radius: int=22
 	style.border_width_right = 2
 	style.border_width_top = 2
 	style.border_width_bottom = 2
-	style.border_color = Color(0.77,0.82,0.73,0.33)
+	style.border_color = Color(0.76,0.66,0.43,0.65)
+	style.shadow_color = Color(0.015,0.045,0.05,0.30)
+	style.shadow_size = 14
+	style.shadow_offset = Vector2(0,6)
 	style.content_margin_left = 22.0
 	style.content_margin_right = 22.0
 	style.content_margin_top = 18.0
@@ -38,6 +46,7 @@ func _label(parent: Node, text: String, font_size: int, tint: Color=Color("#f8ec
 	l.text = text
 	l.add_theme_color_override("font_color",tint)
 	l.add_theme_font_size_override("font_size",font_size)
+	if font_size >= 24: l.add_theme_font_override("font",heading_font)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	parent.add_child(l)
@@ -51,8 +60,8 @@ func _button(parent: Node, text: String, fn: Callable, minimum: Vector2=Vector2(
 	b.add_theme_font_size_override("font_size",18)
 	b.add_theme_color_override("font_color",Color("#fef1d8"))
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("#34695f")
-	style.border_color=Color("#b7bc89")
+	style.bg_color = Color("#38695e")
+	style.border_color=Color("#d6bc80")
 	style.set_border_width_all(1)
 	style.shadow_color=Color(0,.06,.06,.25)
 	style.shadow_size=4
@@ -61,7 +70,7 @@ func _button(parent: Node, text: String, fn: Callable, minimum: Vector2=Vector2(
 	style.set_content_margin_all(10)
 	b.add_theme_stylebox_override("normal",style)
 	var hover: StyleBoxFlat = style.duplicate()
-	hover.bg_color = Color("#648f88")
+	hover.bg_color = Color("#527e6d")
 	b.add_theme_stylebox_override("hover",hover)
 	var pressed: StyleBoxFlat = style.duplicate()
 	pressed.bg_color=Color("#224d48")
@@ -87,28 +96,37 @@ func _center(control: Control, width_percent: float, height_percent: float) -> v
 	control.offset_bottom = 0
 
 func _build_ui() -> void:
+	keepsake.load_assets()
+	keepsake.install_story(tex)
 	beauty_art.load_assets()
 	object_art.load_assets()
 	menu_layer = Control.new()
 	menu_layer.mouse_filter = Control.MOUSE_FILTER_PASS
 	ui_canvas.add_child(menu_layer)
 	_fill(menu_layer)
-	menu_card = _panel(menu_layer,Color(0.05,0.12,0.17,0.91),28)
-	_center(menu_card,0.58,0.88)
+	menu_card = _panel(menu_layer,Color(0.969,0.945,0.879,0.96),28)
+	var foil := preload("res://scripts/keepsake_frame.gd").new()
+	menu_layer.add_child(foil)
+	menu_card.resized.connect(func(): foil.position=menu_card.position;foil.size=menu_card.size)
 	menu_col = VBoxContainer.new()
+	menu_col.alignment = BoxContainer.ALIGNMENT_CENTER
 	menu_col.add_theme_constant_override("separation",10)
 	menu_card.add_child(menu_col)
-	_label(menu_col,"✦ WOODLAND WHIMSY · v0.9 ✦",17,Color("#e8d6a4"))
-	_label(menu_col,"ARA THE PANDA",34)
-	_label(menu_col,"Quest to Find Ira",24,Color("#fedbb3"))
-	var avatar := TextureRect.new()
-	menu_avatar=avatar
-	avatar.texture = tex.get("ara")
-	avatar.custom_minimum_size = Vector2(92,112)
-	avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	menu_col.add_child(avatar)
-	_label(menu_col,"Five little chapters. One very big hug.",18)
+	menu_edition = _label(menu_col,"✦  THE MOONLIT KEEPSAKE EDITION  ✦",13,Color("#8f7340"))
+	menu_title = _label(menu_col,"Ara the Panda",38,Color("#244e48"))
+	_label(menu_col,"Quest to Find Ira",25,Color("#67735c"))
+	menu_cast = HBoxContainer.new()
+	menu_cast.alignment = BoxContainer.ALIGNMENT_CENTER
+	menu_cast.add_theme_constant_override("separation",8)
+	menu_col.add_child(menu_cast)
+	for name in ["pip","bramble","ara","ira","moss"]:
+		var avatar := TextureRect.new()
+		avatar.texture = keepsake.portrait(name)
+		avatar.custom_minimum_size = Vector2(65,105)
+		avatar.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		menu_cast.add_child(avatar)
+	_label(menu_col,"Five little chapters. One very big hug.",17,Color("#5c6b5b"))
 	continue_button=_button(menu_col,"CONTINUE ADVENTURE",journal.resume,Vector2(220,48))
 	continue_button.visible=journal.has_checkpoint()
 	_button(menu_col,"NEW ADVENTURE",_new_adventure,Vector2(220,48))
@@ -116,28 +134,30 @@ func _build_ui() -> void:
 	menu_row.alignment=BoxContainer.ALIGNMENT_CENTER
 	menu_row.add_theme_constant_override("separation",12)
 	menu_col.add_child(menu_row)
-	_button(menu_row,"OPTIONS",_open_options,Vector2(130,42))
-	_button(menu_row,"CHAPTERS",_open_album,Vector2(130,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Ara and Ira's artwork, five original woodland chapters, and the music from the 2.4 Storybook edition.\n\nA moonlit adventure for little explorers. Original woodland sounds and tiny surprises around every bend.","BACK", "", "menu"),Vector2(130,42))
+	_button(menu_row,"OPTIONS",_open_options,Vector2(110,42))
+	_button(menu_row,"CHAPTERS",_open_album,Vector2(110,42))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.10.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
+	_label(menu_col,"A LITTLE LIGHT. A LOVELY ADVENTURE.  ·  v0.10.0",11,Color("#8b846d"))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)
 	_fill(story_layer)
-	var comic_card := _panel(story_layer,Color(0.055,0.095,0.16,0.96),25)
+	var comic_card := _panel(story_layer,Color(0.97,0.948,0.894,0.98),25)
+	story_card = comic_card
 	_center(comic_card,0.72,0.91)
 	var story_col := VBoxContainer.new()
 	story_col.add_theme_constant_override("separation",10)
 	comic_card.add_child(story_col)
-	story_caption = _label(story_col,"A bedtime story",16,Color("#f8cf98"))
-	story_title = _label(story_col,"The beginning",30)
+	story_caption = _label(story_col,"A bedtime story",15,Color("#8a734c"))
+	story_title = _label(story_col,"The beginning",28,Color("#2b554e"))
 	story_image = TextureRect.new()
 	story_image.custom_minimum_size = Vector2(360,225)
 	story_image.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	story_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	story_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	story_col.add_child(story_image)
-	story_bubble = _label(story_col,"",22,Color("#ffe3b3"))
-	story_body = _label(story_col,"",19)
+	story_bubble = _label(story_col,"",21,Color("#8a644f"))
+	story_body = _label(story_col,"",18,Color("#3f514b"))
 	story_body.custom_minimum_size = Vector2(0,68)
 	var story_row := HBoxContainer.new()
 	story_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -165,7 +185,7 @@ func _build_ui() -> void:
 	title_col.add_theme_constant_override("separation",3)
 	title_plate.add_child(title_col)
 	hud_chapter = _label(title_col,"CHAPTER 1 OF 5",12,Color("#eed6a1"))
-	hud_chapter.visible = false
+	hud_chapter.visible = true
 	hud_title = _label(title_col,"Whispering Woods",17)
 	hud_objective = _label(title_col,"Find the key",13)
 	hud_discoveries = _label(title_col,"Explore with your lantern",11,Color("#a9e4df"))
@@ -372,7 +392,7 @@ func _show_dialog(title: String, body: String, primary: String, secondary: Strin
 		dialog_card.anchor_top=.65;dialog_card.anchor_bottom=.98
 		modal_dim.color=Color(0,0,0,.10)
 	else:
-		_center(dialog_card,.66,.80)
+		_center(dialog_card,.92 if size.x<700 else .76 if size.y<600 else .66,.92 if size.y<600 else .80)
 		modal_dim.color=Color(0,0,0,.42)
 	options_music.visible = false
 	options_sound.visible = false
@@ -478,5 +498,22 @@ func _add_icon(button: Button, kind: String) -> void:
 
 func _layout_ui() -> void:
 	if album!=null: album.custom_minimum_size.y=clampf(size.y*.31,140,235)
-	if menu_avatar!=null: menu_avatar.visible=size.y>=600
-	if menu_col!=null: menu_col.add_theme_constant_override("separation",8 if size.y<600 else 10)
+	if menu_cast!=null: menu_cast.visible=size.y>=600
+	if menu_col!=null: menu_col.add_theme_constant_override("separation",7 if size.y<600 else 12)
+	if menu_title!=null: menu_title.add_theme_font_size_override("font_size",32 if size.y<600 else 38)
+	if menu_card!=null:
+		menu_card.anchor_left=.055 if size.x/size.y>1.5 else .08
+		menu_card.anchor_right=(.57 if size.x<1000 else .48) if size.x/size.y>1.5 else .92
+		menu_card.anchor_top=.10 if size.y>=600 else .04
+		menu_card.anchor_bottom=.90 if size.y>=600 else .96
+	if story_card!=null:
+		var compact: bool = size.y<600
+		_center(story_card,.88 if compact else .72,.95 if compact else .91)
+		story_image.custom_minimum_size=Vector2(260,108 if compact else 225)
+		story_bubble.visible=not compact
+		story_body.custom_minimum_size.y=38 if compact else 68
+		story_title.add_theme_font_size_override("font_size",21 if compact else 28)
+		story_body.add_theme_font_size_override("font_size",16 if compact else 18)
+		story_caption.add_theme_font_size_override("font_size",13 if compact else 15)
+		var story_col: VBoxContainer = story_card.get_child(0)
+		story_col.add_theme_constant_override("separation",5 if compact else 10)

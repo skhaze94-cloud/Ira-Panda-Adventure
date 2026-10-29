@@ -1,7 +1,7 @@
 extends Node2D
 ## Native 2D lights, trunk occluders, procedural air, and fireflies.
 ## Bounded pools avoid creating a node per tree in the large level maps.
-const AMBIENT = [Color("#8e9eb5"),Color("#9693b7"),Color("#86aab7"),Color("#898bab"),Color("#b2a2ac")]
+const AMBIENT = [Color("#b6c7bf"),Color("#beb6d3"),Color("#aacccc"),Color("#b4bdd9"),Color("#d4c1bd")]
 const MIST = [Color("#94b5c7"),Color("#bda4dd"),Color("#87cfda"),Color("#a7afe8"),Color("#e5c2ce")]
 var game: Control
 var ambient: CanvasModulate
@@ -93,7 +93,8 @@ func _ready() -> void:
 	finish_layer.add_child(finish)
 
 func _process(_dt: float) -> void:
-	var active: bool = game.state in ["play","dialog","win"]
+	var menu_dialog: bool = game.state=="dialog" and (game.dialog_from in ["menu","newgame"] or game.dialog_from.begins_with("travel-"))
+	var active: bool = game.state in ["play","dialog","win"] and not menu_dialog
 	var woodland_tint: Color=AMBIENT[game.level_index].lightened(game.living.clearing*.055)
 	woodland_tint=woodland_tint.lerp(Color("#8baebc"),game.living.brook*.075)
 	woodland_tint=woodland_tint.lerp(Color("#d5bca1"),game.living.home_warmth*.19)

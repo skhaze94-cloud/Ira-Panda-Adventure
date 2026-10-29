@@ -1,0 +1,66 @@
+{
+  "characters/ara.png": {
+    "sha256": "6568b52b1a21f37b4033fd67f86e6b0908bf3824046468f383be4bc4943d114b",
+    "bytes": 2204157
+  },
+  "characters/bramble.png": {
+    "sha256": "da44c3936db222cf280a28227eb8261dcc7c229147e45c7c46e14c5071a92e1d",
+    "bytes": 2468976
+  },
+  "characters/friends.png": {
+    "sha256": "55a2477bfa2ab149e71533cc9ea5d73d7f0438efd5db2e573382b1996c9bad07",
+    "bytes": 1759568
+  },
+  "characters/ira.png": {
+    "sha256": "183d0500a8c37edaa1861c552c78008071113fb32b03a6070075ad2b624a3048",
+    "bytes": 3040817
+  },
+  "characters/moss.png": {
+    "sha256": "2e43576107a9c7c2c5dce2e12138f588414930808db1df7312eb9a5794581820",
+    "bytes": 2077772
+  },
+  "characters/pip.png": {
+    "sha256": "53e6dc5ad69cb9bd92038cf347a6f4908cf01bb42be307ebe8dacee7b5b4dbf8",
+    "bytes": 2486953
+  },
+  "cover.png": {
+    "sha256": "1a2744a5332016d58c53ebe92eb54ee5782fc5293bb917d30c09390dde8ac8af",
+    "bytes": 3211585
+  },
+  "ground.png": {
+    "sha256": "ab31a525d2eea3848c27f6bf94e46f43e27ffc0c4ebe79640a0502eec248c551",
+    "bytes": 2787944
+  },
+  "settings/brook.png": {
+    "sha256": "765528fa6ceb9267b260e7147f952b2705b7569522c1970ecd518fc06741e7c7",
+    "bytes": 2927822
+  },
+  "settings/garden.png": {
+    "sha256": "d6eef6e0c309914a1e15c11643fb293070e3e564acef347eaeb75485c0ce100e",
+    "bytes": 3257952
+  },
+  "settings/glade.png": {
+    "sha256": "b91f9336a374232e1b52e1718aa76e16ced16c7a50ac66ad17006d916a61975d",
+    "bytes": 3031563
+  },
+  "settings/hollow.png": {
+    "sha256": "fd2e5a03cfd2f82e9077d684e206cc42cc5f140300e809866fbf7541f2bcc2d0",
+    "bytes": 2803483
+  },
+  "settings/woods.png": {
+    "sha256": "381c0b015ac4a51659d1e36fd4ffd284680a45db3333e7d6a5a055b7375580c8",
+    "bytes": 3008828
+  },
+  "story-beginning.png": {
+    "sha256": "1d7ae6698facf4869c274e015136db6ce3ef7855b04f30a387c9a0d11ba7d0c1",
+    "bytes": 3520326
+  },
+  "story-homeward.png": {
+    "sha256": "3af56c9a604e7bc1337ce8d4c187d6563995ad2c7d518d91064b7f0df09b7b7a",
+    "bytes": 3704841
+  },
+  "story-journey.png": {
+    "sha256": "6e6589991ed7a81f0a859f46e0068b4ab553f699643ee59928a1c5a9d61e1a4e",
+    "bytes": 3267968
+  }
+}

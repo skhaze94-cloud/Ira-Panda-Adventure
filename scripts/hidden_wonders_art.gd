@@ -18,10 +18,12 @@ func tree(g: Control, data: Dictionary, alpha: float, sway: float) -> void:
 	g.draw_set_transform(Vector2.ZERO)
 func scenery(g: Control, data: Dictionary) -> void:
 	var at: Vector2=g._project(data.pos)
-	g._shadow(at,25)
-	var h: float=g.tile*(3.1 if data.kind==0 else 1.35 if data.kind==1 else 1.85)
-	var alpha: float=.15 if data.kind==0 and g.player.distance_to(data.pos)<4 else 1.0
-	sprite(g,data.kind,at,h,alpha)
+	var index: int=0 if data.kind==0 else 2 if data.kind==1 else 3
+	var height: float=g.tile*(2.9 if data.kind==0 else .95 if data.kind==1 else 1.65)
+	var alpha: float=.10 if data.kind==0 and g.player.distance_to(data.pos)<4 else 1.0
+	g._shadow(at,22)
+	g.keepsake.scenery(g,index,at,height,alpha)
+
 func chest(g: Control, data: Dictionary) -> void:
 	var at: Vector2=g._project(data.pos)
 	var clock: float=0 if g.quieter_motion else g.living.clock
@@ -66,6 +68,6 @@ func paths(g: Control) -> void:
 		var p: Vector2=g._project(branch.points[0])
 		if not g._visible(p,80): continue
 		# A small stitched star is an invitation, without revealing the treasure itself.
-		g._world_oval(branch.points[0]+Vector2(.2,-.7),Vector2(.35,.30),Color("#8f9d82"))
+		g._world_oval(branch.points[0]+Vector2(.2,-.7),Vector2(.35,.30),Color(0.56,0.62,0.51,0.10))
 		g.draw_line(p+Vector2(15,-6),p+Vector2(15,-20),Color("#e5d5aa"),1.5,true)
 		g.draw_line(p+Vector2(9,-13),p+Vector2(21,-13),Color("#e5d5aa"),1.5,true)

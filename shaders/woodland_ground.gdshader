@@ -1,6 +1,7 @@
 shader_type canvas_item;
 render_mode unshaded;
 uniform sampler2D atlas : source_color, filter_linear;
+uniform sampler2D storybook_atlas : source_color, filter_linear;
 uniform vec4 crops[20];
 uniform vec2 atlas_size = vec2(1120.0,1400.0);
 uniform vec2 viewport_size = vec2(1280.0,720.0);
@@ -42,6 +43,14 @@ vec3 sample_tile(int index,vec2 f) {
     vec4 crop=crops[index];
     return texture(atlas,(crop.xy+vec2(1.0)+f*(crop.zw-vec2(2.0)))/atlas_size).rgb;
 }
+vec3 painted_ground(float kind, vec2 world) {
+    // Mirrored world coordinates meet continuously, even at the atlas edge.
+    // Broad painted washes replace the old per-square paving repetition.
+    vec2 local=abs(fract(world*0.085+vec2(0.17,0.31))*2.0-1.0);
+    vec2 uv=vec2((float(chapter)+0.006+local.x*0.988)/5.0,
+                 (kind+0.006+local.y*0.988)/2.0);
+    return texture(storybook_atlas,uv).rgb;
+}
 void fragment() {
     vec2 projected=(UV*viewport_size-camera_offset)/tile_size;
     vec2 world=vec2((projected.x+projected.y/0.49)*0.5,(projected.y/0.49-projected.x)*0.5);
@@ -62,17 +71,17 @@ void fragment() {
     int parity=int(mod(cell.x+cell.y,2.0));
     float organic=grain(world*1.7);
     float edge=smoothstep(1.65,2.8,distance_to_trail+(organic-0.5)*0.55);
-    vec3 trail=sample_tile(chapter*4+parity,local);
-    vec3 grass=sample_tile(chapter*4+2+parity,local);
+    vec3 trail=painted_ground(0.0,world);
+    vec3 grass=painted_ground(1.0,world+vec2(3.1,7.7));
     float variation=fract(sin(dot(cell,vec2(13.0,37.0))+float(chapter)*83.0)*43758.5453);
-    vec3 base=mix(trail,grass,edge)*(0.91+variation*0.09);
+    vec3 base=mix(trail,grass,edge);
     // Continuous world-space variation breaks the atlas grid and adds textile grain.
     float moss=grain(world*0.44);
-    base*=0.92+0.14*moss;
-    base=mix(base,base*vec3(0.88,1.07,0.97),edge*moss*0.28);
+    base*=0.96+0.08*moss;
+    base=mix(base,base*vec3(0.95,1.02,0.98),edge*moss*0.15);
     if(detail>0.5) {
         float fibers=grain(world*29.0);
-        base*=0.96+fibers*0.08;
+        base*=0.98+fibers*0.04;
     }
     float wonder_edge=(1.0-smoothstep(0.7,2.1,wonder_distance))*smoothstep(2.0,3.0,main_distance);
     base=mix(base,base*vec3(1.10,1.06,0.96),wonder_edge*0.50);
@@ -88,7 +97,7 @@ void fragment() {
         float wave=sin(world.x*8.0+world.y*4.0+clock*1.5);
         float crosswave=sin(world.x*3.0-world.y*9.0-clock*0.8);
         float glint=pow(max(0.0,wave*0.5+crosswave*0.5),12.0);
-        vec3 liquid=mix(vec3(0.07,0.22,0.30),vec3(0.19,0.43,0.48),grain(world*0.8+vec2(clock*0.015)));
+        vec3 liquid=mix(vec3(0.15,0.35,0.40),vec3(0.29,0.53,0.55),grain(world*0.8+vec2(clock*0.015)));
         liquid+=vec3(0.51,0.76,0.78)*glint*(detail>0.5 ? 0.32 : 0.12);
         liquid+=vec3(0.08,0.17,0.20)*(wave+crosswave)*0.12;
         base=mix(base,liquid,water);

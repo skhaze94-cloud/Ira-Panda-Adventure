@@ -9,8 +9,8 @@ const PATHWAY_ART = preload("res://scripts/pathway_art.gd")
 # --- Art renderer: native CanvasItem / Godot Texture2D drawing ---
 func _draw() -> void:
 	if tex.is_empty(): return
-	if state == "menu" or state == "comic":
-		_cover("forest")
+	if state == "menu" or state == "comic" or (state == "dialog" and (dialog_from in ["menu","newgame"] or dialog_from.begins_with("travel-"))):
+		_cover("keepsake-cover")
 		_moon_haze()
 		for i in range(28):
 			var px: float = _randseed(i * 17) * size.x + (sin(elapsed * 0.4 + i) * 16 if not quieter_motion else 0.0)
@@ -77,7 +77,7 @@ func _draw() -> void:
 		var station_pos := _station()
 		entities.append({"depth":station_pos.x+station_pos.y,"type":"station","data":{}})
 	var exit_pos := _exit()
-	entities.append({"depth":exit_pos.x+exit_pos.y,"type":"exit","data":{}})
+	entities.append({"depth":exit_pos.x+exit_pos.y-(3.5 if player.distance_to(exit_pos)<4 else 0.0),"type":"exit","data":{}})
 	entities.append({"depth":player.x+player.y,"type":"ara","data":{}})
 	entities.sort_custom(func(a,b): return a.depth < b.depth)
 	for entity in entities:
@@ -167,44 +167,13 @@ func _draw_halo(at: Vector2, radius: float, tint: Color, weight: float=1.0) -> v
 		_disc(at,radius*f,Color(tint.r,tint.g,tint.b,weight * (1-f) * 0.065))
 
 func _draw_tree(t: Dictionary) -> void:
-	var at := _project(t.pos)
-	var h: float = tile*3.9*float(t["size"])
-	var crop: Array = TREE_RECTS[level_index*3 + int(t.variant)]
-	var w: float = minf(tile*2.25,h*float(crop[2])/float(crop[3]))
-	if t.get("beauty",false):
-		var region: Array=beauty_art.regions[level_index][0]
-		w=h*float(region[2])/float(region[3])
-	_shadow(at,30*t["size"])
-	var relative := at-_project(player)
-	var overlap := (1.0-smoothstep(maxf(tile*.65,w*.32+24),maxf(tile*1.3,w*.70+24),absf(relative.x)))*smoothstep(0.0,6.0,relative.y)*(1.0-smoothstep(h*0.55,h*0.78,relative.y))
-	for target in foliage_focus:
-		var delta := at-_project(target)
-		var cover := (1-smoothstep(tile*.55,tile*1.5,absf(delta.x)))*smoothstep(0,16,delta.y)*(1-smoothstep(h*.65,h*.95,delta.y))
-		overlap=maxf(overlap,cover)
-	var alpha := lerpf(1.0,0.055,overlap)
-	var sway: float = sin(elapsed * 0.8 + t.pos.x) * 0.013 if not quieter_motion else 0.0
-	if t.get("beauty",false):
-		beauty_art.tree(self,t,alpha,sway)
-		return
-	draw_set_transform(at,sway)
-	_draw_crop("trees-v2",crop,Rect2(Vector2(-w*0.5,-h),Vector2(w,h)),Color(1,1,1,alpha))
-	draw_set_transform(Vector2.ZERO)
+	keepsake.tree(self,t)
 
 func _draw_lantern(l: Dictionary) -> void:
-	var at := _project(l.pos)
-	var h: float = tile*(1.75 if int(l.variant) else 2.7)
-	var crop: Array = LAMP_RECTS[level_index*2 + int(l.variant)]
-	var w: float = minf(tile*1.25,h*float(crop[2])/float(crop[3]))
-	_draw_crop("lamps-v2",crop,Rect2(at-Vector2(w*0.5,h),Vector2(w,h)))
-	var light: Color = Color("#9ad9ff") if l.get("blue",false) else COLORS[level_index]
-	_draw_halo(at-Vector2(0,h*0.72),45,light,1.4)
+	keepsake.lamp(self,l)
 
 func _draw_decoration(d: Dictionary) -> void:
-	var at := _project(d.pos)
-	var h: float = tile*1.5*d["size"]
-	var w := h*0.88
-	var crop: Array = DECOR_RECTS[int(d.variant)]
-	_draw_crop("decor",crop,Rect2(at-Vector2(w*0.5,h),Vector2(w,h)))
+	keepsake.scenery(self,2,_project(d.pos),tile*.95*float(d["size"]))
 
 const NPC_CROPS = [
 	[18,22,340,277],[379,2,330,319],[711,42,230,177],[1073,12,258,300],[1384,46,223,251],
@@ -220,39 +189,7 @@ func _npc_part(n: Dictionary, index: int, offset: Vector2, wh: Vector2, spin: fl
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_npc(n: Dictionary) -> void:
-	var at := _project(n.pos)
-	var phase: float = elapsed+float(n.home.x)*0.13
-	var motion := 0.0 if quieter_motion else 1.0
-	var greeting: float = minf(1.0,float(n.greeting))*motion
-	var joy: float = minf(1.0,float(n.reaction))*motion
-	var breath := sin(phase*2.0)*1.2*motion
-	var head_tilt := (sin(phase*1.3)*0.025+sin(phase*7.0)*greeting*0.055)*motion
-	var hop := (absf(sin(phase*7.0))*joy*5.0+absf(sin(phase*5.0))*float(n.get("stride",0))*2.2)*motion
-	var work: float=float(n.get("work",0))*motion
-	LIVING_ART.npc_props(self,n)
-	_shadow(at,25)
-	match n.id:
-		"pip":
-			_npc_part(n,2,Vector2(-24,-49-breath-hop),Vector2(39,31),sin(phase*6.0)*greeting*0.6,Vector2(0.8,0.18))
-			_npc_part(n,1,Vector2(0,-35-breath-hop),Vector2(62,60))
-			_npc_part(n,4,Vector2(19,-55-breath-hop),Vector2(25,30),sin(phase*2.5)*0.10*motion,Vector2(0.35,0.1))
-			_npc_part(n,3,Vector2(23,-48-breath-hop),Vector2(34,41),sin(phase*2.1)*0.07*motion-greeting*0.25-work*.12,Vector2(0.18,0.12))
-			_npc_part(n,0,Vector2(0,-80-breath-hop),Vector2(69,56),head_tilt)
-			_draw_halo(at+Vector2(33*float(n.facing),-56-hop),35,Color("#ffe0a0"),1.0)
-		"bramble":
-			_npc_part(n,9,Vector2(0,-38-hop),Vector2(58,60),sin(phase*1.3)*0.025*motion)
-			_npc_part(n,6,Vector2(0,-32-breath-hop),Vector2(63,51))
-			_npc_part(n,7,Vector2(-20,-40-hop),Vector2(49,37),sin(phase*1.5)*0.035*motion,Vector2(0.28,0.2))
-			var scribble := sin(phase*10.0)*(.10+work*.10)*motion if greeting<0.1 else sin(phase*7.0)*greeting*0.5
-			_npc_part(n,8,Vector2(23,-41-hop),Vector2(31,35),scribble,Vector2(0.24,0.15))
-			_npc_part(n,5,Vector2(0,-75-breath-hop),Vector2(65,53),head_tilt)
-		"moss":
-			_npc_part(n,14,Vector2(22,-28-hop),Vector2(47,48),sin(phase*2.4)*0.12*motion,Vector2(0.35,0.8))
-			_npc_part(n,11,Vector2(0,-33-breath-hop),Vector2(65,56))
-			_npc_part(n,13,Vector2(-20,-48-hop),Vector2(29,31),sin(phase*2.0)*0.045*motion,Vector2(0.75,0.12))
-			_npc_part(n,12,Vector2(21,-48-hop),Vector2(40,31),-greeting*0.25+sin(phase*3.0)*0.04*motion+work*.3,Vector2(0.14,0.2))
-			_npc_part(n,10,Vector2(0,-82-breath-hop),Vector2(66,60),head_tilt)
-	LIVING_ART.npc_hands(self,n)
+	keepsake.npc(self,n)
 
 func _draw_item(m: Dictionary) -> void:
 	if m.lit and level_index != 4: return
@@ -291,20 +228,7 @@ func _draw_station() -> void:
 	_draw_halo(at-Vector2(0,h*0.6),55,Color("#ffeaa5") if quest_done else Color("#c3ddff"),1.2)
 
 func _draw_bat(b: Dictionary) -> void:
-	var at := _project(b.pos)
-	var h: float = tile*0.85
-	var w: float = tile*1.1
-	var floaty := 12.0 + (sin(elapsed*4+b.phase)*8.0 if not quieter_motion else 0.0)
-	var flap := sin(elapsed*10.0+b.phase)*0.07 if not quieter_motion else 0.0
-	w *= 1.0+flap
-	h *= 1.0-flap*0.5
-	var src := [1090,185,446,320] if int(b.phase) % 2 == 0 else [20,605,430,390]
-	var t: Texture2D = tex.get("atlas")
-	if t:
-		var dimensions := t.get_size()
-		var sx: float = dimensions.x/1536.0
-		var sy: float = dimensions.y/1024.0
-		_draw_crop("atlas",[src[0]*sx,src[1]*sy,src[2]*sx,src[3]*sy],Rect2(at-Vector2(w*0.5,h+floaty),Vector2(w,h)))
+	keepsake.bat(self,b)
 
 func _draw_birches() -> void:
 	var at := _project(Vector2(29,_path_y(29)+6))
@@ -317,21 +241,8 @@ func _draw_birches() -> void:
 
 func _draw_exit() -> void:
 	var at := _project(_exit())
-	_draw_halo(at-Vector2(0,60),85,COLORS[level_index],1.3 if quest_done or key_collected else 0.6)
-	if level_index == 0:
-		_draw_png("woodland-door",at,170,168)
-	elif level_index == 4:
-		_draw_crop("decor",DECOR_RECTS[5],Rect2(at-Vector2(110,200),Vector2(220,200)))
-		if quest_done:
-			var breath := sin(elapsed*1.8)*0.012 if not quieter_motion else 0.0
-			var ira_at := at+Vector2(lerpf(45,39,personality.reunion),5)
-			_shadow(ira_at,22)
-			draw_set_transform(ira_at,0,Vector2(1.0-breath,1.0+breath))
-			_draw_png("ira",Vector2.ZERO,65,82)
-			draw_set_transform(Vector2.ZERO)
-	else:
-		_draw_crop("lamps-v2",LAMP_RECTS[level_index*2],Rect2(at-Vector2(100,152),Vector2(75,152)))
-		_draw_crop("lamps-v2",LAMP_RECTS[level_index*2],Rect2(at+Vector2(28,-152),Vector2(75,152)))
+	_draw_halo(at-Vector2(0,75),95,COLORS[level_index],1.3 if quest_done or key_collected else .6)
+	keepsake.gate(self,at)
 
 func _shadow(at: Vector2, rad: float) -> void:
 	draw_set_transform(at, 0.0, Vector2(1.0,0.32))
@@ -350,21 +261,7 @@ func _rig_part(index: int, center: Vector2, wh: Vector2, spin: float=0.0, pivot:
 	draw_set_transform(Vector2.ZERO)
 
 func _draw_ara() -> void:
-	var at := _project(player)
-	_shadow(at,25)
-	var gait := sin(foot_time) * minf(1.0,walk_dir.length()) if not quieter_motion else 0.0
-	var bounce := absf(sin(foot_time)) * minf(1.0,walk_dir.length()) * 3.2 if not quieter_motion else 0.0
-	var breath := sin(elapsed*2.0)*0.65 if not quieter_motion else 0.0
-	var base := _ara_root()
-	_rig_part(4,base+Vector2(-12,-9+gait*2),Vector2(18,14),-gait*0.15)
-	_rig_part(5,base+Vector2(12,-9-gait*2),Vector2(18,14),gait*0.15)
-	_rig_part(2,base+Vector2(-14,-52-breath),Vector2(18,34),gait*0.16+personality.arm(0),Vector2(0.42,0.10))
-	_rig_part(1,base+Vector2(0,-35-breath),Vector2(45,44),0.0)
-	var lift := sin((1-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
-	_rig_part(3,base+Vector2(14,-51-breath),Vector2(35,49),-lift*0.42+gait*0.04+personality.arm(1),Vector2(0.16,0.10))
-	_rig_part(0,base+Vector2(0,-52-breath),Vector2(70,59),(sin(elapsed*1.4)*0.018 if not quieter_motion else 0.0),Vector2(0.5,0.95))
-	_draw_halo(_lantern_tip(),62,COLORS[level_index],2.0)
-
+	keepsake.ara(self)
 
 func _ara_root() -> Vector2:
 	var motion: float = minf(1.0,walk_dir.length())
@@ -374,12 +271,7 @@ func _ara_root() -> Vector2:
 	return at
 
 func _lantern_tip() -> Vector2:
-	var lift: float = sin((1.0-pulse/GLOW_TIME)*PI) if pulse > 0 else 0.0
-	var breath: float = sin(elapsed*2.0)*0.65 if not quieter_motion else 0.0
-	var gait: float = sin(foot_time)*minf(1.0,walk_dir.length()) if not quieter_motion else 0.0
-	var arm_spin: float = -lift*0.42+gait*0.04+personality.arm(1)
-	var tip := Vector2(14,-51-breath) + Vector2(19,32).rotated(arm_spin)
-	return _ara_frame(tip)
+	return keepsake.ara_lantern(self)
 
 func _ara_frame(local: Vector2) -> Vector2:
 	var pivot := Vector2(0,-32)
@@ -434,11 +326,10 @@ func _draw_chapter_landscape() -> void:
 			for x in [18.0,39.0,55.0]:
 				var center := Vector2(x,_path_y(x))
 				if not _visible(_project(center),tile*8): continue
-				_world_oval(center,Vector2(3.7,3.7),Color(0.43,0.30,0.57,0.20))
-				for i in range(18):
-					var p := center+Vector2(3.6,0).rotated(float(i)*TAU/18.0)
-					var at := _project(p)
-					_storybook_mushroom(at,8.0,17.0,Color("#b191d4"),float(i))
+				_world_oval(center,Vector2(3.7,3.7),Color(0.64,0.58,0.77,0.04))
+				for i in range(8):
+					var p := center+Vector2(3.6,0).rotated(float(i)*TAU/8.0)
+					keepsake.scenery(self,2,_project(p),tile*.55)
 		2:
 			# Pebble pools and reeds track the brook banks, leaving the walk clear.
 			for c in pathways.crossings:
@@ -452,7 +343,7 @@ func _draw_chapter_landscape() -> void:
 		3:
 			var center := Vector2(70,_path_y(70))
 			if _visible(_project(center),tile*14):
-				_world_oval(center,Vector2(8,8),Color(0.28,0.29,0.46,0.26))
+				_world_oval(center,Vector2(8,8),Color(0.48,0.53,0.70,0.055))
 				for ring in [2.8,4.5,7.5]:
 					var orbit := PackedVector2Array()
 					for i in range(65):
@@ -472,24 +363,14 @@ func _draw_chapter_landscape() -> void:
 				for side in [-1.0,1.0]:
 					var p := Vector2(x,_path_y(x)+side*4.0)
 					if not _visible(_project(p),tile*3): continue
-					_world_oval(p,Vector2(1.3,1.3),Color(0.33,0.25,0.29,0.55))
-					_draw_crop("quests-23",QUEST_RECTS[6],Rect2(_project(p)-Vector2(23,55),Vector2(46,55)))
+					keepsake.scenery(self,2,_project(p),tile*1.05)
 					for i in range(9):
 						var at := _project(p+Vector2(0.9,0).rotated(float(i)*TAU/9.0))
 						_woodland_flower(at-Vector2(0,10),Color("#d8a8c5"),8.0)
 
 func _draw_landmark(mark: Dictionary) -> void:
-	var at := _project(mark.pos)
-	var i: int = int(mark.index)
-	# Existing painted assets anchor the landscape details in the original art style.
-	if level_index == 1 and i < 2:
-		_draw_crop("decor",DECOR_RECTS[0],Rect2(at-Vector2(55,112),Vector2(110,112)))
-	elif level_index == 2 and i < 2:
-		_draw_crop("decor",DECOR_RECTS[1],Rect2(at-Vector2(48,100),Vector2(96,100)))
-	elif level_index == 3 and i < 2:
-		_draw_crop("decor",DECOR_RECTS[6],Rect2(at-Vector2(40,110),Vector2(80,110)))
-	elif level_index == 4 and i < 2:
-		_draw_crop("decor",DECOR_RECTS[4],Rect2(at-Vector2(45,85),Vector2(90,85)))
+	if int(mark.index) >= 2: return
+	keepsake.scenery(self,3,_project(mark.pos),tile*1.85)
 
 func _draw_landmark_names() -> void:
 	if state!="play" or (conversation!=null and conversation.notice_left>0): return
@@ -577,7 +458,7 @@ func _draw_lantern_clues_ground() -> void:
 		var p: Vector2 = stone.pos
 		var shape := [p-side*0.22,p+cast*1.9-side*0.22,p+cast*1.9-side*0.65,tip,p+cast*1.9+side*0.65,p+cast*1.9+side*0.22,p+side*0.22]
 		if not lit: shape = [p-side*0.30,p+cast*1.9-side*0.16,p+cast*2.2,p+cast*1.9+side*0.16,p+side*0.30]
-		_world_polygon(shape,Color(0.015,0.03,0.08,0.76))
+		_world_polygon(shape,Color(0.10,0.16,0.20,0.30 if lit else 0.15))
 		if lit:
 			var fade := minf(1.0,float(stone.time)/3.0)
 			var line := PackedVector2Array()
@@ -623,13 +504,10 @@ func _draw_lantern_plant_names() -> void:
 
 func _draw_shadow_stone(stone: Dictionary) -> void:
 	var at := _project(stone.pos)
-	_shadow(at,24)
-	var top := at-Vector2(0,35)
-	draw_colored_polygon(PackedVector2Array([at+Vector2(-20,-3),at+Vector2(-17,-28),top,at+Vector2(17,-28),at+Vector2(21,-3),at+Vector2(0,6)]),Color("#4d6171"))
-	draw_colored_polygon(PackedVector2Array([at+Vector2(-17,-28),top,at+Vector2(17,-28),at+Vector2(0,-19)]),Color("#899fa3"))
-	draw_line(at-Vector2(0,18),at-Vector2(0,3),Color("#e9c990"),2,true)
-	draw_arc(at-Vector2(0,12),6,-PI*0.8,PI*0.2,16,Color("#e9c990"),2,true)
-	if stone.time > 0: _draw_halo(top,50,Color("#ffe5a3"),1.5)
+	_shadow(at,20)
+	_draw_crop("quests-23",QUEST_RECTS[4],Rect2(at-Vector2(21,63),Vector2(42,63)))
+	if stone.time>0: _draw_halo(at-Vector2(0,37),43,Color("#ffe5a3"),1.4)
+
 
 func _draw_shadow_inscriptions() -> void:
 	if state!="play" or (conversation!=null and conversation.notice_left>0): return
@@ -650,46 +528,9 @@ func _draw_shadow_inscriptions() -> void:
 # Each chapter has its own small set of animated, nonblocking scenic props.
 func _draw_woodland_prop(prop: Dictionary) -> void:
 	var at := _project(prop.pos)
-	var sway := sin(elapsed*1.2+float(prop.phase))*3.0 if not quieter_motion else 0.0
-	_shadow(at,29)
-	match prop.kind:
-		"ribbon":
-			for side in [-1.0,1.0]:
-				draw_line(at+Vector2(side*34,0),at+Vector2(side*28,-86),Color("#73665a"),5,true)
-			draw_arc(at+Vector2(0,-91),31,0,PI,20,Color("#bda984"),3,true)
-			for i in range(5):
-				var tip := at+Vector2(-26+i*13,-82+sway*float(i%2))
-				draw_colored_polygon(PackedVector2Array([tip,tip+Vector2(8,1),tip+Vector2(4,17)]),Color("#dbb887") if i%2 else Color("#88b8bb"))
-		"mushroom":
-			for i in range(3):
-				var foot := at+Vector2((i-1)*22,abs(i-1)*6)
-				var h := 35.0+float(i%2)*18.0
-				_storybook_mushroom(foot,19.0 if i==1 else 14.0,h,Color("#a58bc1"),float(prop.phase)+i)
-		"lily":
-			for i in range(3):
-				var pad := at+Vector2((i-1)*24,i%2*12)
-				draw_set_transform(pad,0,Vector2(1,0.45))
-				_disc(Vector2.ZERO,19,Color("#548e88"))
-				draw_arc(Vector2.ZERO,19,0.2,TAU-0.4,20,Color("#86b3a0"),2,true)
-				draw_set_transform(Vector2.ZERO)
-				if i==1: _woodland_flower(pad-Vector2(0,7+sway*0.3),Color("#ebcbdd"),8)
-		"orrery":
-			var center := at-Vector2(0,53+sway)
-			draw_line(at,center+Vector2(0,15),Color("#9a91a8"),5,true)
-			draw_arc(center,30,0,TAU,32,Color("#bbab83"),2,true)
-			draw_set_transform(center,-0.6,Vector2(1,0.45))
-			draw_arc(Vector2.ZERO,39,0,TAU,32,Color("#b4bce5"),2,true)
-			draw_set_transform(Vector2.ZERO)
-			_draw_halo(center,47,Color("#b4bce5"),1.6)
-			for i in range(3):
-				var angle := float(i)*TAU/3.0+(elapsed*0.4 if not quieter_motion else 0.0)
-				_disc(center+Vector2(30,0).rotated(angle),4,Color("#fff0bb"))
-		"garden_arch":
-			for side in [-1.0,1.0]: draw_line(at+Vector2(side*34,0),at+Vector2(side*34,-69),Color("#7b9c86"),5,true)
-			draw_arc(at-Vector2(0,69),34,PI,TAU,24,Color("#7b9c86"),5,true)
-			for i in range(7):
-				var angle := PI+float(i)*PI/6.0
-				_woodland_flower(at-Vector2(0,69)+Vector2(34,0).rotated(angle),Color("#e4b8c9") if i%2 else Color("#b8d5bc"),6)
+	var floral: bool=prop.kind in ["mushroom","lily"]
+	var height: float=tile*(1.0 if floral else 1.9)
+	keepsake.scenery(self,2 if floral else 3,at,height)
 
 var flower_textures: Dictionary = {}
 func _woodland_flower(at: Vector2, tint: Color, radius: float) -> void:

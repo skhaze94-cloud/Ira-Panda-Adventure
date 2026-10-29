@@ -16,6 +16,7 @@ func _ready() -> void:
 	surface.set_shader_parameter("crops",crops)
 	surface.set_shader_parameter("atlas",game.tex["ground-v2"])
 	surface.set_shader_parameter("atlas_size",game.tex["ground-v2"].get_size())
+	surface.set_shader_parameter("storybook_atlas",load("res://assets/keepsake/ground.png"))
 
 func sync() -> void:
 	visible = game.state in ["play","dialog","win"]

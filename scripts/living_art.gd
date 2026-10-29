@@ -73,38 +73,8 @@ static func guide(g: Control) -> void:
 			var p: Vector2=at.lerp(target-Vector2(0,24),float(i)/5)
 			g._disc(p,1.4,Color(1,.93,.69,.3))
 static func visitor(g: Control) -> void:
-	var data: Dictionary=g.living.visitor
-	if data.is_empty(): return
-	var at: Vector2=g._project(data.pos)
-	var clock: float=0 if g.quieter_motion else g.living.clock
-	var interest: float=data.attention
-	g._shadow(at,13)
-	match g.level_index:
-		0,4:
-			# A tiny woodland rabbit turns toward Ara, ears pricked in curiosity.
-			var side: float=1 if g.player.x-g.player.y>data.pos.x-data.pos.y else -1
-			var head:=at+Vector2(side*5,-14-interest*2)
-			g._disc(at-Vector2(0,8),11,Color("#b8afa0"))
-			g._disc(at+Vector2(-side*9,-8),4,Color("#e3ddce"))
-			g._disc(head,8,Color("#d4cbb9"))
-			for i in range(2): g._storybook_petal(head+Vector2(-2+i*6,-5),-PI/2+sin(clock*.7+i)*.06,14,3,Color("#d4cbb9"))
-			g._disc(head+Vector2(side*4,-2),1.6,Color("#364b48"));g._disc(head+Vector2(side*8,1),1.4,Color("#bd8887"))
-		2:
-			var hop: float=maxf(0,sin(clock*2))*interest*5
-			var frog:=at-Vector2(0,8+hop)
-			g._disc(frog,10,Color("#8bae82"))
-			for side in [-1.0,1.0]:
-				g._disc(frog+Vector2(side*6,-7),4,Color("#c5d5a6"));g._disc(frog+Vector2(side*6,-8),1.8,Color("#364e46"))
-				g.draw_line(frog+Vector2(side*7,7),frog+Vector2(side*13,9),Color("#729a79"),3,true)
-			g.draw_arc(frog+Vector2(0,-1),4,0,PI,10,Color("#466653"),1,true)
-		1,3:
-			var moth:=at-Vector2(0,27+sin(clock*1.5)*4)
-			var wing: float=13+sin(clock*5)*2
-			for side in [-1.0,1.0]:
-				g._storybook_petal(moth,PI*.8 if side<0 else .2,wing,7,Color("#d5c2e9"))
-				g._storybook_petal(moth,PI*1.2 if side<0 else -.2,wing*.7,4,Color("#bdcce4"))
-			g.draw_line(moth-Vector2(0,5),moth+Vector2(0,5),Color("#e5d9bd"),2,true)
-			if interest>.1: g._draw_halo(moth,33,Color("#d8e7ef"),interest*.7)
+	g.keepsake.visitor(g)
+
 static func npc_props(g: Control, npc: Dictionary) -> void:
 	var at: Vector2=g._project(npc.home)
 	if npc.id=="moss":

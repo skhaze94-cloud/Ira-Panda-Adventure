@@ -48,11 +48,7 @@ static func secret(g: Control, loop: Dictionary) -> void:
 					g.draw_line(p,p+Vector2(0,24+i*3),Color("#d6c390"),2,true)
 		3:
 			if loop.index==0:
-				g.draw_line(at,at-Vector2(0,42),Color("#958d96"),5,true)
-				g.draw_line(at-Vector2(0,18),at+Vector2(-22,9),Color("#958d96"),3,true)
-				g.draw_line(at-Vector2(0,18),at+Vector2(22,9),Color("#958d96"),3,true)
-				g.draw_line(at+Vector2(-20,-35),at+Vector2(26,-51),Color("#b0a2c4"),16,true)
-				g._disc(at+Vector2(28,-51),10,Color("#eadbb5"));g._disc(at+Vector2(28,-51),7,Color("#6a7d9b"))
+				g.keepsake.scenery(g,3,at,g.tile*1.6)
 			else:
 				for side in [-1.0,1.0]: g.draw_line(at+Vector2(side*24,0),at+Vector2(side*24,-18),Color("#6d6476"),5,true)
 				g.draw_line(at+Vector2(-35,-18),at+Vector2(35,-18),Color("#b7a487"),12,true)
