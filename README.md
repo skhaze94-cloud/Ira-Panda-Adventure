@@ -1,3 +1,7 @@
+# Ara & Ira — v0.15.0: A Gentle Journey
+
+A softer camera follow, clearer framing around the HUD, gentle scenic reveals, and small fixes from a complete opening-to-finale engine playthrough. See [CAMERA-AND-PLAYTHROUGH-V0.15.md](CAMERA-AND-PLAYTHROUGH-V0.15.md) for the review and prioritized outstanding work.
+
 # Ara & Ira — v0.14.0: A Little Room to Bloom
 
 Twenty-five new painted botanical textures: five exclusive to each chapter, with more space between trees, plants and repeated scenery. See [BOTANICAL-V0.14.md](BOTANICAL-V0.14.md) for the asset list, layout rules and validation.

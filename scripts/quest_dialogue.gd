@@ -6,7 +6,7 @@ static func beat(speaker: String, text: String, mood: String="warm") -> Dictiona
 static func talk(game: Control, id: String) -> Array:
 	var lines: Array=quest_talk(game,id)
 	if not game.beauty.chests.is_empty() and not game.beauty.chests[1].open:
-		lines.append(beat(id,"One quest treasure is tucked in a chest off the trail. Follow the little stars; shine to see its golden clasp, then press E to open it.","curious"))
+		lines.append(beat(id,"One quest treasure is tucked in a chest off the trail. Follow the little stars; shine to see its golden clasp, then use Interact to open it.","curious"))
 	if game.living.count_clues()>0 and not game.quest_done and not game.key_collected:
 		lines.insert(1,beat(id,["Ira passed this way. I recognise that very determined little bounce!","She asked whether mushrooms make good umbrellas. I think you know who I mean.","A small cushion crossed here humming. The brook hummed back!","Someone has been counting the stars and leaving biscuit crumbs.","Your sister is very close. I heard two biscuits being carefully counted."][game.level_index],"happy"))
 	return lines

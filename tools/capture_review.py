@@ -13,6 +13,7 @@ parser.add_argument("--xvfb", required=True)
 parser.add_argument("--xvfb-library")
 parser.add_argument("--script", default="tests/capture_keepsake.gd")
 parser.add_argument("--output", required=True)
+parser.add_argument("--timeout", type=int, default=180)
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 output = Path(args.output).resolve()
@@ -43,7 +44,7 @@ with (output / "display.log").open("w") as log:
         code = subprocess.run([
             args.godot, "--path", str(root), "--rendering-method", "gl_compatibility",
             "--audio-driver", "Dummy", "--script", args.script,
-        ], env=env, cwd=root, timeout=180).returncode
+        ], env=env, cwd=root, timeout=args.timeout).returncode
     finally:
         display.terminate()
         display.wait(timeout=5)

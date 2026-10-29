@@ -173,6 +173,7 @@ func close() -> void:
 	if ending=="replay":
 		game._show_dialog("One very big hug", "Ara and Ira are together again. Adventure tastes even better with biscuits!\n"+game.beauty.result(), "PLAY AGAIN", "TITLE SCREEN", "replay")
 		game.state = "win"
+		game.trail_camera.frame_result(game)
 	else:
 		game._set_state("play")
 
@@ -235,6 +236,7 @@ func _process(dt: float) -> void:
 	elif game.state=="play" and notice_left>0:
 		notice_left = maxf(0.0,notice_left-dt)
 		if notice_left<=0: show_notice()
+	notice_panel.size=Vector2(size.x*.54,maxf(94.0,size.y*.18))
 	notice_panel.position.y=maxf(12,size.y-notice_panel.size.y-12)
 	notice_panel.visible = not active and game.state=="play" and notice_left>0
 

@@ -162,8 +162,8 @@ func _build_ui() -> void:
 	menu_col.add_child(menu_row)
 	_button(menu_row,"SETTINGS",_open_options,Vector2(110,42))
 	_button(menu_row,"ALBUM",_open_album,Vector2(110,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.14.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
-	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.14.0",11,Color("#8b846d"))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.15.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
+	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.15.0",11,Color("#8b846d"))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)
@@ -400,6 +400,7 @@ func _talk(npc: Dictionary) -> void:
 	conversation.start(load("res://scripts/quest_dialogue.gd").talk(self,npc.id))
 
 func _reunion() -> void:
+	trail_camera.frame_reunion(self)
 	conversation.start(load("res://scripts/quest_dialogue.gd").reunion(),"replay")
 
 func _direction_button(symbol: String, offset: Vector2, vector: Vector2) -> void:
@@ -469,9 +470,19 @@ func _show_dialog(title: String, body: String, primary: String, secondary: Strin
 	dialog_card.find_child("PauseSettings",true,false).visible=action=="resume"
 	modal_text.visible=true
 	dialog_from = action
+	var compact_result: bool=action=="replay" and size.y<500
+	var plate: StyleBoxFlat=dialog_card.get_theme_stylebox("panel").duplicate()
+	plate.content_margin_left=12 if compact_result else 22
+	plate.content_margin_right=12 if compact_result else 22
+	plate.content_margin_top=12 if compact_result else 18
+	plate.content_margin_bottom=12 if compact_result else 18
+	dialog_card.add_theme_stylebox_override("panel",plate)
+	modal_heading.add_theme_font_size_override("font_size",22 if compact_result else 28)
+	modal_heading.get_parent().get_child(0).add_theme_font_size_override("font_size",12 if compact_result else 15)
+	modal_heading.get_parent().add_theme_constant_override("separation",5 if compact_result else 10)
 	if action=="replay":
-		dialog_card.anchor_left=.20;dialog_card.anchor_right=.80
-		dialog_card.anchor_top=.65;dialog_card.anchor_bottom=.98
+		dialog_card.anchor_left=.05 if compact_result else .20;dialog_card.anchor_right=.95 if compact_result else .80
+		dialog_card.anchor_top=.46 if compact_result else .65;dialog_card.anchor_bottom=.98
 		modal_dim.color=Color(0,0,0,.10)
 	else:
 		_center(dialog_card,.92 if size.x<700 else .76 if size.y<600 else .66,.92 if size.y<600 else .80)
@@ -485,6 +496,7 @@ func _show_dialog(title: String, body: String, primary: String, secondary: Strin
 	modal_primary.text = primary
 	modal_secondary.text = secondary
 	modal_secondary.visible = not secondary.is_empty()
+	_apply_reading_size()
 	_set_state("dialog")
 
 func _resume() -> void:
@@ -498,11 +510,14 @@ func _resume() -> void:
 		_start_intro()
 		return
 	if state == "win":
+		journal.reset_checkpoint()
 		start_level(0)
 		return
 	if dialog_from == "options-pause": _set_state("play");_pause()
 	elif dialog_from == "menu": _set_state("menu")
-	elif dialog_from == "replay": start_level(0)
+	elif dialog_from == "replay":
+		journal.reset_checkpoint()
+		start_level(0)
 	else: _set_state("play")
 
 func _return_menu() -> void:
@@ -640,7 +655,8 @@ func _volume_row(parent: Node, title: String, change: Callable) -> HSlider:
 	return slider
 
 func _apply_reading_size() -> void:
-	modal_text.add_theme_font_size_override("font_size",21 if large_text else 19)
+	var result_size: int=16 if dialog_from=="replay" and size.y<500 else 19
+	modal_text.add_theme_font_size_override("font_size",result_size+(2 if large_text else 0))
 	var reading: int=15 if size.y<400 else 16 if size.y<600 else 18
 	story_body.add_theme_font_size_override("font_size",reading+(2 if large_text else 0))
 	if conversation!=null: conversation._layout()

@@ -1,5 +1,7 @@
 extends "res://scripts/core.gd"
 
+var world_label_boxes: Array[Rect2] = []
+
 var beauty_art = preload("res://scripts/hidden_wonders_art.gd").new()
 
 const LIVING_ART = preload("res://scripts/living_art.gd")
@@ -18,6 +20,7 @@ func _draw() -> void:
 			_disc(Vector2(px,py), 1.4, Color(0.98,0.89,0.61,0.25))
 		return
 	if not (state == "play" or state == "dialog" or state == "win"): return
+	world_label_boxes.clear()
 	var draw_begin := Time.get_ticks_usec()
 	foliage_focus=_focus_points()
 	_refresh_visible_trees()
@@ -119,7 +122,6 @@ func _draw() -> void:
 			"flourish": _draw_woodland_prop(d)
 	ADVENTURE_ART.moments(self)
 	LIVING_ART.guide(self)
-	_draw_landmark_names()
 	for part in particles:
 		var fade: float = part.life / part.max
 		var dust: bool = part.get("kind","") == "dust"
@@ -149,10 +151,12 @@ func _draw() -> void:
 	if level_index==0 and not opening.found:
 		var ribbon_at: Vector2=_project(opening.ribbon)
 		draw_polyline(PackedVector2Array([ribbon_at+Vector2(-14,-5),ribbon_at+Vector2(0,2),ribbon_at+Vector2(12,-7),ribbon_at+Vector2(5,9)]),Color("#efb2c4"),5,true)
-	_draw_interaction_hint()
-	_draw_shadow_inscriptions()
-	_draw_lantern_plant_names()
 	_draw_woodland_air()
+	_draw_interaction_hint()
+	_draw_rune_names()
+	_draw_shadow_inscriptions()
+	_draw_landmark_names()
+	_draw_lantern_plant_names()
 	render_cpu_us = Time.get_ticks_usec()-draw_begin
 
 func _cover(name: String, alpha: float=1.0) -> void:
@@ -229,9 +233,6 @@ func _draw_rune(r: Dictionary) -> void:
 	var at := _project(r.pos)
 	_draw_crop("quests-23",QUEST_RECTS[4],Rect2(at-Vector2(33,100),Vector2(66,100)))
 	_draw_halo(at-Vector2(0,55),45,Color("#fff4bc") if r.lit else Color("#b3beff"),1.0)
-	var font := ThemeDB.fallback_font
-	var width := font.get_string_size(r.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x
-	draw_string(font,at-Vector2(width*0.5,105),r.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe9b3") if r.lit else Color("#d9ddff"))
 
 func _draw_station() -> void:
 	var at := _project(_station())
@@ -401,9 +402,10 @@ func _draw_landmark_names() -> void:
 		var text: String = mark.name
 		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,15).x
 		var pos := at+Vector2(-width*0.5,22)
-		if not _landmark_label_clear(Rect2(pos-Vector2(10,17),Vector2(width+20,25))): continue
-		draw_style_box(_landmark_style(),Rect2(pos-Vector2(10,17),Vector2(width+20,25)))
-		draw_string(font,pos,text,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("#eee4cb"))
+		var box:=_place_world_label(Rect2(pos-Vector2(10,17),Vector2(width+20,25)))
+		if not box.has_area():continue
+		draw_style_box(_landmark_style(),box)
+		draw_string(font,box.position+Vector2(10,17),text,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("#eee4cb"))
 
 func _landmark_label_clear(box: Rect2) -> bool:
 	# Discovery clues and toast messages take priority over scenery labels.
@@ -428,13 +430,15 @@ func _draw_interaction_hint() -> void:
 	if focus.is_empty(): return
 	var foot: Vector2=_project(focus.pos)
 	if conversation!=null and conversation.notice_left>0:return
-	var target: Vector2=foot-Vector2(0,tile*1.9)
+	var target: Vector2=foot-Vector2(0,137 if focus.kind=="npc" else tile*1.9)
 	var text: String=("Tap "+str(focus.action)+" · " if joystick.visible else "E · ")+str(focus.label)
 	if text.is_empty(): return
 	var font := ThemeDB.fallback_font
 	var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x
-	draw_style_box(_landmark_style(),Rect2(target-Vector2(width*0.5+10,20),Vector2(width+20,30)))
-	draw_string(font,target-Vector2(width*0.5,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe1a1"))
+	var box:=_place_world_label(Rect2(target-Vector2(width*.5+10,20),Vector2(width+20,30)))
+	if not box.has_area():return
+	draw_style_box(_landmark_style(),box)
+	draw_string(font,box.position+Vector2(10,20),text,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe1a1"))
 
 func _draw_lantern_clues_ground() -> void:
 	if light_trails == null: return
@@ -502,10 +506,12 @@ func _draw_lantern_plant_names() -> void:
 		if player.distance_to(plant.pos) >= 3.5: continue
 		var at := _project(plant.pos)
 		var font := ThemeDB.fallback_font
-		var text := "Lantern bloom" if plant.awake else "Space / GLOW"
+		var text := "Lantern bloom" if plant.awake else "Tap GLOW" if joystick.visible else "Space · GLOW"
 		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,13).x
-		draw_style_box(_landmark_style(),Rect2(at-Vector2(width*0.5+7,73),Vector2(width+14,23)))
-		draw_string(font,at-Vector2(width*0.5,57),text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("#c8ffe9"))
+		var box:=_place_world_label(Rect2(at-Vector2(width*.5+7,73),Vector2(width+14,23)))
+		if not box.has_area():continue
+		draw_style_box(_landmark_style(),box)
+		draw_string(font,box.position+Vector2(7,16),text,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("#c8ffe9"))
 
 func _draw_shadow_stone(stone: Dictionary) -> void:
 	var at := _project(stone.pos)
@@ -525,10 +531,12 @@ func _draw_shadow_inscriptions() -> void:
 		var font := ThemeDB.fallback_font
 		var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,14).x
 		var fade := minf(1.0,float(stone.time)/3.0)
+		var bounds:=_place_world_label(Rect2(at-Vector2(width*.5+10,19),Vector2(width+20,27)))
+		if not bounds.has_area():continue
 		var box := _landmark_style()
 		box.bg_color.a *= fade
-		draw_style_box(box,Rect2(at-Vector2(width*0.5+10,19),Vector2(width+20,27)))
-		draw_string(font,at-Vector2(width*0.5,0),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color(1.0,0.90,0.65,fade))
+		draw_style_box(box,bounds)
+		draw_string(font,bounds.position+Vector2(10,19),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color(1.0,0.90,0.65,fade))
 
 # Each chapter has its own small set of animated, nonblocking scenic props.
 func _draw_woodland_prop(prop: Dictionary) -> void:
@@ -708,3 +716,35 @@ func _focus_points() -> Array[Vector2]:
 	if not living.visitor.is_empty() and player.distance_to(living.visitor.pos)<5: points.append(living.visitor.pos)
 	if player.distance_to(_station())<6: points.append(_station())
 	return points
+
+func _place_world_label(preferred: Rect2) -> Rect2:
+	var viewport:=Rect2(Vector2(12,12),size-Vector2(24,24))
+	if preferred.size.x>viewport.size.x:return Rect2()
+	for shift in [Vector2.ZERO,Vector2(72,0),Vector2(-72,0),Vector2(0,-30),Vector2(0,30),Vector2(144,0),Vector2(-144,0),Vector2(0,-60),Vector2(0,60),Vector2(0,-90)]:
+		var box:=Rect2(preferred.position+shift,preferred.size)
+		box.position.x=clampf(box.position.x,viewport.position.x,viewport.end.x-box.size.x)
+		if not viewport.encloses(box):continue
+		var clear:=true
+		for used in world_label_boxes:
+			if box.grow(3).intersects(used):clear=false
+		for child in hud_layer.get_children():
+			if child is Control and child.is_visible_in_tree() and (child is PanelContainer or child is BaseButton or child==joystick or child==opening.label):
+				if box.intersects(child.get_global_rect().grow(4)):clear=false
+		var ara_foot:=_ara_root()
+		if box.intersects(Rect2(ara_foot-Vector2(43,124),Vector2(86,114))):clear=false
+		if clear:
+			world_label_boxes.append(box)
+			return box
+	return Rect2()
+
+func _draw_rune_names() -> void:
+	if state!="play" or (conversation!=null and conversation.notice_left>0):return
+	for rune in runes:
+		if player.distance_to(rune.pos)>7:continue
+		var font:=ThemeDB.fallback_font
+		var width:=font.get_string_size(rune.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x
+		var at:=_project(rune.pos)-Vector2(width*.5+7,126)
+		var box:=_place_world_label(Rect2(at,Vector2(width+14,25)))
+		if not box.has_area():continue
+		draw_style_box(_landmark_style(),box)
+		draw_string(font,box.position+Vector2(7,18),rune.name,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("#ffe9b3") if rune.lit else Color("#d9ddff"))

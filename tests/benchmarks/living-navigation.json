@@ -1,32 +1,32 @@
 [
   {
     "chapter": 1,
-    "max_slice_ms": 8.183,
-    "navigation_work_ms": 1639.681,
-    "request_ms": 0.023
+    "max_slice_ms": 5.574,
+    "navigation_work_ms": 1298.039,
+    "request_ms": 0.013
   },
   {
     "chapter": 2,
-    "max_slice_ms": 7.558,
-    "navigation_work_ms": 1336.591,
-    "request_ms": 0.009
-  },
-  {
-    "chapter": 3,
-    "max_slice_ms": 126.361,
-    "navigation_work_ms": 2354.37,
+    "max_slice_ms": 148.177,
+    "navigation_work_ms": 1695.462,
     "request_ms": 0.011
   },
   {
+    "chapter": 3,
+    "max_slice_ms": 6.292,
+    "navigation_work_ms": 1722.117,
+    "request_ms": 0.009
+  },
+  {
     "chapter": 4,
-    "max_slice_ms": 4.523,
-    "navigation_work_ms": 1237.448,
-    "request_ms": 0.008
+    "max_slice_ms": 8.391,
+    "navigation_work_ms": 2065.57,
+    "request_ms": 0.01
   },
   {
     "chapter": 5,
-    "max_slice_ms": 5.133,
-    "navigation_work_ms": 1396.145,
+    "max_slice_ms": 8.056,
+    "navigation_work_ms": 1384.26,
     "request_ms": 0.009
   }
 ]

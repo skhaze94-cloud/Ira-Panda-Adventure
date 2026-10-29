@@ -90,7 +90,7 @@ func resume() -> void:
 	game.beauty.restore(saved.get("beauty",{}) if saved.get("beauty",{}) is Dictionary else {})
 	game.objects.restore(saved.get("objects",[]) if saved.get("objects",[]) is Array else [])
 	game.navigation=null;game._begin_navigation()
-	game.camera=game.size*Vector2(.5,.55)-Vector2((game.player.x-game.player.y)*game.tile,(game.player.x+game.player.y)*game.tile*.49)
+	game.trail_camera.snap(game)
 	game.restoring=false
 	game._update_hud();game.show_toast("Back on the trail. Ira is waiting!",2.5)
 func write() -> bool:

@@ -1,0 +1,267 @@
+{
+  "version": "0.15.0",
+  "release": "A Gentle Journey",
+  "date": "2026-10-29",
+  "runtime": "Godot 4.5.1 Linux",
+  "checks": [
+    {
+      "test": "camera_v015",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "full_journey_v015",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "botanical_v014",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "movement_v013",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "opening",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "landscapes_controls",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "quests_captions",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "hidden_wonders",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "object_upgrade",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "personality_v06",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "storybook_ui",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "reliability_v011",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "headless_journey": {
+    "captures": [],
+    "chapters": [
+      {
+        "chapter": 1,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": true,
+        "quest_items": 0,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 2,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "clearing-1",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 3,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "bridge-2"
+        ]
+      },
+      {
+        "chapter": 4,
+        "chests": 2,
+        "completed": true,
+        "hearts": 2,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 5,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "clearing-1",
+          "bridge-1",
+          "home"
+        ]
+      }
+    ],
+    "failures": 0,
+    "method": "Scripted engine playthrough using live movement, quest interactions, story buttons, captions, hazards, Continue and replay; no quest flags injected.",
+    "simulation_seconds": 343.016666666667,
+    "walked_ground_units": 758.289323107339
+  },
+  "native_journey": {
+    "captures": [
+      "01-title",
+      "02-opening-story",
+      "03-first-step",
+      "chapter-1-guide",
+      "chapter-1-clearing",
+      "chapter-1-quest-complete",
+      "chapter-1-interlude",
+      "chapter-2-guide",
+      "chapter-2-clearing",
+      "chapter-2-quest-complete",
+      "chapter-2-interlude",
+      "chapter-3-guide",
+      "chapter-3-clearing",
+      "chapter-3-pause",
+      "chapter-3-quest-complete",
+      "chapter-3-interlude",
+      "chapter-4-guide",
+      "chapter-4-clearing",
+      "chapter-4-quest-complete",
+      "chapter-4-interlude",
+      "chapter-5-guide",
+      "chapter-5-clearing",
+      "chapter-5-quest-complete",
+      "finale-reunion",
+      "finale-complete",
+      "finale-compact",
+      "replay-fresh-opening"
+    ],
+    "chapters": [
+      {
+        "chapter": 1,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": true,
+        "quest_items": 0,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 2,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "clearing-1",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 3,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "bridge-2"
+        ]
+      },
+      {
+        "chapter": 4,
+        "chests": 2,
+        "completed": true,
+        "hearts": 2,
+        "key": false,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "bridge-1"
+        ]
+      },
+      {
+        "chapter": 5,
+        "chests": 2,
+        "completed": true,
+        "hearts": 3,
+        "quest_items": 3,
+        "reveals_seen": [
+          "clearing-0",
+          "bridge-0",
+          "clearing-1",
+          "bridge-1",
+          "home"
+        ]
+      }
+    ],
+    "failures": 0,
+    "method": "Scripted engine playthrough using live movement, quest interactions, story buttons, captions, hazards, Continue and replay; no quest flags injected.",
+    "simulation_seconds": 335.866666666667,
+    "walked_ground_units": 758.289323107339
+  },
+  "visual_review": {
+    "camera_stills": 24,
+    "journey_stills": 27,
+    "resolutions": [
+      [
+        1280,
+        720
+      ],
+      [
+        740,
+        360
+      ]
+    ],
+    "renderer": "OpenGL Compatibility / Mesa llvmpipe software rendering",
+    "reviewed": true
+  },
+  "scope": "Damped follow, HUD-aware framing, crossings/clearings/cottage reveals, small playthrough fixes. Existing artwork/audio preserved.",
+  "outstanding_review": "CAMERA-AND-PLAYTHROUGH-V0.15.md",
+  "limitations": [
+    "Scripted playthrough uses known objective positions; no unassisted human playtest.",
+    "GPU performance, packaged exports and physical touch devices are unverified.",
+    "First distant tap can wait for incremental navigation preparation."
+  ]
+}

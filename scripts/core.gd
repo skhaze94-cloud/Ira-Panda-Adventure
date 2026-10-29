@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var trail_camera = preload("res://scripts/trail_camera.gd").new()
 var botany = preload("res://scripts/botanical_art.gd").new()
 var keepsake = preload("res://scripts/keepsake_art.gd").new()
 var object_art = preload("res://scripts/object_art.gd").new()
@@ -446,14 +447,15 @@ func start_level(index: int) -> void:
 	pathways.protect_objectives()
 	_set_state("play")
 	opening.begin()
+	trail_camera.build(self)
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
 	_begin_navigation()
 	if not restoring: journal.checkpoint()
 
 func _station() -> Vector2:
-	var sx: float = float(BASE_LEVELS[level_index]["size"] - (9 if level_index == 2 else 4))
-	return Vector2(sx, _path_y(sx) + (2.1 if level_index == 4 else 0.0))
+	var sx: float = float(BASE_LEVELS[level_index]["size"] - (9 if level_index == 2 else 7 if level_index == 4 else 4))
+	return Vector2(sx, _path_y(sx) + (3.8 if level_index == 4 else 0.0))
 
 func _blocked(p: Vector2) -> bool:
 	var n: float = float(BASE_LEVELS[level_index]["size"])
@@ -521,11 +523,7 @@ func _process(dt: float) -> void:
 		_update_hud()
 	if state=="win": personality.update(dt)
 	soundscape.update(dt)
-	var lead_target := velocity * 0.38 if state == "play" and not quieter_motion else Vector2.ZERO
-	camera_lead = camera_lead.lerp(lead_target, 1.0-exp(-dt*4.0))
-	var focus := player + camera_lead
-	var camera_target := size * Vector2(0.5, 0.55) - Vector2((focus.x-focus.y)*tile,(focus.x+focus.y)*tile*0.49)
-	camera = camera_target if quieter_motion else camera.lerp(camera_target,1.0-exp(-dt*7.0))
+	trail_camera.update(self,dt)
 	if state == "play":
 		for i in range(particles.size()-1, -1, -1):
 			particles[i].life -= dt
@@ -568,7 +566,7 @@ func _update_bats(dt: float) -> void:
 				heart = 3
 				player = Vector2(2, _path_y(2))
 				_reset_controls()
-				camera_lead = Vector2.ZERO
+				trail_camera.snap(self)
 				show_toast("Try again from the lantern trail. You've got this!", 3.5)
 
 func glow() -> void:
