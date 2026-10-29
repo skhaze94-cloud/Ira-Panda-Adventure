@@ -1,0 +1,129 @@
+{
+  "version": "0.14.0",
+  "release": "A Little Room to Bloom",
+  "date": "2026-10-29",
+  "runtime": "Godot 4.5.1 Linux",
+  "automated_checks": [
+    {
+      "test": "botanical_v014",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "movement_v013",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "opening",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "landscapes_controls",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "quests_captions",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "hidden_wonders",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "object_upgrade",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "personality_v06",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "test": "storybook_ui",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "layout": [
+    {
+      "chapter": 1,
+      "lamps": 11,
+      "new_small_props": 11,
+      "previous_tree_count": 1028,
+      "regular_decorations": 10,
+      "small_prop_species": 3,
+      "tree_silhouettes": 4,
+      "trees": 268
+    },
+    {
+      "chapter": 2,
+      "lamps": 12,
+      "new_small_props": 7,
+      "previous_tree_count": 1105,
+      "regular_decorations": 12,
+      "small_prop_species": 3,
+      "tree_silhouettes": 4,
+      "trees": 337
+    },
+    {
+      "chapter": 3,
+      "lamps": 12,
+      "new_small_props": 6,
+      "previous_tree_count": 1206,
+      "regular_decorations": 12,
+      "small_prop_species": 3,
+      "tree_silhouettes": 4,
+      "trees": 341
+    },
+    {
+      "chapter": 4,
+      "lamps": 13,
+      "new_small_props": 9,
+      "previous_tree_count": 1458,
+      "regular_decorations": 13,
+      "small_prop_species": 3,
+      "tree_silhouettes": 4,
+      "trees": 421
+    },
+    {
+      "chapter": 5,
+      "lamps": 14,
+      "new_small_props": 9,
+      "previous_tree_count": 725,
+      "regular_decorations": 14,
+      "small_prop_species": 3,
+      "tree_silhouettes": 4,
+      "trees": 310
+    }
+  ],
+  "assets": {
+    "unique_new_textures": 25,
+    "textures_per_chapter": 5,
+    "runtime_png_bytes": 5349522,
+    "original_assets_unchanged": true
+  },
+  "visual_review": {
+    "script": "tests/capture_botanical.gd",
+    "desktop_resolution": [
+      1280,
+      720
+    ],
+    "compact_resolution": [
+      740,
+      360
+    ],
+    "captures": 16,
+    "renderer": "OpenGL Compatibility, Mesa llvmpipe software rendering",
+    "reviewed": true
+  },
+  "limitations": [
+    "Physical-device testing and GPU performance are not measured.",
+    "Existing incremental route-building behavior remains; a first far tap can wait for navigation preparation."
+  ]
+}

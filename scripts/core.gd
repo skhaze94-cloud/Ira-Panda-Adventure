@@ -40,6 +40,7 @@ const QUEST_RECTS = [[91,79,329,354],[564,56,407,400],[1099,69,361,373],[40,587,
 const RIG_RECTS = [[0,32,588,451],[628,106,458,392],[1209,92,239,390],[125,515,330,465],[626,660,314,276],[1165,659,314,274]]
 const COLORS = [Color("#ffdca3"), Color("#ffe4bd"), Color("#ffe5b3"), Color("#e8ddff"), Color("#ffd297")]
 
+var botany = preload("res://scripts/botanical_art.gd").new()
 var keepsake = preload("res://scripts/keepsake_art.gd").new()
 var object_art = preload("res://scripts/object_art.gd").new()
 var objects = preload("res://scripts/object_upgrade.gd").new()
@@ -383,13 +384,24 @@ func start_level(index: int) -> void:
 	for x in range(n):
 		for y in range(n):
 			var p := Vector2(float(x) + 0.2 + _randseed(x + y * 36 + level_index) * 0.25, float(y) + 0.2 + _randseed(x * 7 + y + level_index) * 0.25)
+			var river_bank := false
+			for crossing in pathways.crossings:
+				if absf(p.x-crossing.x)<crossing.width+.7: river_bank=true
+			if river_bank: continue
 			if exploration.open(p,3.0) or beauty.open_floor(p,3.0): continue
-			if _randseed(x*71+y*83+level_index*129)<.42: continue
+			if _randseed(x*71+y*83+level_index*129)<.52: continue
+			# Spaced tree anchors leave breathing room between neighbouring canopies.
+			var crowded := false
+			for dx in range(-2,3):
+				for dy in range(-2,3):
+					for anchor in tree_cells.get(Vector2i(x+dx,y+dy),[]):
+						if p.distance_squared_to(anchor)<5.29: crowded=true
+			if crowded: continue
 			if _key_clearing(p) or (level_index==1 and p.distance_to(pathways.web_position())<4.8): continue
 			var d: float = pathways.distance(p)
 			if d < _clearing_radius(p.x) or (d>_clearing_radius(p.x)+2.0 and _randseed(x * 29 + y + level_index * 71) <= float(level.trees)) or p.distance_to(exit_pos) < 2.5: continue
 			if level_index == 4 and d>10.0 and (x % 3 == 1 or y % 3 == 1): continue
-			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 3.0)), "beauty":_randseed(x*39+y*87)>.60, "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
+			var t := {"pos":p, "variant":int(floor(_randseed(x + y * 14 + level_index * 21) * 4.0)), "beauty":_randseed(x*39+y*87)>.60, "size":(0.78 + _randseed(x * 39 + y) * 0.45) * (1.18 if level_index == 0 else 0.88 if level_index == 3 else 1.0)}
 			trees.append(t)
 			var chunk := Vector2i(floori(p.x/8.0),floori(p.y/8.0))
 			if not tree_render_chunks.has(chunk): tree_render_chunks[chunk] = []
@@ -397,8 +409,8 @@ func start_level(index: int) -> void:
 			var cell := Vector2i(int(floor(p.x)), int(floor(p.y)))
 			if not tree_cells.has(cell): tree_cells[cell] = []
 			tree_cells[cell].append(p)
-	for x in range(3, n - 3, 3):
-		var side := 1.0 if (int(x / 3) % 2) else -1.0
+	for x in range(3, n - 3, 6):
+		var side := 1.0 if (int(x / 6) % 2) else -1.0
 		lanterns.append({"pos":Vector2(x, _path_y(x) + side * 2.15), "variant":int(x / 3) % 2, "phase":_randseed(x * 3) * TAU})
 		decorations.append({"pos":Vector2(x + 0.8, _path_y(x + 0.8) - side * 2.8), "variant":level.decor, "size":0.75})
 	for i in range(int(level.bats)):
@@ -430,6 +442,7 @@ func start_level(index: int) -> void:
 	living.build(self)
 	beauty.finish_layout()
 	objects.build(self)
+	botany.build(self)
 	pathways.protect_objectives()
 	_set_state("play")
 	opening.begin()

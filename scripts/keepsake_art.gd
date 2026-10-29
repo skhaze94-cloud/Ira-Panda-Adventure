@@ -108,9 +108,12 @@ func scenery(g: Control, index: int, at: Vector2, height: float, alpha: float = 
 
 func tree(g: Control, data: Dictionary) -> void:
 	var at: Vector2 = g._project(data.pos)
-	var height: float = g.tile * 3.65 * float(data["size"])
+	var height: float = g.tile * (3.55 if int(data.variant)>=2 else 3.3) * float(data["size"])
 	var source := crop("settings", CHAPTERS[g.level_index], int(data.variant) % 2)
 	var width: float = height * source.size.x / source.size.y
+	if int(data.variant)>=2:
+		var texture: Texture2D=g.botany.textures[int(data.variant)-2]
+		width=height*texture.get_width()/texture.get_height()
 	var overlap := 0.0
 	for target in g.foliage_focus:
 		var delta: Vector2 = at - g._project(target)
@@ -119,7 +122,10 @@ func tree(g: Control, data: Dictionary) -> void:
 	var alpha := lerpf(1.0, .065, overlap)
 	var sway: float = 0 if g.quieter_motion else sin(g.elapsed * .65 + data.pos.x) * .009
 	g._shadow(at, 28 * float(data["size"]))
-	scenery(g, int(data.variant) % 2, at, height, alpha, sway)
+	if int(data.variant)>=2:
+		g.botany.draw_sprite(g,int(data.variant)-2,at,height,alpha,sway)
+	else:
+		scenery(g, int(data.variant) % 2, at, height, alpha, sway)
 
 func lamp(g: Control, data: Dictionary) -> void:
 	var at: Vector2 = g._project(data.pos)

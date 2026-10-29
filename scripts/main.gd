@@ -162,8 +162,8 @@ func _build_ui() -> void:
 	menu_col.add_child(menu_row)
 	_button(menu_row,"SETTINGS",_open_options,Vector2(110,42))
 	_button(menu_row,"ALBUM",_open_album,Vector2(110,42))
-	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.13.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
-	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.13.0",11,Color("#8b846d"))
+	_button(menu_row,"CREDITS",func(): _show_dialog("Made with moonlight", "Moonlit Keepsake · v0.14.0\n\nNew original character poses and woodland illustrations, native Godot animation, five little quests, hidden wonders, and the music from the 2.4 Storybook edition.\n\nMade for curious paws and very big hugs. Heading font: DejaVu Serif (Bitstream Vera licence).", "BACK", "", "menu"),Vector2(110,42))
+	_label(menu_col,"✦ A LITTLE LIGHT. A LOVELY ADVENTURE. ✦  v0.14.0",11,Color("#8b846d"))
 
 	story_layer = Control.new()
 	ui_canvas.add_child(story_layer)

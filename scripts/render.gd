@@ -34,6 +34,8 @@ func _draw() -> void:
 	LIVING_ART.ground(self)
 	beauty_art.paths(self)
 	var entities: Array = []
+	for plant in botany.plants:
+		if _visible(_project(plant.pos),tile*3): entities.append({"depth":plant.pos.x+plant.pos.y,"type":"botanical","data":plant})
 	for prop in objects.items:
 		if _visible(_project(prop.pos),tile*3): entities.append({"depth":prop.pos.x+prop.pos.y,"type":"whimsy","data":prop})
 	for crossing in pathways.crossings:
@@ -89,6 +91,7 @@ func _draw() -> void:
 	for entity in entities:
 		var d: Dictionary = entity.data
 		match entity.type:
+			"botanical": botany.draw_plant(self,d)
 			"whimsy": object_art.prop(self,d)
 			"bridge_front": object_art.rail(self,d,1)
 			"beauty_prop": beauty_art.scenery(self,d)

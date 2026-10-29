@@ -1,0 +1,502 @@
+[
+  {
+    "path": "assets/botanical/woods/rowan.png",
+    "name": "rowan",
+    "chapter": "woods",
+    "subject": "a slender young rowan tree with airy open golden leaves and tiny cream berries, visible fine trunk",
+    "palette": "warm moss green, honey gold, ivory flowers",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "5f168ae41f271f766d609cf029e076d69668086315254a3f941e57d1b2e25d16",
+    "sha256": "987b92eb6e81189f2e681b477e9b60db9e18d6a1bad16d06e5e9931ef52c2a6e",
+    "size": [
+      425,
+      640
+    ],
+    "source_crop": [
+      0,
+      17,
+      1008,
+      1536
+    ]
+  },
+  {
+    "path": "assets/botanical/woods/hazel.png",
+    "name": "hazel",
+    "chapter": "woods",
+    "subject": "a small twisting hazel tree with sparse rounded moss-green leaves and golden catkins",
+    "palette": "warm moss green, honey gold, ivory flowers",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "cbfaedae315e7635cd4a9823b80835868cd17f461a7d56fb1ea299042c0d35cd",
+    "sha256": "318c91bb13921c40c4badbb197213da4728aea4bb6b9db859684a166023378bb",
+    "size": [
+      512,
+      519
+    ],
+    "source_crop": [
+      0,
+      27,
+      1212,
+      1256
+    ]
+  },
+  {
+    "path": "assets/botanical/woods/fern.png",
+    "name": "fern",
+    "chapter": "woods",
+    "subject": "a low unfurling fern with delicate copper tips and three tiny daisies",
+    "palette": "warm moss green, honey gold, ivory flowers",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "9476e9255c84a55517fc11a7fff8b36c4b6f4f825c73152c08eb8c0cc8adedbe",
+    "sha256": "81b1bb51c28b4fed844e624ca05b6b1a98b03bc334d14621e0d76fe572f59d4a",
+    "size": [
+      319,
+      320
+    ],
+    "source_crop": [
+      0,
+      23,
+      1228,
+      1254
+    ]
+  },
+  {
+    "path": "assets/botanical/woods/strawberry.png",
+    "name": "strawberry",
+    "chapter": "woods",
+    "subject": "a compact wild strawberry plant with white blossoms and a few red berries",
+    "palette": "warm moss green, honey gold, ivory flowers",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "e3d223936fc6ad5128df30c7d187d54bec2c0577dcfc138388cc6e1b3c3a2a29",
+    "sha256": "3fb8403e3f474cc91bca50adfabf476fef8e2a61439557bfdeefca4de15654ee",
+    "size": [
+      314,
+      320
+    ],
+    "source_crop": [
+      0,
+      21,
+      1214,
+      1260
+    ]
+  },
+  {
+    "path": "assets/botanical/woods/birch_branch.png",
+    "name": "birch_branch",
+    "chapter": "woods",
+    "subject": "a mossy fallen birch branch with small shelf fungi, violets and a fern",
+    "palette": "warm moss green, honey gold, ivory flowers",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "020c13061912c681be8bbf201f2ea8192cea2eb99ce6b0180ac3ef793e34417f",
+    "sha256": "ff22be7023475d1bba3c83727bad634039e63e710ee4a8b8b11dbfb0bf259cc2",
+    "size": [
+      320,
+      216
+    ],
+    "source_crop": [
+      0,
+      0,
+      1516,
+      1024
+    ]
+  },
+  {
+    "path": "assets/botanical/glade/alder.png",
+    "name": "alder",
+    "chapter": "glade",
+    "subject": "an airy slender lilac-leaf alder tree with small glowing cream seedpods",
+    "palette": "muted lavender, sage, dusky plum, warm cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "8d5962517d3a57af550d2d7cf025811659a9eb31ea41fafda46a0d328fea7558",
+    "sha256": "b9431c8bb6fff514b1e57961e8293de8a740d37e05db80838fff9cd5af23a60a",
+    "size": [
+      424,
+      640
+    ],
+    "source_crop": [
+      27,
+      19,
+      1008,
+      1500
+    ]
+  },
+  {
+    "path": "assets/botanical/glade/mushroom_tree.png",
+    "name": "mushroom_tree",
+    "chapter": "glade",
+    "subject": "a little umbrella-shaped mushroom tree, slender branching stalk and three lavender caps",
+    "palette": "muted lavender, sage, dusky plum, warm cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "f38121bf0cd86039e1b775fa62a9e3d6f0433a88900be5cfde3629b24195267d",
+    "sha256": "7e81a6accfe136d083bf9ef0effb665be30a122c9aa255676f302f5843c905eb",
+    "size": [
+      427,
+      640
+    ],
+    "source_crop": [
+      0,
+      31,
+      1004,
+      1536
+    ]
+  },
+  {
+    "path": "assets/botanical/glade/bell_mushrooms.png",
+    "name": "bell_mushrooms",
+    "chapter": "glade",
+    "subject": "a cluster of three translucent lavender bell mushrooms with moss",
+    "palette": "muted lavender, sage, dusky plum, warm cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "6b16372b1958f70e927122077d0ef9b42bdedbbf82b4bdcc707a48601313ebb9",
+    "sha256": "361d89f9cb18bccaf56aaba437a67096bac755dd2810883f80c5ceda90d9cd80",
+    "size": [
+      318,
+      320
+    ],
+    "source_crop": [
+      31,
+      37,
+      1223,
+      1235
+    ]
+  },
+  {
+    "path": "assets/botanical/glade/silver_fern.png",
+    "name": "silver_fern",
+    "chapter": "glade",
+    "subject": "a curled silver fern surrounding a single violet crystal pebble",
+    "palette": "muted lavender, sage, dusky plum, warm cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "2d443a9c809f043f3c66cef26c4bcdf10550bf44f1ff2421e46512daab5b15e3",
+    "sha256": "157f67907de52aa8af2ee761cf615d759c9fcbf9ec8cb51ddc34962855653292",
+    "size": [
+      320,
+      319
+    ],
+    "source_crop": [
+      0,
+      21,
+      1238,
+      1254
+    ]
+  },
+  {
+    "path": "assets/botanical/glade/log_planter.png",
+    "name": "log_planter",
+    "chapter": "glade",
+    "subject": "a weathered hollow log planter with small plum fungi and clover",
+    "palette": "muted lavender, sage, dusky plum, warm cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "c01c94cba141803b76b66b38d4a78bf2bac154aebd97ed1003fd21fa4969b9b0",
+    "sha256": "04d974642a59adf3816de947a6ac1565c874401f9663462886cc848e8bc748d8",
+    "size": [
+      320,
+      218
+    ],
+    "source_crop": [
+      0,
+      0,
+      1468,
+      1002
+    ]
+  },
+  {
+    "path": "assets/botanical/brook/willow.png",
+    "name": "willow",
+    "chapter": "brook",
+    "subject": "a slender young willow tree with airy hanging pale green leaves and visible crooked trunk",
+    "palette": "seafoam, willow green, pale aqua, soft cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "bf0ed8b9ccd838aa14f721f7415e89ed2b051eb96c2a9b133f4572960118e1ea",
+    "sha256": "5e045029addc1a8986336d140274b3ffdcc354d4e1cf15ab1240793a7be8552c",
+    "size": [
+      512,
+      543
+    ],
+    "source_crop": [
+      0,
+      21,
+      1208,
+      1302
+    ]
+  },
+  {
+    "path": "assets/botanical/brook/river_birch.png",
+    "name": "river_birch",
+    "chapter": "brook",
+    "subject": "a compact river birch tree with sparse silver-green leaves and pale peeling bark",
+    "palette": "seafoam, willow green, pale aqua, soft cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "a1f697a42bccb98558ce9c3d8796250c9f4a928110d5d1442326c4b689a61aa9",
+    "sha256": "413dd2242a3f789bf8517bae51e6e40494c740ffc857642010ce4b2c5e5e5096",
+    "size": [
+      512,
+      610
+    ],
+    "source_crop": [
+      0,
+      13,
+      1129,
+      1358
+    ]
+  },
+  {
+    "path": "assets/botanical/brook/cattails.png",
+    "name": "cattails",
+    "chapter": "brook",
+    "subject": "a graceful tuft of cattails and reeds with two tiny blue flowers",
+    "palette": "seafoam, willow green, pale aqua, soft cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "a9cd9c6ef9c47e205c4638a5b2183e0d6b35db262cd290491e79e07f8aca7198",
+    "sha256": "2a7115b366dd52e1a820a435129da03da794877dc535338fe60722c614601b2b",
+    "size": [
+      300,
+      320
+    ],
+    "source_crop": [
+      0,
+      17,
+      1200,
+      1295
+    ]
+  },
+  {
+    "path": "assets/botanical/brook/water_mint.png",
+    "name": "water_mint",
+    "chapter": "brook",
+    "subject": "a low glossy water mint plant with tiny pale lilac blossoms and wet pebbles",
+    "palette": "seafoam, willow green, pale aqua, soft cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "c2a9b4a3d28e4e329b9692adb7d43e4dec23547a44177e4e1152334299f97561",
+    "sha256": "b28e9ef8dbd4505ca8429e64f569934a19169da6e1af71950aaf26ffbb15af6c",
+    "size": [
+      300,
+      320
+    ],
+    "source_crop": [
+      0,
+      17,
+      1198,
+      1295
+    ]
+  },
+  {
+    "path": "assets/botanical/brook/driftwood_lily.png",
+    "name": "driftwood_lily",
+    "chapter": "brook",
+    "subject": "a curved piece of driftwood with soft moss and one cream river lily",
+    "palette": "seafoam, willow green, pale aqua, soft cream",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "4913f848ed0dfe5afeb97ba5511552ab608bbc6aed336fe076113bed79d0bc5d",
+    "sha256": "a02dbd04d1a18b715d852c430e0b3c44e7ca80ef01b76e0bb8bd412048878068",
+    "size": [
+      320,
+      277
+    ],
+    "source_crop": [
+      0,
+      19,
+      1322,
+      1165
+    ]
+  },
+  {
+    "path": "assets/botanical/hollow/silver_tree.png",
+    "name": "silver_tree",
+    "chapter": "hollow",
+    "subject": "an airy slender silver-barked tree with sparse indigo leaves and tiny star-shaped cream blossoms",
+    "palette": "midnight teal, dusty indigo, soft silver, warm pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "6b44903d6536c04901648864a3e8f617ed70607b76c96b195e8d1a6965472ae8",
+    "sha256": "048bf0ad7b0cc1475b84ebd621191a50396e41a9d3fbe07f000cf46825db933a",
+    "size": [
+      422,
+      640
+    ],
+    "source_crop": [
+      21,
+      25,
+      1006,
+      1520
+    ]
+  },
+  {
+    "path": "assets/botanical/hollow/juniper.png",
+    "name": "juniper",
+    "chapter": "hollow",
+    "subject": "a small windswept blue juniper tree with open branches and silver berries",
+    "palette": "midnight teal, dusty indigo, soft silver, warm pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "70f763fdaa25146836488453c55e95ecca5d929550211fd28a21d187c7b2378e",
+    "sha256": "ff9c5da188df490d22dbffa388c3b062066bb0a35ed7918fb3434b9365546bf6",
+    "size": [
+      512,
+      543
+    ],
+    "source_crop": [
+      0,
+      0,
+      1211,
+      1285
+    ]
+  },
+  {
+    "path": "assets/botanical/hollow/moon_ferns.png",
+    "name": "moon_ferns",
+    "chapter": "hollow",
+    "subject": "a clump of silvery moon ferns with tiny golden seedheads",
+    "palette": "midnight teal, dusty indigo, soft silver, warm pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "7d93669bcc8145c364edfe455deab35f703a54201ce0e656b4fa4458310c3ade",
+    "sha256": "0ea211b66f58b57befd25487f90c4b5fec0ba6138d933bdc9092c4ad0c27cf6b",
+    "size": [
+      320,
+      292
+    ],
+    "source_crop": [
+      0,
+      9,
+      1302,
+      1199
+    ]
+  },
+  {
+    "path": "assets/botanical/hollow/starflowers.png",
+    "name": "starflowers",
+    "chapter": "hollow",
+    "subject": "a low starflower plant with five-pointed cream flowers and dark teal leaves",
+    "palette": "midnight teal, dusty indigo, soft silver, warm pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "f6011efe7f087c644551fbb0ad669b2c80acd53c4902e51240674da0b5ed4d01",
+    "sha256": "b6c5eaad50bd6136f0f953c6983e977fde3c7ef1e0160e0479c955027800a93c",
+    "size": [
+      320,
+      295
+    ],
+    "source_crop": [
+      0,
+      9,
+      1292,
+      1199
+    ]
+  },
+  {
+    "path": "assets/botanical/hollow/lichen_stone.png",
+    "name": "lichen_stone",
+    "chapter": "hollow",
+    "subject": "a low moon-weathered stone with lichen, tiny indigo mushrooms and a curled fern",
+    "palette": "midnight teal, dusty indigo, soft silver, warm pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "f8f63f326c5f28752e1d4e18d32c654164c48262cb8b40b0845f6c4686c139d0",
+    "sha256": "c5af000835c086f10c0479bb92f6d95194e47e878092d7d639dfb6d2f9314886",
+    "size": [
+      320,
+      283
+    ],
+    "source_crop": [
+      23,
+      9,
+      1334,
+      1167
+    ]
+  },
+  {
+    "path": "assets/botanical/garden/crabapple.png",
+    "name": "crabapple",
+    "chapter": "garden",
+    "subject": "an airy small flowering crabapple tree with sparse blush blossoms and visible elegant trunk",
+    "palette": "dusty rose, soft sage, warm cream, pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "5f514e3fc2b2cf110f062384db75c3fcf7be43fb5589b79cd7791c77603fced2",
+    "sha256": "a618af35ab06aba1944728a1eff4049a3b2c16cbd2af5d92fb775ed990e3a616",
+    "size": [
+      512,
+      543
+    ],
+    "source_crop": [
+      23,
+      19,
+      1215,
+      1284
+    ]
+  },
+  {
+    "path": "assets/botanical/garden/magnolia.png",
+    "name": "magnolia",
+    "chapter": "garden",
+    "subject": "a compact slender magnolia tree with open branching and a few large cream flowers",
+    "palette": "dusty rose, soft sage, warm cream, pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "7113fc80b6c04cf30ceeca0678ffc36e149b6273a5e447bce246a8d43b373f08",
+    "sha256": "08d3d00b1f6617e7a06fae755b65d6daa6e46a45015296fb90380b04606ad122",
+    "size": [
+      512,
+      561
+    ],
+    "source_crop": [
+      0,
+      19,
+      1181,
+      1312
+    ]
+  },
+  {
+    "path": "assets/botanical/garden/peonies.png",
+    "name": "peonies",
+    "chapter": "garden",
+    "subject": "a rounded peony plant with three soft dusty rose blossoms and sage leaves",
+    "palette": "dusty rose, soft sage, warm cream, pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "a70c9dc2220a9c10c00b45f337dfe9a9c6d5cf61d8c310fd834f2fe1fb513c18",
+    "sha256": "9eddc8f9e90bec641d2f59133481cb107e9ae2ccb959f3c85cb3ff96fbbd595b",
+    "size": [
+      297,
+      320
+    ],
+    "source_crop": [
+      0,
+      21,
+      1189,
+      1303
+    ]
+  },
+  {
+    "path": "assets/botanical/garden/moonflower.png",
+    "name": "moonflower",
+    "chapter": "garden",
+    "subject": "a low moonflower vine growing over a small curved mossy stone",
+    "palette": "dusty rose, soft sage, warm cream, pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "eef83a2af880281314c678b230a3ac8471da930700cf59c2ce5e1ebc88060668",
+    "sha256": "239b56be27b3af17d321611f2f5b59d29acdb7a3491c72e48c463643ed91cf5c",
+    "size": [
+      320,
+      292
+    ],
+    "source_crop": [
+      2,
+      3,
+      1296,
+      1182
+    ]
+  },
+  {
+    "path": "assets/botanical/garden/sweetpea_can.png",
+    "name": "sweetpea_can",
+    "chapter": "garden",
+    "subject": "an old terracotta watering can filled with trailing pink sweet peas and cream daisies",
+    "palette": "dusty rose, soft sage, warm cream, pale gold",
+    "generator": "built-in image_gen; individual transparent sprites",
+    "source_sha256": "9ee88fe78eda72702832c8dda309452f25d3361218cb7de6dbfae034eea9d375",
+    "sha256": "8be62396a2cb58dc01286b4301412d6b47cb6b443ba978b4aa94103740a94be5",
+    "size": [
+      320,
+      304
+    ],
+    "source_crop": [
+      41,
+      23,
+      1280,
+      1199
+    ]
+  }
+]

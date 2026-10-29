@@ -1,3 +1,7 @@
+# Ara & Ira — v0.14.0: A Little Room to Bloom
+
+Twenty-five new painted botanical textures: five exclusive to each chapter, with more space between trees, plants and repeated scenery. See [BOTANICAL-V0.14.md](BOTANICAL-V0.14.md) for the asset list, layout rules and validation.
+
 # Ara & Ira · v0.13.0 — Little Paws
 
 Open `project.godot` in Godot 4.3+ and press F5. See [movement release notes](MOVEMENT-V0.13.md).

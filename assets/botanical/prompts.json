@@ -1,0 +1,131 @@
+{
+  "generator": "built-in image_gen",
+  "transparent_background": true,
+  "prompts": [
+    {
+      "chapter": "woods",
+      "index": 0,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a slender young rowan tree with airy open golden leaves and tiny cream berries, visible fine trunk. Palette: warm moss green, honey gold, ivory flowers. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "woods",
+      "index": 1,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a small twisting hazel tree with sparse rounded moss-green leaves and golden catkins. Palette: warm moss green, honey gold, ivory flowers. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "woods",
+      "index": 2,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a low unfurling fern with delicate copper tips and three tiny daisies. Palette: warm moss green, honey gold, ivory flowers. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "woods",
+      "index": 3,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a compact wild strawberry plant with white blossoms and a few red berries. Palette: warm moss green, honey gold, ivory flowers. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "woods",
+      "index": 4,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a mossy fallen birch branch with small shelf fungi, violets and a fern. Palette: warm moss green, honey gold, ivory flowers. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "glade",
+      "index": 0,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: an airy slender lilac-leaf alder tree with small glowing cream seedpods. Palette: muted lavender, sage, dusky plum, warm cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "glade",
+      "index": 1,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a little umbrella-shaped mushroom tree, slender branching stalk and three lavender caps. Palette: muted lavender, sage, dusky plum, warm cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "glade",
+      "index": 2,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a cluster of three translucent lavender bell mushrooms with moss. Palette: muted lavender, sage, dusky plum, warm cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "glade",
+      "index": 3,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a curled silver fern surrounding a single violet crystal pebble. Palette: muted lavender, sage, dusky plum, warm cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "glade",
+      "index": 4,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a weathered hollow log planter with small plum fungi and clover. Palette: muted lavender, sage, dusky plum, warm cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "brook",
+      "index": 0,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a slender young willow tree with airy hanging pale green leaves and visible crooked trunk. Palette: seafoam, willow green, pale aqua, soft cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "brook",
+      "index": 1,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a compact river birch tree with sparse silver-green leaves and pale peeling bark. Palette: seafoam, willow green, pale aqua, soft cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "brook",
+      "index": 2,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a graceful tuft of cattails and reeds with two tiny blue flowers. Palette: seafoam, willow green, pale aqua, soft cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "brook",
+      "index": 3,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a low glossy water mint plant with tiny pale lilac blossoms and wet pebbles. Palette: seafoam, willow green, pale aqua, soft cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "brook",
+      "index": 4,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a curved piece of driftwood with soft moss and one cream river lily. Palette: seafoam, willow green, pale aqua, soft cream. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "hollow",
+      "index": 0,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: an airy slender silver-barked tree with sparse indigo leaves and tiny star-shaped cream blossoms. Palette: midnight teal, dusty indigo, soft silver, warm pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "hollow",
+      "index": 1,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a small windswept blue juniper tree with open branches and silver berries. Palette: midnight teal, dusty indigo, soft silver, warm pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "hollow",
+      "index": 2,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a clump of silvery moon ferns with tiny golden seedheads. Palette: midnight teal, dusty indigo, soft silver, warm pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "hollow",
+      "index": 3,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a low starflower plant with five-pointed cream flowers and dark teal leaves. Palette: midnight teal, dusty indigo, soft silver, warm pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "hollow",
+      "index": 4,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a low moon-weathered stone with lichen, tiny indigo mushrooms and a curled fern. Palette: midnight teal, dusty indigo, soft silver, warm pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "garden",
+      "index": 0,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: an airy small flowering crabapple tree with sparse blush blossoms and visible elegant trunk. Palette: dusty rose, soft sage, warm cream, pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "garden",
+      "index": 1,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a compact slender magnolia tree with open branching and a few large cream flowers. Palette: dusty rose, soft sage, warm cream, pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Tree portrait composition, foliage airy with gaps between branches; avoid dense round canopy."
+    },
+    {
+      "chapter": "garden",
+      "index": 2,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a rounded peony plant with three soft dusty rose blossoms and sage leaves. Palette: dusty rose, soft sage, warm cream, pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "garden",
+      "index": 3,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: a low moonflower vine growing over a small curved mossy stone. Palette: dusty rose, soft sage, warm cream, pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    },
+    {
+      "chapter": "garden",
+      "index": 4,
+      "prompt": "Use case: stylized-concept. Asset type: ONE isolated botanical game sprite for Ara & Ira, a lovingly painted cosy isometric woodland RPG. Subject: an old terracotta watering can filled with trailing pink sweet peas and cream daisies. Palette: dusty rose, soft sage, warm cream, pale gold. Hand-painted storybook gouache and soft watercolor, delicate organic texture, graceful readable silhouette, gentle warm moonlight from upper left. Three-quarter view, visible foot/base, entire subject centered with 12% transparent margin, no ground plane, no backdrop, true transparent alpha background, no text, no frame, no other separate assets, no hard outline, no sparkles outside subject. Small scenery prop, detailed but readable at 60–95 pixels high, compact base."
+    }
+  ]
+}
