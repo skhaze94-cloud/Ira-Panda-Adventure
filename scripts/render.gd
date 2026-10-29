@@ -23,6 +23,12 @@ func _draw() -> void:
 	_refresh_visible_trees()
 	_draw_level_surface()
 	_draw_lantern_clues_ground()
+	var selected: Dictionary=_interaction_target()
+	if not selected.is_empty():
+		var selected_foot: Vector2=_project(selected.pos)
+		draw_set_transform(selected_foot,0,Vector2(1,.48))
+		draw_arc(Vector2.ZERO,23,0,TAU,40,Color("#f5df9d"),3,true)
+		draw_set_transform(Vector2.ZERO)
 	_moon_haze()
 	ADVENTURE_ART.signs(self)
 	LIVING_ART.ground(self)
@@ -123,12 +129,20 @@ func _draw() -> void:
 		for i in range(65):
 			wave.append(_project(player+Vector2(radius,0).rotated(float(i)*TAU/64.0)))
 		draw_polyline(wave,Color(1.0,0.88,0.60,(0.16 if quieter_motion else 0.50)*(1.0-expansion)),2.0,true)
-	if has_destination:
+	if has_destination or destination_feedback>0:
 		var at := _project(destination)
-		draw_arc(at,12,0,TAU,24,Color(1,0.89,0.65,0.7),2)
+		var tint := Color("#efb4ad") if destination_status=="blocked" else Color("#f5df9d")
+		var radius: float=13 if quieter_motion else 13+sin(elapsed*4)*2
+		draw_arc(at,radius,0,TAU,32,tint,2,true)
+		if destination_status=="blocked":
+			draw_line(at-Vector2(5,5),at+Vector2(5,5),tint,2,true)
+			draw_line(at+Vector2(-5,5),at+Vector2(5,-5),tint,2,true)
+		elif destination_status=="arrived":
+			draw_polyline(PackedVector2Array([at+Vector2(-5,0),at+Vector2(-1,4),at+Vector2(6,-4)]),tint,2,true)
+		else: _disc(at,3,tint)
 		for i in range(route_index, route.size()):
 			var waypoint := _project(route[i])
-			if _visible(waypoint,10): _disc(waypoint,2.5,Color(1,0.89,0.65,0.35))
+			if _visible(waypoint,10): _disc(waypoint,2.5,Color(tint,.35))
 	if level_index==0 and not opening.found:
 		var ribbon_at: Vector2=_project(opening.ribbon)
 		draw_polyline(PackedVector2Array([ribbon_at+Vector2(-14,-5),ribbon_at+Vector2(0,2),ribbon_at+Vector2(12,-7),ribbon_at+Vector2(5,9)]),Color("#efb2c4"),5,true)
@@ -406,28 +420,13 @@ func _landmark_style() -> StyleBoxFlat:
 	return style
 
 func _draw_interaction_hint() -> void:
-	if state!="play" or (conversation!=null and conversation.notice_left>0): return
-	if state != "play": return
-	var target := Vector2.ZERO
-	var text := ""
-	var npc := _nearest_npc()
-	var chest: int=beauty.nearest_chest()
-	if chest>=0:
-		target=_project(beauty.chests[chest].pos)-Vector2(0,90)
-		text="E · Open treasure"
-	elif objects.nearest()>=0:
-		var item: Dictionary=objects.items[objects.nearest()]
-		target=_project(item.pos)-Vector2(0,105)
-		text="E · Say boo" if item.kind=="pumpkin" else "E · Look closer"
-	elif npc >= 0:
-		target = _project(npcs[npc].pos)-Vector2(0,tile*2.2)
-		text = "E · Talk to " + str(npcs[npc].name)
-	elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
-		target = _project(_station())-Vector2(0,115)
-		text = "E · Quest station"
-	elif level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS:
-		target = _project(_exit())-Vector2(0,175)
-		text = "E · Open door" if key_collected else "Door locked"
+	if state!="play": return
+	var focus: Dictionary=_interaction_target()
+	if focus.is_empty(): return
+	var foot: Vector2=_project(focus.pos)
+	if conversation!=null and conversation.notice_left>0:return
+	var target: Vector2=foot-Vector2(0,tile*1.9)
+	var text: String=("Tap "+str(focus.action)+" · " if joystick.visible else "E · ")+str(focus.label)
 	if text.is_empty(): return
 	var font := ThemeDB.fallback_font
 	var width := font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x

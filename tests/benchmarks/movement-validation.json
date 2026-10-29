@@ -1,0 +1,93 @@
+{
+  "version": "0.13.0",
+  "engine": "4.5.1",
+  "tests": [
+    {
+      "test": "movement_v013",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "opening",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "landscapes_controls",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "quests_captions",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "hidden_wonders",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "object_upgrade",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "personality_v06",
+      "exit": 0,
+      "errors": []
+    },
+    {
+      "test": "storybook_ui",
+      "exit": 0,
+      "errors": []
+    }
+  ],
+  "native_capture_viewports": [
+    [
+      1280,
+      720
+    ],
+    [
+      740,
+      360
+    ]
+  ],
+  "navigation_profile": [
+    {
+      "chapter": 1,
+      "max_slice_ms": 5.168,
+      "navigation_work_ms": 1230.036,
+      "request_ms": 0.008
+    },
+    {
+      "chapter": 2,
+      "max_slice_ms": 4.508,
+      "navigation_work_ms": 1090.854,
+      "request_ms": 0.008
+    },
+    {
+      "chapter": 3,
+      "max_slice_ms": 8.624,
+      "navigation_work_ms": 1479.229,
+      "request_ms": 0.027
+    },
+    {
+      "chapter": 4,
+      "max_slice_ms": 5.218,
+      "navigation_work_ms": 1137.856,
+      "request_ms": 0.008
+    },
+    {
+      "chapter": 5,
+      "max_slice_ms": 6.924,
+      "navigation_work_ms": 1292.392,
+      "request_ms": 0.008
+    }
+  ],
+  "notes": [
+    "Initial request measurements concern queueing a cold route, not completing navigation construction.",
+    "Cold navigation construction takes about 1.1\u20131.5 seconds of work spread over updates in this environment; the destination marker is shown while pending.",
+    "No physical-device movement-feel or GPU frame-rate claim."
+  ]
+}

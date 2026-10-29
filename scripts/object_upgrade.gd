@@ -11,7 +11,7 @@ func build(g: Control) -> void:
 		for data in [{"pos":game.living.safe_spot(points[0]+Vector2(-.5,.9)),"kind":"sign"},{"pos":game.living.safe_spot(points[1]+Vector2(.8,-.5)),"kind":"pumpkin"},{"pos":game.living.safe_spot(points[2]+Vector2(-.9,.7)),"kind":"prop"}]:
 			data.merge({"index":items.size(),"found":false,"response":0.0,"branch":branch.index});items.append(data)
 func nearest() -> int:
-	var best:=-1;var distance:=1.8
+	var best:=-1;var distance: float=game.INTERACT_RADIUS
 	for item in items:
 		var d: float=game.player.distance_to(item.pos)
 		if d<distance:best=item.index;distance=d

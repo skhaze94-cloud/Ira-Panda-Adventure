@@ -235,6 +235,7 @@ func _process(dt: float) -> void:
 	elif game.state=="play" and notice_left>0:
 		notice_left = maxf(0.0,notice_left-dt)
 		if notice_left<=0: show_notice()
+	notice_panel.position.y=maxf(12,size.y-notice_panel.size.y-12)
 	notice_panel.visible = not active and game.state=="play" and notice_left>0
 
 func _unhandled_key_input(event: InputEvent) -> void:

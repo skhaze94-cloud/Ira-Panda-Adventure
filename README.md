@@ -1,3 +1,7 @@
+# Ara & Ira · v0.13.0 — Little Paws
+
+Open `project.godot` in Godot 4.3+ and press F5. See [movement release notes](MOVEMENT-V0.13.md).
+
 # Ara & Ira · v0.12.0 — The First Five Minutes
 
 Open `project.godot` in Godot 4.3+ and press F5. See [opening release notes](OPENING-V0.12.md).

@@ -5,7 +5,7 @@ extends Control
 const SPEED := 3.15
 const ACCELERATION := 20.0
 const DECELERATION := 28.0
-const INTERACT_RADIUS := 2.4
+const INTERACT_RADIUS := 2.7
 const GLOW_TIME := 1.05
 const GLOW_RECHARGE := 1.15
 const BASE_LEVELS = [
@@ -89,6 +89,8 @@ var story_chapter := -1
 var story_page := 0
 var player := Vector2(2, 3)
 var destination := Vector2.ZERO
+var destination_status := ""
+var destination_feedback := 0.0
 var has_destination := false
 var walk_dir := Vector2.ZERO
 var velocity := Vector2.ZERO
@@ -457,10 +459,11 @@ func _walk(d: Vector2) -> void:
 	if not _blocked(player+d):
 		player += d
 		return
-	var nx := player + Vector2(d.x, 0)
-	if not _blocked(nx): player.x = nx.x
-	var ny := player + Vector2(0, d.y)
-	if not _blocked(ny): player.y = ny.y
+	# Slide on the dominant component first, without adding sideways motion.
+	var axes: Array[Vector2]=[Vector2(d.x,0),Vector2(0,d.y)]
+	if absf(d.y)>absf(d.x): axes.reverse()
+	for axis in axes:
+		if not _blocked(player+axis): player+=axis
 
 func _process(dt: float) -> void:
 	if state == "play" or state == "menu" or state == "comic" or state=="win": elapsed += dt
@@ -471,6 +474,7 @@ func _process(dt: float) -> void:
 		if Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_DOWN): axis.y += 1
 		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): axis.x -= 1
 		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): axis.x += 1
+		destination_feedback=maxf(0,destination_feedback-dt)
 		_advance_movement(axis, dt)
 		opening.update()
 		light_trails.update(dt)
@@ -494,18 +498,8 @@ func _process(dt: float) -> void:
 		celebration = maxf(0.0,celebration-dt)
 		_update_collectibles()
 		_update_bats(dt)
-		if level_index == 0 and player.distance_to(_exit()) < INTERACT_RADIUS and key_collected:
-			action_button.text = "OPEN DOOR"
-		elif beauty.nearest_chest()>=0:
-			action_button.text="OPEN CHEST"
-		elif objects.nearest()>=0:
-			action_button.text="SAY BOO" if objects.items[objects.nearest()].kind=="pumpkin" else "LOOK"
-		elif _nearest_npc() >= 0:
-			action_button.text = "TALK"
-		elif level_index > 0 and player.distance_to(_station()) < INTERACT_RADIUS:
-			action_button.text = "FINISH"
-		else:
-			action_button.text = "INTERACT"
+		var focus: Dictionary=_interaction_target()
+		action_button.text=focus.get("action","INTERACT")
 		if level_index > 0 and quest_done and player.distance_to(_exit()) < 1.15: _complete_chapter()
 		if toast_seconds > 0:
 			toast_seconds -= dt
@@ -624,9 +618,11 @@ func glow() -> void:
 
 func interact() -> void:
 	if state != "play": return
-	if beauty.interact(): return
-	if objects.interact(): return
-	var ni := _nearest_npc()
+	var focus: Dictionary=_interaction_target()
+	if focus.is_empty(): return
+	if focus.kind=="chest": beauty.interact();return
+	if focus.kind=="object": objects.interact();return
+	var ni: int=int(focus.index) if focus.kind=="npc" else -1
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]
 		_talk(npc)
@@ -639,11 +635,11 @@ func interact() -> void:
 		journal.checkpoint()
 		return
 	if level_index == 0:
-		if player.distance_to(_exit()) < INTERACT_RADIUS:
+		if focus.kind=="door":
 			if key_collected: _complete_chapter()
 			else: show_toast("The woodland door is locked. Ask Moss about the missing key.", 4)
 		return
-	if player.distance_to(_station()) < INTERACT_RADIUS:
+	if focus.kind=="station":
 		if quest_done:
 			show_toast("The path is open. Find the next lantern gate.", 3)
 		elif quest_count < 3:
@@ -734,9 +730,9 @@ func _gui_input(event: InputEvent) -> void:
 	var mouse := event as InputEventMouseButton
 	var touch := event as InputEventScreenTouch
 	if mouse != null and mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT:
-		_request_destination(_unproject(mouse.position))
+		_tap_destination(_unproject(mouse.position))
 	if touch != null and touch.pressed:
-		_request_destination(_unproject(touch.position))
+		_tap_destination(_unproject(touch.position))
 
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_WM_CLOSE_REQUEST and state=="play": journal.checkpoint()
@@ -745,6 +741,7 @@ func _notification(what: int) -> void:
 		if state == "play": _pause()
 
 func _reset_controls() -> void:
+	_cancel_navigation()
 	velocity = Vector2.ZERO
 	walk_dir = Vector2.ZERO
 	mobile_axis = Vector2.ZERO
@@ -759,6 +756,7 @@ func _reset_controls() -> void:
 
 func _hold_direction(id: int, direction: Vector2, pressed: bool) -> void:
 	if pressed and state == "play":
+		if direction.length_squared()>.001: _cancel_navigation()
 		held_directions[id] = direction
 	else:
 		held_directions.erase(id)
@@ -770,6 +768,7 @@ func _screen_to_world(axis: Vector2) -> Vector2:
 	return Vector2(axis.x + axis.y / 0.49, axis.y / 0.49 - axis.x).normalized()
 
 func _advance_movement(axis: Vector2, dt: float) -> void:
+	if axis.length_squared()>.001: _cancel_navigation()
 	personality.update(dt)
 	_navigation_tick(2000)
 	var remaining := minf(dt, 0.25)
@@ -788,23 +787,34 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	if axis.length_squared() > 0.001:
 		has_destination = false
 		route.clear()
-		target_velocity = _screen_to_world(axis) * SPEED * pathways.pace(player) * (0.8 if personality.surface()=="wood" else 0.72 if personality.surface()=="stone" else 1.0)
+		target_velocity = _screen_to_world(axis) * minf(axis.length(),1.0) * SPEED * pathways.pace(player) * (0.8 if personality.surface()=="wood" else 0.72 if personality.surface()=="stone" else 1.0)
 	elif has_destination:
 		while route_index < route.size() and player.distance_to(route[route_index]) < 0.015:
 			route_index += 1
 		if route_index >= route.size():
 			has_destination = false
+			destination_status="arrived";destination_feedback=.8
 			velocity = Vector2.ZERO
 		else:
 			var delta := route[route_index] - player
 			var speed := minf(SPEED * pathways.pace(player) * (0.8 if personality.surface()=="wood" else 0.72 if personality.surface()=="stone" else 1.0), delta.length() / dt)
 			if route_index == route.size()-1: speed = minf(speed, sqrt(2.0*DECELERATION*delta.length()))
 			target_velocity = delta.normalized() * speed
-	if has_destination: velocity = target_velocity
-	velocity = velocity.move_toward(target_velocity, (ACCELERATION if target_velocity != Vector2.ZERO else DECELERATION)*dt)
+	if has_destination and target_velocity.length_squared()>.0001:
+		# Follow the validated segment exactly; carry speed, not corner-cutting momentum.
+		var pace: float=move_toward(velocity.length(),target_velocity.length(),ACCELERATION*dt)
+		velocity=target_velocity.normalized()*pace
+	else:
+		velocity=velocity.move_toward(target_velocity,(ACCELERATION if target_velocity!=Vector2.ZERO else DECELERATION)*dt)
 	var before := player
-	_walk(velocity * dt)
+	var displacement := velocity*dt
+	if has_destination and route_index<route.size():
+		var gap: Vector2=route[route_index]-player
+		if displacement.dot(gap)>0 and displacement.length()>gap.length(): displacement=gap
+	_walk(displacement)
 	var actual := (player-before)/dt
+	if absf(actual.x)<.0001: velocity.x=0
+	if absf(actual.y)<.0001: velocity.y=0
 	walk_dir = actual / SPEED
 	if absf(actual.x-actual.y) > 0.15: facing = signf(actual.x-actual.y)
 	body_lean = lerpf(body_lean, clampf((actual.x-actual.y)/SPEED, -1.0, 1.0)*0.045, 1.0-exp(-dt*12.0))
@@ -819,7 +829,9 @@ func _movement_step(axis: Vector2, dt: float) -> void:
 	if has_destination and actual.length() < 0.01:
 		stuck_time += dt
 		if stuck_time > 0.5:
+			var failed_destination := destination
 			_reset_controls()
+			destination=failed_destination;destination_status="blocked";destination_feedback=1.4
 			show_toast("That spot is tucked behind an obstacle. Try the lantern path.", 2.5)
 	else: stuck_time = 0.0
 
@@ -888,12 +900,15 @@ func _nearest_walkable(point: Vector2) -> Vector2i:
 	var center := Vector2i((point*4.0).round())
 	var best := Vector2i(-1,-1)
 	var distance := INF
+	var point_open: bool=not _blocked(point)
+	if navigation.is_in_boundsv(center) and not navigation.is_point_solid(center) and (not point_open or _segment_open(point,Vector2(center)*.25)): return center
 	for x in range(-4,5):
 		for y in range(-4,5):
 			var id := center + Vector2i(x,y)
 			if not navigation.is_in_boundsv(id) or navigation.is_point_solid(id): continue
-			if not _blocked(point) and not _segment_open(point,Vector2(id)*0.25): continue
 			var d := point.distance_squared_to(Vector2(id)*0.25)
+			if d>=distance: continue
+			if point_open and not _segment_open(point,Vector2(id)*0.25): continue
 			if d < distance:
 				distance = d
 				best = id
@@ -901,25 +916,23 @@ func _nearest_walkable(point: Vector2) -> Vector2i:
 
 func _request_destination(point: Vector2) -> void:
 	if state != "play": return
-	var npc := _nearest_npc()
-	if npc >= 0 and point.distance_to(npcs[npc].pos) < 1.3:
-		interact()
-		return
+	destination=point;destination_status="moving";destination_feedback=1.4
 	route.clear()
 	route_index = 0
 	has_destination = false
 	pending_destination=false
 	stuck_time = 0.0
-	if _segment_open(player, point):
+	if player.distance_squared_to(point)<=16.0 and _segment_open(player, point):
 		route.append(point)
 	else:
 		if navigation==null: _begin_navigation()
 		if not navigation_ready:
-			destination=point;pending_destination=true;has_destination=true
+			destination=point;pending_destination=true;has_destination=true;destination_status="waiting"
 			return
 		var from := _nearest_walkable(player)
 		var to := _nearest_walkable(point)
 		if from.x < 0 or to.x < 0:
+			destination_status="blocked";destination_feedback=1.4
 			show_toast("Choose a spot on the woodland floor.", 2.5)
 			return
 		var raw := navigation.get_point_path(from,to)
@@ -930,12 +943,13 @@ func _request_destination(point: Vector2) -> void:
 				route.clear()
 				break
 			var far := i
-			while far+1 < raw.size() and _segment_open(anchor,raw[far+1]): far += 1
+			while far+1 < raw.size() and far-i<8 and _segment_open(anchor,raw[far+1]): far += 1
 			route.append(raw[far])
 			anchor = raw[far]
 			i = far+1
 		if not route.is_empty() and _segment_open(route[route.size()-1],point): route.append(point)
 	if route.is_empty():
+		destination_status="blocked";destination_feedback=1.4
 		show_toast("That route is closed. Try a nearby lantern.", 2.5)
 		return
 	destination = route[route.size()-1]
@@ -994,3 +1008,39 @@ func _exit_tree() -> void:
 			player.stop()
 			player.stream=null
 	if is_instance_valid(soundscape): soundscape.silence()
+
+func _cancel_navigation() -> void:
+	has_destination=false;pending_destination=false
+	route.clear();route_index=0;stuck_time=0
+	destination_status="";destination_feedback=0
+
+func _interaction_target() -> Dictionary:
+	var candidates: Array=[]
+	for i in range(npcs.size()):
+		candidates.append({"kind":"npc","index":i,"pos":npcs[i].pos,"action":"TALK","label":"Talk to "+str(npcs[i].name)})
+	for chest in beauty.chests:
+		if not chest.open: candidates.append({"kind":"chest","index":chest.index,"pos":chest.pos,"action":"OPEN CHEST","label":"Open treasure"})
+	for item in objects.items:
+		candidates.append({"kind":"object","index":item.index,"pos":item.pos,"action":"SAY BOO" if item.kind=="pumpkin" else "LOOK","label":"Say boo" if item.kind=="pumpkin" else "Look closer"})
+	if level_index==0: candidates.append({"kind":"door","index":-1,"pos":_exit(),"action":"OPEN DOOR","label":"Open door" if key_collected else "Door locked"})
+	else: candidates.append({"kind":"station","index":-1,"pos":_station(),"action":"FINISH","label":"Quest station"})
+	var best: Dictionary={};var distance: float=INTERACT_RADIUS
+	for candidate in candidates:
+		var d: float=player.distance_to(candidate.pos)
+		if d>=distance: continue
+		# Check the approach to a target; its final footprint may be solid.
+		if not _interaction_visible(candidate.pos): continue
+		distance=d;best=candidate
+	return best
+
+func _interaction_visible(point: Vector2) -> bool:
+	var steps: int=maxi(1,int(ceil(player.distance_to(point)/.15)))
+	for i in range(1,steps+1):
+		if _blocked(player.lerp(point,.8*float(i)/float(steps))): return false
+	return true
+
+func _tap_destination(point: Vector2) -> void:
+	var focus: Dictionary=_interaction_target()
+	if not focus.is_empty() and point.distance_to(focus.pos)<.4:
+		interact()
+	else: _request_destination(point)
