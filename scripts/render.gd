@@ -129,6 +129,9 @@ func _draw() -> void:
 		for i in range(route_index, route.size()):
 			var waypoint := _project(route[i])
 			if _visible(waypoint,10): _disc(waypoint,2.5,Color(1,0.89,0.65,0.35))
+	if level_index==0 and not opening.found:
+		var ribbon_at: Vector2=_project(opening.ribbon)
+		draw_polyline(PackedVector2Array([ribbon_at+Vector2(-14,-5),ribbon_at+Vector2(0,2),ribbon_at+Vector2(12,-7),ribbon_at+Vector2(5,9)]),Color("#efb2c4"),5,true)
 	_draw_interaction_hint()
 	_draw_shadow_inscriptions()
 	_draw_lantern_plant_names()

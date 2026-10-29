@@ -1,0 +1,17 @@
+[
+  {
+    "test": "opening",
+    "exit": 0,
+    "output": "Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org\n\nOPENING FLOW PASSED\n"
+  },
+  {
+    "test": "storybook_ui",
+    "exit": 0,
+    "output": "Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org\n\nSTORYBOOK UI REGRESSIONS PASSED\n"
+  },
+  {
+    "test": "quests_captions",
+    "exit": 0,
+    "output": "Godot Engine v4.5.1.stable.official.f62fdbde1 - https://godotengine.org\n\nQUEST / CAPTION CHECKED CHAPTER 1\nQUEST / CAPTION CHECKED CHAPTER 2\nQUEST / CAPTION CHECKED CHAPTER 3\nQUEST / CAPTION CHECKED CHAPTER 4\nQUEST / CAPTION CHECKED CHAPTER 5\nQUEST / CAPTION FAILURES: 0\n"
+  }
+]

@@ -54,7 +54,7 @@ func checkpoint(next_chapter: int=-1) -> void:
 		data["checkpoint"]={"chapter":game.level_index,"pos":[game.player.x,game.player.y],"heart":game.heart,"started":game.quest_started,"done":game.quest_done,"count":game.quest_count,"key":game.key_collected,"revealed":game.key_revealed,"rune_step":game.rune_step,"marks":marks,"npcs":npc_flags,"runes":rune_flags,"plants":plants,"stones":stones,"trails":game.light_trails.trail_found.values(),"web":game.pathways.web_clear,"explored":game.exploration.found.duplicate(),"living":game.living.saved(),"beauty":game.beauty.saved(),"objects":game.objects.saved()}
 	settings()
 func reset_checkpoint() -> void:
-	data.erase("checkpoint");settings()
+	data.erase("checkpoint");data.erase("opening");settings()
 func resume() -> void:
 	if not has_checkpoint(): return
 	var saved: Dictionary = data.checkpoint.duplicate(true)

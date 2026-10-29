@@ -80,6 +80,7 @@ var foot_dust := 0.0
 var tex: Dictionary = {}
 var chapter_stories: Array = []
 var level_index := 0
+var opening=preload("res://scripts/opening.gd").new()
 var music_volume := 0.35
 var effects_volume := 0.75
 var large_text := false
@@ -198,6 +199,7 @@ func _resume() -> void:
 
 func _ready() -> void:
 	journal.attach(self)
+	opening.game=self
 	personality.game=self
 	living.game=self
 	beauty.game=self
@@ -428,6 +430,7 @@ func start_level(index: int) -> void:
 	objects.build(self)
 	pathways.protect_objectives()
 	_set_state("play")
+	opening.begin()
 	_update_hud()
 	show_toast("Chapter %d: %s" % [level_index + 1, level.title], 3.0)
 	_begin_navigation()
@@ -469,6 +472,7 @@ func _process(dt: float) -> void:
 		if Input.is_key_pressed(KEY_A) or Input.is_key_pressed(KEY_LEFT): axis.x -= 1
 		if Input.is_key_pressed(KEY_D) or Input.is_key_pressed(KEY_RIGHT): axis.x += 1
 		_advance_movement(axis, dt)
+		opening.update()
 		light_trails.update(dt)
 		cooldown = maxf(0, cooldown - dt)
 		pulse = maxf(0, pulse - dt)
@@ -568,6 +572,7 @@ func glow() -> void:
 	glow_buffer = 0.0
 	cooldown = GLOW_RECHARGE
 	pulse = GLOW_TIME
+	opening.glow()
 	_burst(player)
 	soundscape.play("glow")
 	light_trails.shine()
@@ -625,6 +630,7 @@ func interact() -> void:
 	if ni >= 0:
 		var npc: Dictionary = npcs[ni]
 		_talk(npc)
+		if npc.id=="pip": opening.talk()
 		npc.met = true
 		npc.reaction = 1.6
 		if npc.id == "moss" and level_index == 0: quest_started = true

@@ -17,7 +17,7 @@ static func quest_talk(game: Control, id: String) -> Array:
 		if game.key_collected:
 			return [beat(id,"A brass key! Ira's trail is opening up."),beat("ara","One woodland door, coming right up!","happy")]
 		match id:
-			"pip": return [beat("pip","A missing pillow sister? That is a very important owl emergency!","happy"),beat("ara","She's called Ira. Small, squishy, surprisingly sneaky."),beat("pip","Follow the lanterns to Bramble and Moss. Move with the arrows or tap the path; Space makes your lantern shine.")]
+			"pip": return [beat("pip","Ira’s pink ribbon! She bounced past here, giggling. That is a very important owl emergency!","happy"),beat("ara","She's called Ira. Small, squishy, surprisingly sneaky."),beat("pip","Let your lantern shine once, brave Ara. Then follow the lanterns to Bramble and Moss. They may have seen your sister.")]
 			"bramble": return [beat("bramble","I checked my clipboard. The woodland door is definitely locked."),beat("ara","Does your clipboard know where the key went?","curious"),beat("bramble","Moss saw it near the blue lanterns. He remembers everything. Except where he leaves his tea.","happy")]
 			"moss": return [beat("moss","Three pale birches are keeping a little brass secret.","curious"),beat("ara","A key-sized secret?"),beat("moss","Take the blue-lantern side trail. Open the little chest between their roots, shine, and pick up the key, then open the woodland door.")]
 	if game.quest_done:
